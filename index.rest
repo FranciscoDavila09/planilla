@@ -1,0 +1,431 @@
+###
+@BASE_URL = http://localhost
+
+//Parte del empleado 
+// get donde lista todos los empleados
+###
+GET {{ BASE_URL }}/EmpleadoServicio/listarEmpleados HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+/// get donde lista empleado por id*/
+###
+GET {{ BASE_URL }}/EmpleadoServicio/obtenerPorId?id=201 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+// post donde se crea un nuevo empleado
+###
+POST {{ BASE_URL }}/EmpleadoServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+ "CodigoEmpleado": "",
+  "Nombre": "Berny",
+  "Apellidos": "Davila",
+  "Identificacion": "1-1111-1111",
+  "Correo": "bernys@correo.com",
+  "Telefono": "8888-8888",
+  "FechaIngreso": "2026-02-08",
+  "Estado": 1,
+  "HoraEntrada": "08:00:00",
+  "CuentaBancaria": 123456,
+  "Salario": 450000,
+  "idDepartamento": 1,
+  "HoraSalida": "17:00:00"
+}
+
+
+
+
+//put para actualizar un empleado por id 
+###
+
+
+PUT {{ BASE_URL }}/EmpleadoServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+
+ "idEmpleado": 201,
+  "CodigoEmpleado": "E001",
+  "Nombre": "Berny",
+  "Apellidos": "Aguilar",
+  "Identificacion": "1-1111-1111",
+  "Correo": "bernys@correo.com",
+  "Telefono": "6209-7471",
+  "FechaIngreso": "2026-02-08",
+  "Estado": 1,
+  "HoraEntrada": "08:00:00",
+  "CuentaBancaria": 123456,
+  "Salario": 450000,
+  "idDepartamento": 1,
+  "HoraSalida": "17:00:00"
+}
+
+
+
+//delete para eliminar un empleado por id
+###
+DELETE {{ BASE_URL }}/EmpleadoServicio/eliminar?id=405 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+
+
+
+###
+GET {{ BASE_URL }}/Servicio1/listar2 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+###
+POST {{ BASE_URL }}/Servicio1/listar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+
+
+
+
+///Parte del usuario
+###
+GET {{ BASE_URL }}/UsuarioServicio/listarUsuarios HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+/// get donde lista usuario por id*/
+###
+GET {{ BASE_URL }}/UsuarioServicio/obtenerPorId?id=20 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+// post donde se crea un nuevo empleado
+###
+POST {{ BASE_URL }}/UsuarioServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "Nombre": "Jeeyson",
+  "Apellidos": "Martinez",
+  "Estado": 1,
+  "FechaCreacion": "2026-02-08",
+  "Clave": "password123",
+  "Telefono": "8888-8888",
+  "Correo": "bernys@correo.com",
+  "idRol": 1,
+  "idDepartamento": 2
+}
+
+
+
+
+//put para actualizar un usuario por id 
+###
+
+
+PUT {{ BASE_URL }}/UsuarioServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+    "idUsuario": 20,
+   "Nombre": "Jeeyson",
+  "Apellidos": "Martinez",
+  "Estado": 1,
+  "FechaCreacion": "2026-02-08",
+  "Clave": "password123",
+  "Telefono": "8888-8888",
+  "Correo": "bernys@correo.com",
+  "idRol": 1,
+  "idDepartamento": 2
+}
+
+
+
+//delete para eliminar un usuario por id
+###
+DELETE {{ BASE_URL }}/UsuarioServicio/eliminar?id=20 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+
+
+
+///Parte del departamento
+// get donde lista todos los departamentos
+###
+GET {{ BASE_URL }}/DepartamentoServicio/listarDepartamentos HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+/// get donde lista departamento por id*/
+###
+GET {{ BASE_URL }}/DepartamentoServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+// post donde se crea un nuevo departamento
+###
+POST {{ BASE_URL }}/DepartamentoServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "Nombre": "IT Department",
+  "Descripcion": "Departamento de IT",
+  "Estado": 1
+}
+
+
+
+//put para actualizar un departamento por id 
+###
+
+
+PUT {{ BASE_URL }}/DepartamentoServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "idDepartamento": 1,
+  "Nombre": "Recursos Humanos",
+  "Descripcion": "Departamento de recursos humanos actualizado",
+  "Estado": 1
+}
+
+
+
+//delete para eliminar un departamento por id
+###
+DELETE {{ BASE_URL }}/DepartamentoServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+///Parte de la planilla
+// get donde lista todas las planillas
+###
+GET {{ BASE_URL }}/PlanillaServicio/listarPlanillas HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+/// get donde lista planilla por id*/
+###
+GET {{ BASE_URL }}/PlanillaServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+// post donde se crea una nueva planilla
+###
+POST {{ BASE_URL }}/PlanillaServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "EstadoPlanilla": "Activa",
+  "Idusuario": 1,
+  "Fechacreacion": "2026-02-08"
+}
+
+
+
+//put para actualizar una planilla por id 
+###
+
+
+PUT {{ BASE_URL }}/PlanillaServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "idPlanillas": 2,
+  "EstadoPlanilla": "Cerrada",
+  "IdUsuario": 1,
+  "Fechacreacion": "2026-02-08"
+}
+
+  
+
+//delete para eliminar una planilla por id
+###
+DELETE {{ BASE_URL }}/PlanillaServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+{
+  "Usuario": "root"
+}
+
+
+///Parte del pago
+// get donde lista todos los pagos
+###
+GET {{ BASE_URL }}/PagoServicio/listarPagos HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+/// get donde lista pago por id*/
+###
+GET {{ BASE_URL }}/PagoServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+// post donde se crea un nuevo pago
+###
+POST {{ BASE_URL }}/PagoServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdPlanilla": 1,
+  "IdEmpleado": 201,
+  "MontoPagado": 550000.00,
+  "MetodoPago": "Transferencia bancaria",
+  "ReferenciaPago": "TRF-001",
+  "IdUsuarioProcesa": 1,
+  "FechaPago": "2026-02-08 10:00:00",
+  "Estado": 1,
+  "idFeriados": 1,
+  "idDeduccion": 401
+}
+
+
+
+//put para actualizar un pago por id 
+###
+
+
+PUT {{ BASE_URL }}/PagoServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdPago": 1,
+  "IdPlanilla": 1,
+  "IdEmpleado": 201,
+  "MontoPagado": 650000.00,
+  "MetodoPago": "Transferencia bancaria",
+  "ReferenciaPago": "TRF-001",
+  "IdUsuarioProcesa": 1,
+  "FechaPago": "2026-02-08 10:00:00",
+  "Estado": 1,
+  "idFeriados": 1,
+  "idDeduccion": 401
+}
+
+
+
+//delete para eliminar un pago por id
+###
+DELETE {{ BASE_URL }}/PagoServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+///Parte del feriado
+// get donde lista todos los feriados
+###
+GET {{ BASE_URL }}/FeriadoServicio/listarFeriados HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+/// get donde lista feriado por id*/
+###
+GET {{ BASE_URL }}/FeriadoServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+// post donde se crea un nuevo feriado
+###
+POST {{ BASE_URL }}/FeriadoServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "Fecha": "2026-12-25 00:00:00",
+  "Nombre": "Navidad",
+  "EsObligatorio": 1
+}
+
+
+
+//put para actualizar un feriado por id 
+###
+
+
+PUT {{ BASE_URL }}/FeriadoServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdFeriado": 14,
+  "Fecha": "2026-01-01 00:00:00",
+  "Nombre": "Dia del trabajador",
+  "EsObligatorio": 1
+}
+
+
+
+//delete para eliminar un feriado por id
+###
+DELETE {{ BASE_URL }}/FeriadoServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
