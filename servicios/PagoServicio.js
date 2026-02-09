@@ -22,7 +22,8 @@ class PagoServicio {
 async insertar(datos) {
     const sql = `
     INSERT INTO dbplanilla.pagos
-(IdPlanilla, IdEmpleado, MontoPagado, MetodoPago, ReferenciaPago, IdUsuarioProcesa, FechaPago, Estado, idFeriados, idDeduccion) VALUES 
+(IdPlanilla, IdEmpleado, MontoPagado, MetodoPago, ReferenciaPago, IdUsuarioProcesa,
+ FechaPago, Estado, idFeriados, idDeduccion) VALUES 
 (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
