@@ -13,6 +13,12 @@ const rutasDelPlanilla = require("./PlanillaServicio.js");
 const rutasDelPago = require("./PagoServicio.js");
 //Para asignar las rutas de feriado
 const rutasDelFeriado = require("./FeriadoServicio.js");
+
+//Para asignar las rutas de aguinaldos
+const rutasDelAguinaldos = require("./AguinaldosServicio.js");
+//para asignar las rutas de contrato
+const rutasDelContrato = require("./ContratoServicio.js");
+
 function asignarRutasAExpress(app) {
   app.use("/Servicio1", rutasDelServicio1);
   app.use("/EmpleadoServicio", rutasDelEmpleado);
@@ -21,6 +27,8 @@ function asignarRutasAExpress(app) {
   app.use("/PlanillaServicio", rutasDelPlanilla);
   app.use("/PagoServicio", rutasDelPago);
   app.use("/FeriadoServicio", rutasDelFeriado);
+  app.use("/AguinaldosServicio", rutasDelAguinaldos);
+  app.use("/ContratoServicio", rutasDelContrato);
 }
 
 module.exports = asignarRutasAExpress;

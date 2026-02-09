@@ -429,3 +429,127 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+
+
+
+
+
+
+
+
+
+//Parte de los aguinaldos
+
+// get donde lista todos los aguinaldos
+###
+GET {{ BASE_URL }}/AguinaldosServicio/listarAguinaldos HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+/// get donde lista aguinaldo por id*/
+###
+GET {{ BASE_URL }}/AguinaldosServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo aguinaldo
+###
+POST {{ BASE_URL }}/AguinaldosServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json  
+Origin: {{ BASE_URL }}
+
+{
+  "IdEmpleado": 201,
+  "Periodo": "2026",
+  "MontoCalculado": 450000.00,
+  "FechaPago": "2026-02-08",
+  "idUsuario": 1,
+  "Estado": 1
+}
+
+//put para actualizar un aguinaldo por id
+###
+PUT {{ BASE_URL }}/AguinaldosServicio/actualizar HTTP/1.1 
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json  
+Origin: {{ BASE_URL }}
+
+{
+  "IdAguinaldo": 1,
+  "IdEmpleado": 201,
+  "Periodo": "2026",
+  "MontoCalculado": 550000.00,
+  "FechaPago": "2026-02-08",
+  "idUsuario": 1,
+  "Estado": 1
+}
+
+//delete para eliminar un aguinaldo por id
+### 
+DELETE {{ BASE_URL }}/AguinaldosServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+
+//parte del contrato
+
+// get donde lista todos los contratos
+###
+GET {{ BASE_URL }}/ContratoServicio/listarContratos HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+/// get donde lista contrato por id*/
+###
+GET {{ BASE_URL }}/ContratoServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo contrato
+###
+POST {{ BASE_URL }}/ContratoServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdEmpleado": 201,
+  "TipoContrato": "Indefinido",
+  "FechaInicio": "2026-02-01",
+  "FechaFin": null,
+  "Salario": 450000.00,
+  "Estado": 1
+}
+
+//put para actualizar un contrato por id
+###
+PUT {{ BASE_URL }}/ContratoServicio/actualizar HTTP/1.1 
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdContrato": 1,
+  "IdEmpleado": 201,
+  "TipoContrato": "Plazo fijo",
+  "FechaInicio": "2026-02-01",
+  "FechaFin": "2027-02-01",
+  "Salario": 500000.00,
+  "Estado": 1
+}
+
+//delete para eliminar un contrato por id
+### 
+DELETE {{ BASE_URL }}/ContratoServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
