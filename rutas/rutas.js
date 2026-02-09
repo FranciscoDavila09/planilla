@@ -21,6 +21,18 @@ const rutasDelContrato = require("./ContratoServicio.js");
 //Para asignar las rutas de detalleplanilla
 const rutasDelDetalleplanilla = require("./DetalleplanillaServicio.js");
 
+//para asignar las rutas de controlAsistencia
+
+const rutasDelControlAsistencia = require("./ControlAsistenciaServicio.js");
+
+//para asignar las rutas de control horarios
+
+const rutasDelControlHorarios = require("./ControlHorarioServicio.js");
+
+// para asignar las rutas de deducciones
+
+const rutasDelDeducciones = require("./DeduccionesServicio.js");
+
 function asignarRutasAExpress(app) {
   app.use("/Servicio1", rutasDelServicio1);
   app.use("/EmpleadoServicio", rutasDelEmpleado);
@@ -32,6 +44,9 @@ function asignarRutasAExpress(app) {
   app.use("/AguinaldosServicio", rutasDelAguinaldos);
   app.use("/ContratoServicio", rutasDelContrato);
   app.use("/DetalleplanillaServicio", rutasDelDetalleplanilla);
+  app.use("/ControlAsistenciaServicio", rutasDelControlAsistencia);
+  app.use("/ControlHorarioServicio", rutasDelControlHorarios);
+  app.use("/DeduccionesServicio", rutasDelDeducciones);
 }
 
 module.exports = asignarRutasAExpress;

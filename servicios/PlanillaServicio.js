@@ -21,14 +21,16 @@ class PlanillaServicio {
   async insertar(datos) {
     const sql = `
     INSERT INTO dbplanilla.planillas
-(EstadoPlanilla, Idusuario, Fechacreacion) VALUES 
-(?, ?, ?)
+(EstadoPlanilla, Idusuario, Fechacreacion, idControlHorarios, idPeriodoPlanilla) VALUES 
+(?, ?, ?, ?, ?)
     `;
 
     const parametros = [
       datos.EstadoPlanilla,
       datos.Idusuario,
       datos.Fechacreacion,
+      datos.idControlHorarios,
+      datos.idPeriodoPlanilla,
     ];
 
     return await ejecutarConsulta(sql, parametros);
@@ -39,7 +41,7 @@ class PlanillaServicio {
   async actualizar(datos) {
     const sql = `
   UPDATE dbplanilla.planillas
-      SET EstadoPlanilla = ?, IdUsuario = ?, Fechacreacion = ?
+      SET EstadoPlanilla = ?, IdUsuario = ?, Fechacreacion = ?, idControlHorarios = ?, idPeriodoPlanilla = ?
       WHERE idPlanillas = ?
 
 `;
@@ -48,6 +50,8 @@ class PlanillaServicio {
       datos.EstadoPlanilla,
       datos.IdUsuario,
       datos.Fechacreacion,
+      datos.idControlHorarios,
+      datos.idPeriodoPlanilla,
       datos.idPlanillas,
     ];
 

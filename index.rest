@@ -622,3 +622,187 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+
+
+///Parte del control de asistencia
+
+// get donde lista todos los controlAsistencia
+###
+GET {{ BASE_URL }}/ControlAsistenciaServicio/listarControlAsistencia HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+ // get donde lista controlAsistencia por id*/
+###
+GET {{ BASE_URL }}/ControlAsistenciaServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo controlAsistencia
+###
+POST {{ BASE_URL }}/ControlAsistenciaServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+ 
+  "HoraEntrada": "08:00:00",
+  "HoraSalida": "17:00:00",
+  "IdEmpleado": 201,
+  "idUsuarios": 1
+}
+
+//put para actualizar un controlAsistencia por id
+###
+PUT {{ BASE_URL }}/ControlAsistenciaServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdControlAsistencia": 1,
+  "HoraEntrada": "08:30:00",
+  "HoraSalida": "17:30:00",
+  "IdEmpleado": 202,
+  "idUsuarios": 1
+}
+
+//delete para eliminar un controlAsistencia por id
+###
+DELETE {{ BASE_URL }}/ControlAsistenciaServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+
+
+
+
+//Parte del control de horarios
+
+// get donde lista todos los controlHorarios
+###
+GET {{ BASE_URL }}/ControlHorarioServicio/listarControlHorario HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+ // get donde lista controlHorarios por id*/
+###
+GET {{ BASE_URL }}/ControlHorarioServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json  
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo controlHorarios
+###
+POST {{ BASE_URL }}/ControlHorarioServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdEmpleado": 201,
+  "Fecha": "2024-01-01",
+  "HoraEntrada": "08:00:00",
+  "HoraSalida": "17:00:00",
+  "HorasNormales": "08:00:00",
+  "HorasExtra": "00:00:00",
+  "Estado": 1,
+  "idUsuarios": 1
+}
+
+//put para actualizar un controlHorarios por id
+###
+PUT {{ BASE_URL }}/ControlHorarioServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdControl": 2,
+  "IdEmpleado": 201,
+  "Fecha": "2024-01-01",
+  "HoraEntrada": "08:30:00",
+  "HoraSalida": "17:30:00",
+  "HorasNormales": "08:00:00",
+  "HorasExtra": "00:00:00",
+  "Estado": 1,
+  "idUsuarios": 1
+}
+
+//delete para eliminar un controlHorarios por id
+###
+DELETE {{ BASE_URL }}/ControlHorarioServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ BASE_URL }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+
+
+//Parte de las deducciones
+
+// get donde lista todos los deducciones
+###
+GET {{ BASE_URL }}/DeduccionesServicio/listarDeducciones HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+ // get donde lista deducciones por id*/
+###
+GET {{ BASE_URL }}/DeduccionesServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo deducciones
+###
+POST {{ BASE_URL }}/DeduccionesServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "Nombre": "Seguro social",
+  "Monto": 50000.00,
+  "Impuesto": 0.00,
+  "Estado": 1,
+  "idEmpleado": 201,
+  "usuariosId": 1,
+  "idPrestamo": null
+  
+}
+
+//put para actualizar un deducciones por id
+### 
+PUT {{ BASE_URL }}/DeduccionesServicio/actualizar HTTP/1.1  
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "idDeducciones": 601,
+  "Nombre": "Seguro social actualizado",
+  "Monto": 60000.00,
+  "Impuesto": 0.00,
+  "Estado": 1,
+  "idEmpleado": 201,
+  "usuariosId": 1,
+  "idPrestamo": null
+}
+
+//delete para eliminar un deducciones por id
+###
+DELETE {{ BASE_URL }}/DeduccionesServicio/eliminar?id=601 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+

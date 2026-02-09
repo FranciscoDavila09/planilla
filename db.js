@@ -4,7 +4,7 @@ async function crearObjetoConexion() {
   return await mysql.createConnection({
     host: process.env.DB_HOST || "127.0.0.1",
     user: process.env.DB_USER || "root",
-    password: process.env.MYSQLPASS || "admin",
+    password: process.env.MYSQLPASS || "123456",
     database: process.env.DB_NAME || "dbplanilla",
     port: process.env.MYSQLPORT || 3306,
     multipleStatements: true,
