@@ -553,3 +553,72 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+
+///Parte de detalleplanilla
+// get donde lista todos los detalleplanilla
+###
+GET {{ BASE_URL }}/DetalleplanillaServicio/listarDetalleplanilla HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+/// get donde lista detalleplanilla por id*/
+###
+GET {{ BASE_URL }}/DetalleplanillaServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+// post donde se crea un nuevo detalleplanilla
+###
+POST {{ BASE_URL }}/DetalleplanillaServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "SalarioBase": 450000,
+  "HorasExtra": "02:30:00",
+  "Deducciones": 50000,
+  "Bono": 25000,
+  "TotalDeducciones": 50000,
+  "SalarioNeto": 425000,
+  "SalarioBruto": 475000,
+  "idPlanilla": 1
+}
+
+
+
+
+//put para actualizar un detalleplanilla por id 
+###
+
+
+PUT {{ BASE_URL }}/DetalleplanillaServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "idDetallePlanilla": 1,
+  "SalarioBase": 450000,
+  "HorasExtra": "03:00:00",
+  "Deducciones": 50000,
+  "Bono": 30000,
+  "TotalDeducciones": 50000,
+  "SalarioNeto": 430000,
+  "SalarioBruto": 480000,
+  "idPlanilla": 1
+}
+
+
+
+//delete para eliminar un detalleplanilla por id
+###
+DELETE {{ BASE_URL }}/DetalleplanillaServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
