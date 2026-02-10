@@ -33,6 +33,18 @@ const rutasDelControlHorarios = require("./ControlHorarioServicio.js");
 
 const rutasDelDeducciones = require("./DeduccionesServicio.js");
 
+//para asignar las rutas de historial salarios
+
+const rutasDelHistorialSalarios = require("./HistorialSalarioServicio.js");
+
+//para asignar las rutas de licencias
+
+const rutasDelLicencias = require("./LicenciaServicio.js");
+
+//para asignar las rutas de periodo planilla
+
+const rutasDelPeriodoPlanilla = require("./PeriodoPlanillaServicio.js");
+
 function asignarRutasAExpress(app) {
   app.use("/Servicio1", rutasDelServicio1);
   app.use("/EmpleadoServicio", rutasDelEmpleado);
@@ -47,6 +59,9 @@ function asignarRutasAExpress(app) {
   app.use("/ControlAsistenciaServicio", rutasDelControlAsistencia);
   app.use("/ControlHorarioServicio", rutasDelControlHorarios);
   app.use("/DeduccionesServicio", rutasDelDeducciones);
+  app.use("/HistorialSalarioServicio", rutasDelHistorialSalarios);
+  app.use("/LicenciaServicio", rutasDelLicencias);
+  app.use("/PeriodoPlanillaServicio", rutasDelPeriodoPlanilla);
 }
 
 module.exports = asignarRutasAExpress;
