@@ -806,3 +806,176 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+
+
+
+//Parte del historial de salarios
+
+// get donde lista todos los historialSalarios
+###
+GET {{ BASE_URL }}/HistorialSalarioServicio/listarHistorialSalario HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+ // get donde lista historialSalarios por id*/
+###
+GET {{ BASE_URL }}/HistorialSalarioServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo historialSalarios
+###
+POST {{ BASE_URL }}/HistorialSalarioServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+{
+  "MontoSalario": 500000,
+  "FechaInicio": "2026-02-01",
+  "FechaFin": "2026-12-31",
+  "MotivoCambio": "Aumento salarial",
+  "idUsuarios": 1,
+  "idEmpleados": 204
+}
+
+
+
+//put para actualizar un historialSalarios por id
+###
+PUT {{ BASE_URL }}/HistorialSalarioServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+{
+  "idHistorialSalarios": 201,
+  "MontoSalario": 550000,
+  "FechaInicio": "2026-02-01",
+  "FechaFin": "2026-12-31",
+  "MotivoCambio": "Aumento por desempeño",
+  "idUsuarios": 1,
+  "idEmpleados": 204
+}
+
+
+
+//delete para eliminar un historialSalarios por id
+###
+DELETE {{ BASE_URL }}/HistorialSalarioServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+//Parte de las licencias
+
+// get donde lista todos los licencias
+###
+GET {{ BASE_URL }}/LicenciaServicio/listarLicencia HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+ // get donde lista licencias por id*/  
+###
+GET {{ BASE_URL }}/LicenciaServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo licencias
+###
+POST {{ BASE_URL }}/LicenciaServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdEmpleado": 201,
+  "Tipo": "Incapacidad médica",
+  "FechaInicio": "2026-02-05",
+  "FechaFin": "2026-02-10",
+  "DocumentoSoporte": "incapacidad_201.pdf",
+  "Estado": 1,
+  "idUsuario": 1
+}
+//put para actualizar un licencias por id
+###
+PUT {{ BASE_URL }}/LicenciaServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+ "IdLicencia": 37,
+  "IdEmpleado": 201,
+  "Tipo": "Licencia personal",
+  "FechaInicio": "2026-02-05",
+  "FechaFin": "2026-02-12",
+  "DocumentoSoporte": "licencia_actualizada.pdf",
+  "Estado": 1,
+  "idUsuario": 1
+}
+
+//delete para eliminar un licencias por id
+###
+DELETE {{ BASE_URL }}/LicenciaServicio/eliminar?id=37 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json  
+Origin: {{ BASE_URL }}
+
+
+//Parte del periodo de planilla
+// get donde lista todos los periodoPlanilla
+### 
+GET {{ BASE_URL }}/PeriodoPlanillaServicio/listarPeriodoPlanilla HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+ // get donde lista periodoPlanilla por id*/
+###
+GET {{ BASE_URL }}/PeriodoPlanillaServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo periodoPlanilla
+###
+POST {{ BASE_URL }}/PeriodoPlanillaServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "NombrePeriodo": "Quincena 1 - Febrero 2026",
+  "FechaInicio": "2026-02-01",
+  "FechaFin": "2026-02-15"
+}
+
+//put para actualizar un periodoPlanilla por id
+###
+PUT {{ BASE_URL }}/PeriodoPlanillaServicio/actualizar HTTP/1.1  
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "idPeriodoPlanilla": 13,
+  "NombrePeriodo": "Quincena 1 - Febrero 2026 (Editado)",
+  "FechaInicio": "2026-02-01",
+  "FechaFin": "2026-02-15"
+}
+
+//delete para eliminar un periodoPlanilla por id
+###
+DELETE {{ BASE_URL }}/PeriodoPlanillaServicio/eliminar?id=13 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
