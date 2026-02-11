@@ -45,6 +45,14 @@ const rutasDelLicencias = require("./LicenciaServicio.js");
 
 const rutasDelPeriodoPlanilla = require("./PeriodoPlanillaServicio.js");
 
+//para asignar las rutas de prestamo
+
+const rutasDelPrestamo = require("./PrestamoServicio.js");
+
+//para asignar las rutas de puestos
+
+const rutasDelPuestos = require("./PuestosServicio.js");
+
 function asignarRutasAExpress(app) {
   app.use("/Servicio1", rutasDelServicio1);
   app.use("/EmpleadoServicio", rutasDelEmpleado);
@@ -62,6 +70,8 @@ function asignarRutasAExpress(app) {
   app.use("/HistorialSalarioServicio", rutasDelHistorialSalarios);
   app.use("/LicenciaServicio", rutasDelLicencias);
   app.use("/PeriodoPlanillaServicio", rutasDelPeriodoPlanilla);
+  app.use("/PrestamoServicio", rutasDelPrestamo);
+  app.use("/PuestosServicio", rutasDelPuestos);
 }
 
 module.exports = asignarRutasAExpress;

@@ -554,6 +554,74 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 
+///Parte de prestamo
+// get donde lista todos los prestamos
+###
+GET {{ BASE_URL }}/PrestamoServicio/listarPrestamos HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+/// get donde lista prestamo por id*/
+###
+GET {{ BASE_URL }}/PrestamoServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+// post donde se crea un nuevo prestamo
+###
+POST {{ BASE_URL }}/PrestamoServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdEmpleado": 201,
+  "MontoTotal": 1000000,
+  "Cuotas": 12,
+  "MontoPorCuota": 83333.33,
+  "SaldoPendiente": 1000000,
+  "FechaInicio": "2026-02-10",
+  "Estado": "1",
+  "IdUsuario": 1
+}
+
+
+
+
+//put para actualizar un prestamo por id 
+###
+
+
+PUT {{ BASE_URL }}/PrestamoServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdPrestamo": 1,
+  "IdEmpleado": 201,
+  "MontoTotal": 1000000,
+  "Cuotas": 12,
+  "MontoPorCuota": 83333.33,
+  "SaldoPendiente": 500000,
+  "FechaInicio": "2026-02-10",
+  "Estado": "1",
+  "IdUsuario": 1
+}
+
+
+
+//delete para eliminar un prestamo por id
+###
+DELETE {{ BASE_URL }}/PrestamoServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
 ///Parte de detalleplanilla
 // get donde lista todos los detalleplanilla
 ###
@@ -976,6 +1044,70 @@ Origin: {{ BASE_URL }}
 //delete para eliminar un periodoPlanilla por id
 ###
 DELETE {{ BASE_URL }}/PeriodoPlanillaServicio/eliminar?id=13 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+///Parte de puestos
+// get donde lista todos los puestos
+###
+GET {{ BASE_URL }}/PuestosServicio/listarPuestos HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+/// get donde lista puestos por id*/
+###
+GET {{ BASE_URL }}/PuestosServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+// post donde se crea un nuevo puesto
+###
+POST {{ BASE_URL }}/PuestosServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "NombrePuesto": "Desarrollador Senior",
+  "Descripcion": "Responsable de desarrollo de software",
+  "SalarioBase": 800000,
+  "Estado": 1,
+  "idEmpleado": 202,
+  "idUsuario": 1
+}
+
+
+
+
+//put para actualizar un puesto por id 
+###
+
+
+PUT {{ BASE_URL }}/PuestosServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdPuestos": 1,
+  "NombrePuesto": "Desarrollador Senior",
+  "Descripcion": "Responsable senior del desarrollo de software",
+  "SalariosBase": 850000,
+  "Estado": 1,
+  "idEmpleado": 201,
+  "idUsuario": 1
+}
+
+
+
+//delete para eliminar un puesto por id
+###
+DELETE {{ BASE_URL }}/PuestosServicio/eliminar?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
