@@ -1111,3 +1111,174 @@ DELETE {{ BASE_URL }}/PuestosServicio/eliminar?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
+
+
+
+
+
+///Parte de roles
+// get donde lista todos los roles
+###
+GET {{ BASE_URL }}/RolesServicio/listarRoles HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+/// get donde lista roles por id*/
+### 
+GET {{ BASE_URL }}/RolesServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo rol
+###
+POST {{ BASE_URL }}/RolesServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "Nombre": "Administrador",
+  "Descripcion": "Acceso completo al sistema",
+  "Estado": 1
+}
+
+//put para actualizar un rol por id
+###
+PUT {{ BASE_URL }}/RolesServicio/actualizar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdRol": 1,
+  "Nombre": "Administrador",
+  "Descripcion": "Acceso completo al sistema (Editado)",
+  "Estado": 1
+}
+
+//delete para eliminar un rol por id
+### 
+DELETE {{ BASE_URL }}/RolesServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+
+//para la parte de tipo de ingresos
+
+// get donde lista todos los tipoIngresos
+###
+GET {{ BASE_URL }}/TipoIngresoServicio/listarTipoIngreso HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+/// get donde lista tipoIngreso por id*/
+###
+GET {{ BASE_URL }}/TipoIngresoServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo tipoIngreso
+###
+POST {{ BASE_URL }}/TipoIngresoServicio/insertar HTTP/1.1 
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "Bonos": 0,
+  "HorasExtra": "06:00:00",
+  "HorasDobles": "00:00:00",
+  "Comisiones": 400000,
+  "Viaticos": 5000,
+  "idEmpleados": 201
+}
+
+//put para actualizar un tipoIngreso por id
+###
+PUT {{ BASE_URL }}/TipoIngresoServicio/actualizar HTTP/1.1  
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "idTipoIngresos": 201,
+  "Bonos": 50000,
+  "HorasExtra": "08:00:00",
+  "HorasDobles": "00:00:00",
+  "Comisiones": 0,
+  "Viaticos": 0,
+  "idEmpleados": 201
+}
+
+//delete para eliminar un tipoIngreso por id
+###
+DELETE {{ BASE_URL }}/TipoIngresoServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+
+
+//para la parte de vacaciones
+// get donde lista todos los vacaciones
+###
+GET {{ BASE_URL }}/VacacionesServicio/listarVacaciones HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+ // get donde lista vacaciones por id*/
+###
+GET {{ BASE_URL }}/VacacionesServicio/obtenerPorId?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+// post donde se crea un nuevo vacaciones
+###
+POST {{ BASE_URL }}/VacacionesServicio/insertar HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdEmpleado": 201,
+  "FechaInicio": "2026-02-20",
+  "FechaFin": "2026-02-25",
+  "DiasSolicitados": 5,
+  "Estado": 1,
+  "UsuarioAprueba": 1
+}
+
+//put para actualizar un vacaciones por id
+###
+
+PUT {{ BASE_URL }}/VacacionesServicio/actualizar HTTP/1.1 
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "IdVacacion": 81,
+  "IdEmpleado": 201,
+  "FechaInicio": "2026-02-20",
+  "FechaFin": "2026-02-25",
+  "DiasSolicitados": 5,
+  "Estado": 1,
+  "UsuarioAprueba": 1
+}
+
+//delete para eliminar un vacaciones por id
+###
+DELETE {{ BASE_URL }}/VacacionesServicio/eliminar?id=1 HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
