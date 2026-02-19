@@ -886,7 +886,7 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
- // get donde lista historialSalarios por id*/
+ // get donde lista historialSalarios por id
 ###
 GET {{ BASE_URL }}/HistorialSalarioServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -950,7 +950,7 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
- // get donde lista licencias por id*/  
+ // get donde lista licencias por id
 ###
 GET {{ BASE_URL }}/LicenciaServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -1057,7 +1057,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 
-/// get donde lista puestos por id*/
+/// get donde lista puestos por id
 ###
 GET {{ BASE_URL }}/PuestosServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -1124,7 +1124,7 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
-/// get donde lista roles por id*/
+/// get donde lista roles por id
 ### 
 GET {{ BASE_URL }}/RolesServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -1177,7 +1177,7 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
-/// get donde lista tipoIngreso por id*/
+/// get donde lista tipoIngreso por id
 ###
 GET {{ BASE_URL }}/TipoIngresoServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -1235,7 +1235,7 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
- // get donde lista vacaciones por id*/
+ // get donde lista vacaciones por id
 ###
 GET {{ BASE_URL }}/VacacionesServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
