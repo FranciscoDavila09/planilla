@@ -398,7 +398,7 @@ Origin: {{ BASE_URL }}
 
 {
   "Fecha": "2026-12-25 00:00:00",
-  "Nombre": "Navidad",
+  "Nombre": "Navi",
   "EsObligatorio": 1
 }
 
@@ -522,7 +522,7 @@ Origin: {{ BASE_URL }}
 
 {
   "IdEmpleado": 201,
-  "TipoContrato": "Indefinido",
+  "TipoContrato": "Indefini",
   "FechaInicio": "2026-02-01",
   "FechaFin": null,
   "Salario": 450000.00,
