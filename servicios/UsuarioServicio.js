@@ -45,7 +45,7 @@ class UsuarioServicio {
   async actualizar(datos) {
     const sql = `
   UPDATE dbplanilla.usuarios
-      SET Nombre = ?, Apellidos = ?, Clave = ?, Correo = ?, Telefono = ?,
+      SET Nombre = ?, Apellidos = ?, Clave = ?, correo = ?, telefono = ?,
           FechaCreacion = ?, Estado = ?, idRol = ?, idDepartamento = ?
       WHERE idUsuario = ?
 
@@ -55,8 +55,8 @@ class UsuarioServicio {
       datos.Nombre,
       datos.Apellidos,
       datos.Clave,
-      datos.Correo,
-      datos.Telefono,
+      datos.correo,
+      datos.telefono,
       datos.FechaCreacion,
       datos.Estado,
       datos.idRol,

@@ -18,45 +18,43 @@ class PlanillaServicio {
 
   //Insertar datos
 
-  async insertar(datos) {
-    const sql = `
+async insertar(datos) {
+  const sql = `
     INSERT INTO dbplanilla.planillas
-(EstadoPlanilla, Idusuario, Fechacreacion, idControlHorarios, idPeriodoPlanilla) VALUES 
-(?, ?, ?, ?, ?)
-    `;
+    (EstadoPlanilla, IdUsuario, FechaCreacion, idControlHorarios, idPeriodoPlanilla)
+    VALUES (?, ?, ?, ?, ?)
+  `;
 
-    const parametros = [
-      datos.EstadoPlanilla,
-      datos.Idusuario,
-      datos.Fechacreacion,
-      datos.idControlHorarios,
-      datos.idPeriodoPlanilla,
-    ];
+  const parametros = [
+    datos.EstadoPlanilla,
+    datos.IdUsuario,
+    datos.FechaCreacion,
+    datos.idControlHorarios,
+    datos.idPeriodoPlanilla
+  ];
 
-    return await ejecutarConsulta(sql, parametros);
-  }
-
+  return await ejecutarConsulta(sql, parametros);
+}
   //Actualizar datos
 
-  async actualizar(datos) {
-    const sql = `
-  UPDATE dbplanilla.planillas
-      SET EstadoPlanilla = ?, IdUsuario = ?, Fechacreacion = ?, idControlHorarios = ?, idPeriodoPlanilla = ?
-      WHERE idPlanillas = ?
+ async actualizar(datos) {
+  const sql = `
+    UPDATE dbplanilla.planillas
+    SET EstadoPlanilla = ?, IdUsuario = ?, FechaCreacion = ?, idControlHorarios = ?, idPeriodoPlanilla = ?
+    WHERE idPlanillas = ?
+  `;
 
-`;
+  const parametros = [
+    datos.EstadoPlanilla,
+    datos.IdUsuario,
+    datos.FechaCreacion,
+    datos.idControlHorarios,
+    datos.idPeriodoPlanilla,
+    datos.idPlanillas
+  ];
 
-    const parametros = [
-      datos.EstadoPlanilla,
-      datos.IdUsuario,
-      datos.Fechacreacion,
-      datos.idControlHorarios,
-      datos.idPeriodoPlanilla,
-      datos.idPlanillas,
-    ];
-
-    return await ejecutarConsulta(sql, parametros);
-  }
+  return await ejecutarConsulta(sql, parametros);
+}
 
   //eliminar datos por id
 

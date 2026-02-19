@@ -29,7 +29,7 @@ async actualizar(datos) {
     const sql = `
   UPDATE dbplanilla.periodoplanilla
         SET NombrePeriodo = ?, FechaInicio = ?, FechaFin = ?
-        WHERE idPeriodoPlanilla = ?
+        WHERE idPeriodoPlanilla  = ?
 `;
 const parametros = [    
         datos.NombrePeriodo,

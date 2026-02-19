@@ -26,7 +26,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
- "CodigoEmpleado": "",
+ "CodigoEmpleado": "E201",
   "Nombre": "Berny",
   "Apellidos": "Davila",
   "Identificacion": "1-1111-1111",
@@ -55,7 +55,7 @@ Origin: {{ BASE_URL }}
 
 {
 
- "idEmpleado": 201,
+ "IdEmpleado": 201,
   "CodigoEmpleado": "E001",
   "Nombre": "Berny",
   "Apellidos": "Aguilar",
@@ -221,7 +221,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "idDepartamento": 1,
+  "IdDepartamento ": 1,
   "Nombre": "Recursos Humanos",
   "Descripcion": "Departamento de recursos humanos actualizado",
   "Estado": 1
@@ -263,8 +263,10 @@ Origin: {{ BASE_URL }}
 
 {
   "EstadoPlanilla": "Activa",
-  "Idusuario": 1,
-  "Fechacreacion": "2026-02-08"
+  "IdUsuario": 1,
+  "FechaCreacion": "2026-02-08",
+  "idControlHorarios": 1,
+  "idPeriodoPlanilla": 13
 }
 
 
@@ -358,8 +360,8 @@ Origin: {{ BASE_URL }}
   "IdUsuarioProcesa": 1,
   "FechaPago": "2026-02-08 10:00:00",
   "Estado": 1,
-  "idFeriados": 1,
-  "idDeduccion": 401
+  "idFeriados": null,
+  "idDeduccion": null
 }
 
 
@@ -463,7 +465,7 @@ Origin: {{ BASE_URL }}
 
 {
   "IdEmpleado": 201,
-  "Periodo": "2026",
+  "Periodo": 2026,
   "MontoCalculado": 450000.00,
   "FechaPago": "2026-02-08",
   "idUsuario": 1,
@@ -478,9 +480,9 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "IdAguinaldo": 1,
+  "IdAguinaldo": 201,
   "IdEmpleado": 201,
-  "Periodo": "2026",
+  "Periodo": 2026,
   "MontoCalculado": 550000.00,
   "FechaPago": "2026-02-08",
   "idUsuario": 1,
@@ -520,14 +522,17 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+
 {
   "IdEmpleado": 201,
-  "TipoContrato": "Indefini",
+  "TipoContrato": "Indefinido",
   "FechaInicio": "2026-02-01",
   "FechaFin": null,
-  "Salario": 450000.00,
-  "Estado": 1
+  "SalarioPactado": 450000.00,
+  "Estado": 1,
+  "usuarioId": 1
 }
+
 
 //put para actualizar un contrato por id
 ###
@@ -537,13 +542,14 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "IdContrato": 1,
+  "IdContrato": 262,
   "IdEmpleado": 201,
   "TipoContrato": "Plazo fijo",
   "FechaInicio": "2026-02-01",
   "FechaFin": "2027-02-01",
-  "Salario": 500000.00,
-  "Estado": 1
+  "SalarioPactado": 500000.00,
+  "Estado": 1,
+  "usuarioId": 1
 }
 
 //delete para eliminar un contrato por id
@@ -585,7 +591,7 @@ Origin: {{ BASE_URL }}
   "MontoPorCuota": 83333.33,
   "SaldoPendiente": 1000000,
   "FechaInicio": "2026-02-10",
-  "Estado": "1",
+  "Estado": 1,
   "IdUsuario": 1
 }
 
@@ -609,7 +615,7 @@ Origin: {{ BASE_URL }}
   "MontoPorCuota": 83333.33,
   "SaldoPendiente": 500000,
   "FechaInicio": "2026-02-10",
-  "Estado": "1",
+  "Estado": 1,
   "IdUsuario": 1
 }
 
@@ -648,15 +654,13 @@ Origin: {{ BASE_URL }}
 
 {
   "SalarioBase": 450000,
-  "HorasExtra": "02:30:00",
-  "Deducciones": 50000,
-  "Bono": 25000,
   "TotalDeducciones": 50000,
   "SalarioNeto": 425000,
   "SalarioBruto": 475000,
-  "idPlanilla": 1
+  "idPlanilla": 1,
+  "idDeducciones": 601,
+  "idTipoIngreso": 1
 }
-
 
 
 
@@ -670,15 +674,14 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "idDetallePlanilla": 1,
+  "idDetallePlanilla": 202,
   "SalarioBase": 450000,
-  "HorasExtra": "03:00:00",
-  "Deducciones": 50000,
-  "Bono": 30000,
   "TotalDeducciones": 50000,
   "SalarioNeto": 430000,
   "SalarioBruto": 480000,
-  "idPlanilla": 1
+  "idPlanilla": 1,
+  "idDeducciones": 601,
+  "idTipoIngreso": 1
 }
 
 
@@ -716,10 +719,9 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
- 
   "HoraEntrada": "08:00:00",
   "HoraSalida": "17:00:00",
-  "IdEmpleado": 201,
+  "idEmpleados": 201,
   "idUsuarios": 1
 }
 
@@ -731,10 +733,10 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "IdControlAsistencia": 1,
+  "idControlAsistencia": 204,
   "HoraEntrada": "08:30:00",
   "HoraSalida": "17:30:00",
-  "IdEmpleado": 202,
+  "idEmpleados": 202,
   "idUsuarios": 1
 }
 
@@ -841,12 +843,11 @@ Origin: {{ BASE_URL }}
 {
   "Nombre": "Seguro social",
   "Monto": 50000.00,
-  "Impuesto": 0.00,
+  "Impuestos": 0.00,
   "Estado": 1,
   "idEmpleado": 201,
   "usuariosId": 1,
   "idPrestamo": null
-  
 }
 
 //put para actualizar un deducciones por id
@@ -860,7 +861,7 @@ Origin: {{ BASE_URL }}
   "idDeducciones": 601,
   "Nombre": "Seguro social actualizado",
   "Monto": 60000.00,
-  "Impuesto": 0.00,
+  "Impuestos": 0.00,
   "Estado": 1,
   "idEmpleado": 201,
   "usuariosId": 1,
@@ -1097,7 +1098,7 @@ Origin: {{ BASE_URL }}
   "IdPuestos": 1,
   "NombrePuesto": "Desarrollador Senior",
   "Descripcion": "Responsable senior del desarrollo de software",
-  "SalariosBase": 850000,
+  "SalarioBase": 850000,
   "Estado": 1,
   "idEmpleado": 201,
   "idUsuario": 1

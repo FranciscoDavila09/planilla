@@ -44,7 +44,7 @@ async actualizar(datos) {
 const sql = `
   UPDATE dbplanilla.departamentos
       SET Nombre = ?, Descripcion = ?, Estado = ?
-      WHERE idDepartamento = ?
+      WHERE IdDepartamento  = ?
 
 `;
 
@@ -53,7 +53,7 @@ const parametros = [
 datos.Nombre,
 datos.Descripcion,
 datos.Estado,
-datos.idDepartamento
+datos.IdDepartamento 
 ];
 
 return await ejecutarConsulta(sql, parametros);
