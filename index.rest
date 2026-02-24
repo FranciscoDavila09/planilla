@@ -1,5 +1,6 @@
 ###
 @BASE_URL = http://localhost
+@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJGcmFuY2lzY28iLCJDb3JyZW8iOiJmcmFuY2lzY29hZ3VpbGFyQGNvcnJlby5jb20iLCJpYXQiOjE3NzE3MzUxNzksImV4cCI6MTc3MTczNTc3OX0.kpF2wEFndmuhYDbeZpvei9aMQ7yrof3aC5wM4CIhSos
 
 //Parte del empleado 
 // get donde lista todos los empleados
@@ -106,6 +107,38 @@ Origin: {{ BASE_URL }}
 
 
 ///Parte del usuario
+
+
+///parte del usuario pero parte del jwt token 
+###
+POST {{ BASE_URL }}/UsuarioServicio/autenticar HTTP/1.1
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "CorreoElectronico": "franciscoaguilar@correo.com",
+  "Clave": "password123"
+}
+
+### VALIDAR TOKEN
+POST {{ BASE_URL }}/UsuarioServicio/validarToken HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+### DESAUTENTICAR
+POST {{ BASE_URL }}/UsuarioServicio/desautenticar HTTP/1.1
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "CorreoElectronico": "franciscoaguilar@correo.com"
+}
+
+
+
+
 ###
 GET {{ BASE_URL }}/UsuarioServicio/listarUsuarios HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -129,13 +162,13 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "Nombre": "Jeeyson",
-  "Apellidos": "Martinez",
+  "Nombre": "Francisco",
+  "Apellidos": "Aguilar",
   "Estado": 1,
   "FechaCreacion": "2026-02-08",
   "Clave": "password123",
-  "Telefono": "8888-8888",
-  "Correo": "bernys@correo.com",
+  "telefono": "8888-8888",
+  "correo": "franciscoaguilar@correo.com",
   "idRol": 1,
   "idDepartamento": 2
 }
@@ -148,21 +181,20 @@ Origin: {{ BASE_URL }}
 
 
 PUT {{ BASE_URL }}/UsuarioServicio/actualizar HTTP/1.1
-Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-    "idUsuario": 20,
-   "Nombre": "Jeeyson",
-  "Apellidos": "Martinez",
+  "idUsuario": 38,
+  "Nombre": "Berny",
+  "Apellidos": "Davila",
   "Estado": 1,
   "FechaCreacion": "2026-02-08",
   "Clave": "password123",
-  "Telefono": "8888-8888",
-  "Correo": "bernys@correo.com",
+  "telefono": "8888-8888",
+  "correo": "bernys@correo.com",
   "idRol": 1,
-  "idDepartamento": 2
+  "idDepartamento": 1
 }
 
 

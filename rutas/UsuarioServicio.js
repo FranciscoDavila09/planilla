@@ -23,4 +23,21 @@ Router.put("/actualizar", async (solicitud, respuesta, next) => {
 Router.delete("/eliminar", async (solicitud, respuesta, next) => {
   return respuesta.json(await UsuarioServicio.eliminar(solicitud.query.id));
 });
+
+/// para ka parte del token y autenticacion
+Router.post("/autenticar", async (solicitud, respuesta) => {
+  respuesta.json(await UsuarioServicio.Autenticacion(solicitud.body.CorreoElectronico, solicitud.body.Clave));
+});
+
+Router.post("/validarToken", async (solicitud, respuesta) => {
+  respuesta.json(await UsuarioServicio.ValidarToken(solicitud));
+});
+
+Router.post("/desautenticar", async (solicitud, respuesta) => {
+  respuesta.json(await UsuarioServicio.DesAutenticacion(solicitud.body.CorreoElectronico));
+});
+
+
+
+
 module.exports = Router;
