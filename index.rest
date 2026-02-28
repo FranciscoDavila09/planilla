@@ -1,6 +1,6 @@
 ###
 @BASE_URL = http://localhost
-@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJGcmFuY2lzY28iLCJDb3JyZW8iOiJmcmFuY2lzY29hZ3VpbGFyQGNvcnJlby5jb20iLCJpYXQiOjE3NzE3MzUxNzksImV4cCI6MTc3MTczNTc3OX0.kpF2wEFndmuhYDbeZpvei9aMQ7yrof3aC5wM4CIhSos
+@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJQYW5jaG8iLCJDb3JyZW8iOiJwYW5jaG9wZXJlekBjb3JyZW8uY29tIiwiaWF0IjoxNzcyMjM4OTE4LCJleHAiOjE3NzIyMzk1MTh9.eAvKXh6FBPa7W1VXJDqWE1YCFDLHUz9ObrHoMKSIu4A
 
 //Parte del empleado 
 // get donde lista todos los empleados
@@ -116,7 +116,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "CorreoElectronico": "franciscoaguilar@correo.com",
+  "CorreoElectronico": "panchoperez@correo.com",
   "Clave": "password123"
 }
 
@@ -133,7 +133,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "CorreoElectronico": "franciscoaguilar@correo.com"
+  "CorreoElectronico": "panchoperez@correo.com"
 }
 
 
@@ -162,13 +162,13 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "Nombre": "Francisco",
-  "Apellidos": "Aguilar",
+  "Nombre": "Pancho",
+  "Apellidos": "Perez",
   "Estado": 1,
-  "FechaCreacion": "2026-02-08",
+  "FechaCreacion": "2026-03-10",
   "Clave": "password123",
   "telefono": "8888-8888",
-  "correo": "franciscoaguilar@correo.com",
+  "correo": "panchoperez@correo.com",
   "idRol": 1,
   "idDepartamento": 2
 }
