@@ -5,7 +5,17 @@ const Router = express.Router();
 const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get("/listarUsuarios", async (solicitud, respuesta, next) => {
-  return respuesta.json(await UsuarioServicio.listarUsuarios());
+  // return respuesta.json(await UsuarioServicio.listarUsuarios());
+  if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
+    try {   
+     return respuesta.json(await UsuarioServicio.listarUsuarios());
+    } catch (error) {
+      console.error(error);
+      return respuesta.status(500).json(error);
+    }
+  }
+  return respuesta.status(401).json();
+
 });
 
 Router.get("/obtenerPorId", async (solicitud, respuesta, next) => {
@@ -30,7 +40,7 @@ Router.post("/autenticar", async (solicitud, respuesta) => {
 });
 
 Router.post("/validarToken", async (solicitud, respuesta) => {
-  respuesta.json(await UsuarioServicio.ValidarToken(solicitud));
+  respuesta.json(await UsuarioServicio.ValidarToken(solicitud.headers.authorization));
 });
 
 Router.post("/desautenticar", async (solicitud, respuesta) => {

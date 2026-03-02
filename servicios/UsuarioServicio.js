@@ -49,36 +49,73 @@ class UsuarioServicio {
   }
 
 
- async ValidarToken(solicitud) {
-    let token;
-    try {
-      token = solicitud.headers.authorization.split(" ")[1];
-    } catch (err) {
-      return false;
-    }
+async ValidarToken(authorizationHeader) {
+  let token;
 
-    let Resultado;
-    try {
-      Resultado = jwt.verify(token, this.PalabraSecreta);
-    } catch (err) {
-      return false;
-    }
-
-    // buscar usuario por correo que viene en el token
-    const filas = await ejecutarConsulta(
-      "SELECT Token FROM dbplanilla.usuarios WHERE correo = ? LIMIT 1",
-      [Resultado.Correo]
-    );
-
-    if (!filas || filas.length === 0) return false;
-
-    const Usuario = filas[0];
-
-    // validar que el token sea el mismo guardado en la base de datos
-    if (Usuario.Token === token) return Resultado;
-
+  try {
+    // authorizationHeader = "Bearer <token>"
+    token = authorizationHeader.split(" ")[1];
+    if (!token) return false;
+  } catch (err) {
     return false;
   }
+
+  let resultado;
+  try {
+    resultado = jwt.verify(token, this.PalabraSecreta);
+  } catch (err) {
+    return false;
+  }
+
+  // Buscar token guardado por el correo del JWT
+  const filas = await ejecutarConsulta(
+    "SELECT Token FROM dbplanilla.usuarios WHERE correo = ? LIMIT 1",
+    [resultado.Correo]
+  );
+
+  if (!filas || filas.length === 0) return false;
+
+  const tokenbase = filas[0].Token;
+
+  //  Retornar SOLO true false 
+  return tokenbase === token;
+}
+
+
+
+
+
+
+//  async ValidarToken(solicitud) {
+//     let token;
+//     try {
+//       token = solicitud.headers.authorization.split(" ")[1];
+//     } catch (err) {
+//       return false;
+//     }
+
+//     let Resultado;
+//     try {
+//       Resultado = jwt.verify(token, this.PalabraSecreta);
+//     } catch (err) {
+//       return false;
+//     }
+
+//     // buscar usuario por correo que viene en el token
+//     const filas = await ejecutarConsulta(
+//       "SELECT Token FROM dbplanilla.usuarios WHERE correo = ? LIMIT 1",
+//       [Resultado.Correo]
+//     );
+
+//     if (!filas || filas.length === 0) return false;
+
+//     const Usuario = filas[0];
+
+//     // validar que el token sea el mismo guardado en la base de datos
+//     if (Usuario.Token === token) return Resultado;
+
+//     return false;
+//   }
 async DesAutenticacion(CorreoElectronico) {
   await ejecutarConsulta(
     "UPDATE dbplanilla.usuarios SET Token = NULL WHERE correo = ?",
