@@ -19,7 +19,16 @@ Router.get("/listarUsuarios", async (solicitud, respuesta, next) => {
 });
 
 Router.get("/obtenerPorId", async (solicitud, respuesta, next) => {
-  return respuesta.json(await UsuarioServicio.obtenerPorId(solicitud.query.id));
+  // return respuesta.json(await UsuarioServicio.obtenerPorId(solicitud.query.id));
+    if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
+    try {   
+    return respuesta.json(await UsuarioServicio.obtenerPorId(solicitud.query.id));
+    } catch (error) {
+      console.error(error);
+      return respuesta.status(500).json(error);
+    }
+  }
+  return respuesta.status(401).json();
 });
 
 Router.post("/insertar", async (solicitud, respuesta, next) => {

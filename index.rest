@@ -1,7 +1,6 @@
 ###
 @BASE_URL = http://localhost
-@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJQYW5jaG8iLCJDb3JyZW8iOiJwYW5jaG9wZXJlekBjb3JyZW8uY29tIiwiaWF0IjoxNzcyNDk1NDA4LCJleHAiOjE3NzI0OTYwMDh9.Y_5NiE3aQ6DBX9D43AUrUYw_EsCmkxWlHGjXs7zTo4A
-
+@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJQYW5jaG8iLCJDb3JyZW8iOiJwYW5jaG9wZXJlekBjb3JyZW8uY29tIiwiaWF0IjoxNzczNDQ1NTg2LCJleHAiOjE3NzM0NDYxODZ9.q-ymDcVI3UYCl8mM49rMc7gQGZmpIU_JxmdQpX0dD_w
 //Parte del empleado 
 // get donde lista todos los empleados
 ###
@@ -148,7 +147,7 @@ Origin: {{ BASE_URL }}
 
 /// get donde lista usuario por id*/
 ###
-GET {{ BASE_URL }}/UsuarioServicio/obtenerPorId?id=20 HTTP/1.1
+GET {{ BASE_URL }}/UsuarioServicio/obtenerPorId?id=22 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
