@@ -12,75 +12,51 @@ async function crearObjetoConexion() {
   });
 }
 
-// Función para registrar auditoría automáticamente en cada consulta
-async function registrarAuditoria(sql, parametros, conexion) {
+// Detectar acción y tabla
+function detectarOperacion(sql) {
+  const sqlNorm = sql.replace(/\s+/g, " ").trim();
+  const sqlUpper = sqlNorm.toUpperCase();
+
+  let accion = null;
+  let tabla = null;
+
+  if (sqlUpper.startsWith("INSERT")) {
+    accion = "INSERT";
+    const match = sqlNorm.match(/INSERT\s+INTO\s+`?(\w+)`?/i);
+    if (match) tabla = match[1];
+  }
+
+  if (sqlUpper.startsWith("UPDATE")) {
+    accion = "UPDATE";
+    const match = sqlNorm.match(/UPDATE\s+`?(\w+)`?/i);
+    if (match) tabla = match[1];
+  }
+
+  if (sqlUpper.startsWith("DELETE")) {
+    accion = "DELETE";
+    const match = sqlNorm.match(/DELETE\s+FROM\s+`?(\w+)`?/i);
+    if (match) tabla = match[1];
+  }
+
+  return { accion, tabla };
+}
+
+// Registrar auditoría
+async function registrarAuditoria(
+  conexion,
+  tabla,
+  accion,
+  registroId,
+  datosAnteriores,
+  datosNuevos,
+) {
   try {
-    // Normalizar: quitar saltos de línea extras y múltiples espacios
-    const sqlNorm = sql.replace(/\s+/g, " ").trim();
-    const sqlUpper = sqlNorm.toUpperCase();
+    if (!tabla || tabla === "auditoria") return;
 
-    let accion = null;
-    let tabla = null;
-    let registroId = null;
-
-    // Detectar tipo de operación y tabla
-    if (sqlUpper.startsWith("INSERT")) {
-      accion = "INSERT";
-      // Busca: INSERT INTO [dbplanilla.]tabla
-      const match = sqlUpper.match(/INSERT\s+INTO\s+[\w`\.]+\.`?(\w+)`?/i);
-      if (match) tabla = match[1];
-
-      // Si no encontró, intenta otro patrón
-      if (!tabla) {
-        const match2 = sqlUpper.match(/INSERT\s+INTO\s+(\w+)/i);
-        if (match2) tabla = match2[1];
-      }
-
-      // Obtener el último ID insertado
-      if (tabla) {
-        const [result] = await conexion.query("SELECT LAST_INSERT_ID() as id");
-        registroId = result[0]?.id?.toString() || null;
-      }
-    } else if (sqlUpper.startsWith("UPDATE")) {
-      accion = "UPDATE";
-      // Busca: UPDATE [dbplanilla.]tabla
-      const match = sqlUpper.match(/UPDATE\s+[\w`\.]+\.`?(\w+)`?/i);
-      if (match) tabla = match[1];
-
-      if (!tabla) {
-        const match2 = sqlUpper.match(/UPDATE\s+(\w+)/i);
-        if (match2) tabla = match2[1];
-      }
-
-      // Extraer ID del WHERE (último parámetro)
-      if (tabla && parametros && parametros.length > 0) {
-        registroId = parametros[parametros.length - 1]?.toString();
-      }
-    } else if (sqlUpper.startsWith("DELETE")) {
-      accion = "DELETE";
-      // Busca: DELETE FROM [dbplanilla.]tabla
-      const match = sqlUpper.match(/DELETE\s+FROM\s+[\w`\.]+\.`?(\w+)`?/i);
-      if (match) tabla = match[1];
-
-      if (!tabla) {
-        const match2 = sqlUpper.match(/DELETE\s+FROM\s+(\w+)/i);
-        if (match2) tabla = match2[1];
-      }
-
-      // Extraer ID del WHERE (primer parámetro)
-      if (tabla && parametros && parametros.length > 0) {
-        registroId = parametros[0]?.toString();
-      }
-    }
-
-    // Ignorar si no es DML o si es la tabla de auditoría
-    if (!accion || !tabla || tabla === "auditoria") return;
-
-    // Insertar en auditoría (registro automático)
     const sqlAuditoria = `
-      INSERT INTO dbplanilla.auditoria 
-      (tabla_afectada, accion, usuario, registro_id, datos_nuevos) 
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO auditoria 
+      (tabla_afectada, accion, usuario, registro_id, datos_anteriores, datos_nuevos) 
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
 
     await conexion.query(sqlAuditoria, [
@@ -88,25 +64,88 @@ async function registrarAuditoria(sql, parametros, conexion) {
       accion,
       "sistema",
       registroId,
-      parametros ? JSON.stringify(parametros) : null,
+      datosAnteriores ? JSON.stringify(datosAnteriores) : null,
+      datosNuevos ? JSON.stringify(datosNuevos) : null,
     ]);
   } catch (error) {
-    console.error("Auditoría error:", error.message);
+    console.error("Error auditoría:", error.message);
   }
 }
 
-async function ejecutarConsulta(consulta, parametrosDeLaConsulta) {
+// Ejecutar consulta principal
+async function ejecutarConsulta(sql, parametros = []) {
   const conexion = await crearObjetoConexion();
-  let resultados = undefined;
+
   try {
-    resultados = await conexion.query(consulta, parametrosDeLaConsulta);
+    const { accion, tabla } = detectarOperacion(sql);
 
-    // Registrar automáticamente en auditoría (con await para evitar race conditions)
-    await registrarAuditoria(consulta, parametrosDeLaConsulta, conexion);
+    let datosAnteriores = null;
+    let registroId = null;
 
-    return resultados[0];
+    // Para UPDATE
+    if (accion === "UPDATE" && parametros.length > 0) {
+      registroId = parametros[parametros.length - 1];
+
+      const [rows] = await conexion.query(
+        `SELECT * FROM ${tabla} WHERE id = ?`,
+        [registroId],
+      );
+
+      if (rows.length > 0) {
+        datosAnteriores = rows[0];
+      }
+    }
+
+    // Para DELETE
+    if (accion === "DELETE" && parametros.length > 0) {
+      registroId = parametros[0];
+
+      const [rows] = await conexion.query(
+        `SELECT * FROM ${tabla} WHERE id = ?`,
+        [registroId],
+      );
+
+      if (rows.length > 0) {
+        datosAnteriores = rows[0];
+      }
+    }
+
+    // Ejecutar consulta principal
+    const [result] = await conexion.query(sql, parametros);
+
+    // Para INSERT obtener ID
+    if (accion === "INSERT") {
+      registroId = result.insertId;
+    }
+
+    // Obtener datos nuevos para UPDATE
+    let datosNuevos = null;
+
+    if ((accion === "INSERT" || accion === "UPDATE") && registroId) {
+      const [rows] = await conexion.query(
+        `SELECT * FROM ${tabla} WHERE id = ?`,
+        [registroId],
+      );
+
+      if (rows.length > 0) {
+        datosNuevos = rows[0];
+      }
+    }
+
+    // Registrar auditoría
+    await registrarAuditoria(
+      conexion,
+      tabla,
+      accion,
+      registroId,
+      datosAnteriores,
+      datosNuevos,
+    );
+
+    return result;
   } catch (error) {
-    console.error(error.message);
+    console.error("Error consulta:", error.message);
+    throw error;
   } finally {
     await conexion.end();
   }

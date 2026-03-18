@@ -1,0 +1,181 @@
+/* Estilos globales - Tema claro PlanillaRH */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=DM+Sans:wght@400;500&display=swap');
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #f7f6f2 !important;
+  color: #1a1a2e;
+  font-family:
+    'DM Sans',
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* Fuentes del dashboard */
+
+/* Scrollbar claro */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f7f6f2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d3d1c7;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b4b2a9;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(233, 69, 96, 0.2);
+  color: #1a1a2e;
+}
+
+/* Variables globales del sistema */
+:root {
+  /* Fondos */
+  --bg-page: #f7f6f2;
+  --bg-card: #ffffff;
+  --bg-sidebar: #1a1a2e;
+
+  /* Texto */
+  --text-primary: #1a1a2e;
+  --text-muted: #888780;
+  --text-sidebar: #a0a0bb;
+
+  /* Acentos */
+  --accent: #e94560; /* rojo-coral - acción principal */
+  --accent-green: #0f6e56; /* teal - éxito / positivo       */
+  --accent-blue: #185fa5; /* azul - info                   */
+  --accent-amber: #854f0b; /* ámbar - advertencia           */
+
+  /* Bordes */
+  --border: rgba(0, 0, 0, 0.07);
+  --border-hover: rgba(0, 0, 0, 0.14);
+
+  /* Tipografía */
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+
+  /* Radios */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-pill: 20px;
+}
+
+/* Reset básico */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Headings con fuente display */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  font-weight: 700;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Utilidades rápidas */
+.text-muted {
+  color: var(--text-muted);
+}
+.text-accent {
+  color: var(--accent);
+}
+.text-success {
+  color: var(--accent-green);
+}
+.text-info {
+  color: var(--accent-blue);
+}
+.text-warning {
+  color: var(--accent-amber);
+}
+
+.bg-page {
+  background-color: var(--bg-page);
+}
+.bg-card {
+  background-color: var(--bg-card);
+}
+
+/* ── Sidebar oscuro ── */
+.sidebar {
+  background: #1a1a2e;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sidebar-section {
+  color: #a0a0bb;
+}
+
+.nav-item {
+  color: #ffffff;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.nav-item.active {
+  background: #e94560;
+  color: #ffffff;
+}
+
+.logo-name {
+  color: #ffffff;
+}
+
+.logo-sub {
+  color: #a0a0bb;
+}
+
+.user-info .name {
+  color: #ffffff;
+}
+
+.user-info .role {
+  color: #a0a0bb;
+}
+
+.sidebar-logo,
+.sidebar-bottom {
+  border-color: rgba(255, 255, 255, 0.07);
+}

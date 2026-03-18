@@ -1,6 +1,6 @@
 ###
 @BASE_URL = http://localhost
-@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJQYW5jaG8iLCJDb3JyZW8iOiJwYW5jaG9wZXJlekBjb3JyZW8uY29tIiwiaWF0IjoxNzcyNjgxODI1LCJleHAiOjE3NzI2ODI0MjV9.4cIQqtspQ3YFpYGmstO--qYgguXW8n0qlyefQLCN1PU
+@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJQYW5jaG8iLCJDb3JyZW8iOiJwYW5jaG9wZXJlekBjb3JyZW8uY29tIiwiaWF0IjoxNzczNDQ1MTc4LCJleHAiOjE3NzM0NDU3Nzh9.7yIknjzDQ6f1hY0Ebt7zQJV7q05UgkSa1byn2jR8TSw
 
 //Parte del empleado 
 // get donde lista todos los empleados
@@ -163,11 +163,11 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "Nombre": "Pancho",
+  "Nombre": "Francisco",
   "Apellidos": "Perez",
   "Estado": 1,
   "FechaCreacion": "2026-03-10",
-  "Clave": "password123",
+  "Clave": "12345678",
   "telefono": "8888-8888",
   "correo": "panchoperez@correo.com",
   "idRol": 1,
@@ -186,7 +186,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "idUsuario": 38,
+  "idUsuario": 55,
   "Nombre": "Berny",
   "Apellidos": "Davila",
   "Estado": 1,
