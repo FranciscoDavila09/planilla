@@ -252,13 +252,109 @@ async actualizar(datos) {
 
   //eliminar datos por id
 
-  async eliminar(id) {
-    return await ejecutarConsulta(
-      "DELETE FROM dbplanilla.usuarios WHERE idUsuario = ?",
-      [id],
-    );
-  }
+async eliminar(id) {
+  // 1. Borrar detalleplanilla de las planillas del usuario
+  await ejecutarConsulta(
+    `DELETE dp
+     FROM dbplanilla.detalleplanilla dp
+     INNER JOIN dbplanilla.planillas p
+       ON dp.idPlanilla = p.idPlanillas
+     WHERE p.IdUsuario = ?`,
+    [id]
+  );
 
+  // 2. Borrar pagos asociados a las planillas del usuario
+  await ejecutarConsulta(
+    `DELETE pa
+     FROM dbplanilla.pagos pa
+     INNER JOIN dbplanilla.planillas p
+       ON pa.IdPlanilla = p.idPlanillas
+     WHERE p.IdUsuario = ?`,
+    [id]
+  );
+
+  // 3. Borrar pagos que usen deducciones creadas por ese usuario
+  await ejecutarConsulta(
+    `DELETE pa
+     FROM dbplanilla.pagos pa
+     INNER JOIN dbplanilla.deducciones d
+       ON pa.idDeduccion = d.idDeducciones
+     WHERE d.usuariosId = ?`,
+    [id]
+  );
+
+  // 4. Borrar pagos donde el usuario procesa el pago
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.pagos WHERE IdUsuarioProcesa = ?",
+    [id]
+  );
+
+  // 5. Borrar deducciones del usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.deducciones WHERE usuariosId = ?",
+    [id]
+  );
+
+  // 6. Borrar aguinaldos del usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.aguinaldos WHERE idUsuario = ?",
+    [id]
+  );
+
+  // 7. Borrar contratos del usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.contratos WHERE usuarioId = ?",
+    [id]
+  );
+
+  // 8. Borrar control de asistencia del usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.controlasistencia WHERE idUsuarios = ?",
+    [id]
+  );
+
+  // 9. Borrar control de horarios del usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.controlhorarios WHERE idUsuarios = ?",
+    [id]
+  );
+
+  // 10. Borrar historial de salarios del usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.historialsalarios WHERE idUsuarios = ?",
+    [id]
+  );
+
+  // 11. Borrar licencias del usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.licencias WHERE idUsuario = ?",
+    [id]
+  );
+
+  // 12. Borrar puestos del usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.puestos WHERE idUsuario = ?",
+    [id]
+  );
+
+  // 13. Borrar vacaciones aprobadas por el usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.vacaciones WHERE UsuarioAprueba = ?",
+    [id]
+  );
+
+  // 14. Borrar planillas del usuario
+  await ejecutarConsulta(
+    "DELETE FROM dbplanilla.planillas WHERE IdUsuario = ?",
+    [id]
+  );
+
+  // 15. Finalmente borrar el usuario
+  return await ejecutarConsulta(
+    "DELETE FROM dbplanilla.usuarios WHERE idUsuario = ?",
+    [id]
+  );
+}
 
   
 }
