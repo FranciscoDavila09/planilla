@@ -32,14 +32,13 @@ body {
   font-family: var(--dm);
   background: var(--bg);
   color: var(--text);
+  min-height: 100vh;
 }
 
 .shell {
   display: flex;
   height: 620px;
-  border-radius: 14px;
   overflow: hidden;
-  border: 2px solid var(--border);
 }
 
 .sidebar {
@@ -49,7 +48,7 @@ body {
   border-right: 1px solid rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
-  padding: 0;
+  margin: 0;
 }
 
 .sidebar-logo {
@@ -135,4 +134,19 @@ body {
 .user-info .role {
   font-size: 11px;
   color: var(--sidebar-text);
+}
+
+.footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: #1a1a2e;
+  justify-content: center;
+}
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  color: #ffffff;
 }

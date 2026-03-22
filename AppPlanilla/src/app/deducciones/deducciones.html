@@ -1,1 +1,384 @@
-<p>deducciones works!</p>
+<!-- ── PAGE HEADER ── -->
+<div class="page-header">
+  <div class="page-title">Gestión de <span>Deducciones</span></div>
+  <button class="btn btn-primary" (click)="openModal('create')">
+    <svg viewBox="0 0 16 16" fill="none">
+      <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    </svg>
+    Nueva deducción
+  </button>
+</div>
+
+<!-- ── STATS ── -->
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-icon red">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M8 2v4M8 10v4M4.93 4.93l2.83 2.83M8.24 8.24l2.83 2.83M2 8h4M10 8h4M4.93 11.07l2.83-2.83M8.24 7.76l2.83-2.83" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="stat-num">{{ deducciones.length }}</div>
+      <div class="stat-label">Total deducciones</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M3 8l3.5 3.5L13 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
+    <div>
+      <div class="stat-num">{{ countByEstado(1) }}</div>
+      <div class="stat-label">Activas</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber">
+      <svg viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M8 5v3M8 11v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="stat-num">₡{{ fmtShort(totalMontos()) }}</div>
+      <div class="stat-label">Monto total activo</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M2 13h12M4 13V7l4-4 4 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="6" y="10" width="4" height="3" rx="0.5" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div>
+      <div class="stat-num">{{ countByEstado(0) }}</div>
+      <div class="stat-label">Inactivas</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOOLBAR ── -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg viewBox="0 0 16 16" fill="none">
+      <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.5" />
+      <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+    </svg>
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar por nombre, empleado, préstamo…"
+      [(ngModel)]="searchQuery"
+      (input)="filterTable()"
+    />
+  </div>
+  <select class="filter-select" [(ngModel)]="estadoFilter" (change)="filterTable()">
+    <option value="">Todos los estados</option>
+    <option value="1">Activa</option>
+    <option value="0">Inactiva</option>
+  </select>
+  <select class="filter-select" [(ngModel)]="tipoFilter" (change)="filterTable()">
+    <option value="">Todos los tipos</option>
+    <option value="CCSS">CCSS</option>
+    <option value="Renta">Renta</option>
+    <option value="Préstamo">Préstamo</option>
+    <option value="Embargo">Embargo</option>
+    <option value="Otro">Otro</option>
+  </select>
+</div>
+
+<!-- ── TABLE ── -->
+<div class="table-card">
+  <div class="table-card-header">
+    <div class="table-card-title">Registro de deducciones</div>
+    <span class="badge badge-total">
+      {{ filteredDeducciones.length }} deducción{{ filteredDeducciones.length !== 1 ? 'es' : '' }}
+    </span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre / Tipo</th>
+        <th>Empleado</th>
+        <th>Monto</th>
+        <th>Impuestos</th>
+        <th>Préstamo</th>
+        <th>Usuario</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (d of pageSlice; track d.idDeducciones) {
+        <tr>
+          <td><span class="id-chip">#{{ d.idDeducciones }}</span></td>
+          <td>
+            <div class="nombre-cell">
+              <span class="tipo-dot" [class]="tipoColor(d.Nombre)"></span>
+              <div>
+                <div class="nombre-text">{{ d.Nombre }}</div>
+                <div class="tipo-label">{{ tipoLabel(d.Nombre) }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="emp-cell">
+              <div class="emp-avatar" [class]="colorFor(d.idEmpleado)">{{ empInitial(d.idEmpleado) }}</div>
+              <div>
+                <div class="emp-name">{{ empName(d.idEmpleado) }}</div>
+                <div class="emp-id">ID #{{ d.idEmpleado }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="monto-chip">₡{{ fmtNum(d.Monto) }}</span></td>
+          <td>
+            @if (d.Impuestos > 0) {
+              <span class="impuesto-chip">₡{{ fmtNum(d.Impuestos) }}</span>
+            } @else {
+              <span class="col-muted">—</span>
+            }
+          </td>
+          <td>
+            @if (d.idPrestamo) {
+              <span class="prestamo-chip">#{{ d.idPrestamo }}</span>
+            } @else {
+              <span class="col-muted">—</span>
+            }
+          </td>
+          <td class="col-muted">#{{ d.usuariosId }}</td>
+          <td>
+            <span class="status-badge" [class]="estadoClass(d.Estado)">
+              {{ d.Estado === 1 ? 'Activa' : 'Inactiva' }}
+            </span>
+          </td>
+          <td>
+            <div class="actions">
+              <div class="icon-btn view" title="Ver" (click)="viewDeduccion(d.idDeducciones)">
+                <svg viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4" />
+                  <path d="M2 8c1.5-3 9-4.5 12 0-1.5 3-9 4.5-12 0z" stroke="currentColor" stroke-width="1.4" />
+                </svg>
+              </div>
+              <div class="icon-btn edit" title="Editar" (click)="openModal('edit', d.idDeducciones)">
+                <svg viewBox="0 0 16 16" fill="none">
+                  <path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <div class="icon-btn delete" title="Eliminar" (click)="askDelete(d.idDeducciones)">
+                <svg viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+            </div>
+          </td>
+        </tr>
+      }
+      @if (pageSlice.length === 0) {
+        <tr>
+          <td colspan="9" class="empty-row">No se encontraron deducciones</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <!-- PAGINACIÓN -->
+  <div class="pagination">
+    <div class="page-info">
+      Mostrando {{ filteredDeducciones.length ? (currentPage - 1) * perPage + 1 : 0 }}–{{
+        min(currentPage * perPage, filteredDeducciones.length)
+      }}
+      de {{ filteredDeducciones.length }}
+    </div>
+    <div class="page-btns">
+      <div class="page-btn" (click)="changePage(-1)">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      @for (pg of totalPages; track pg) {
+        <div class="page-btn" [class.active]="pg === currentPage" (click)="goPage(pg)">{{ pg }}</div>
+      }
+      <div class="page-btn" (click)="changePage(1)">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MODAL CREAR / EDITAR
+══════════════════════════════════ -->
+<div class="modal-overlay" [class.open]="showFormModal" (click)="onOverlayClick($event, 'form')">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">{{ editId ? 'Editar deducción' : 'Nueva deducción' }}</div>
+      <button class="modal-close" (click)="showFormModal = false">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Nombre de la deducción</label>
+          <input class="form-input" [(ngModel)]="form.Nombre" placeholder="Ej. CCSS, Renta, Préstamo personal…" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Monto (₡)</label>
+          <input class="form-input" type="number" [(ngModel)]="form.Monto" placeholder="50000" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Impuestos (₡)</label>
+          <input class="form-input" type="number" [(ngModel)]="form.Impuestos" placeholder="0" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ID Empleado</label>
+          <input class="form-input" type="number" [(ngModel)]="form.idEmpleado" placeholder="Ej. 4" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">ID Usuario</label>
+          <input class="form-input" type="number" [(ngModel)]="form.usuariosId" placeholder="Ej. 1" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ID Préstamo (opcional)</label>
+          <input class="form-input" type="number" [(ngModel)]="form.idPrestamo" placeholder="Ej. 7" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-select" [(ngModel)]="form.Estado">
+            <option [ngValue]="1">Activa</option>
+            <option [ngValue]="0">Inactiva</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="showFormModal = false">Cancelar</button>
+      <button class="btn btn-primary" (click)="saveDeduccion()">Guardar deducción</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MODAL VER DETALLE
+══════════════════════════════════ -->
+<div class="modal-overlay" [class.open]="showViewModal" (click)="onOverlayClick($event, 'view')">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Detalle de deducción</div>
+      <button class="modal-close" (click)="showViewModal = false">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+    @if (showViewModal) {
+      <div class="modal-body">
+        <!-- Header -->
+        <div class="view-header">
+          <div class="view-icon" [class]="'view-icon-' + tipoColor(viewedDeduccion.Nombre)">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="view-name">{{ viewedDeduccion.Nombre }}</div>
+            <div class="view-sub">{{ tipoLabel(viewedDeduccion.Nombre) }} · Empleado #{{ viewedDeduccion.idEmpleado }}</div>
+          </div>
+          <span class="status-badge" [class]="estadoClass(viewedDeduccion.Estado)" style="margin-left:auto">
+            {{ viewedDeduccion.Estado === 1 ? 'Activa' : 'Inactiva' }}
+          </span>
+        </div>
+
+        <!-- Montos destacados -->
+        <div class="view-montos-row">
+          <div class="view-monto-card green">
+            <div class="view-monto-label">Monto deducción</div>
+            <div class="view-monto-num">₡{{ fmtNum(viewedDeduccion.Monto) }}</div>
+          </div>
+          <div class="view-monto-card amber">
+            <div class="view-monto-label">Impuestos</div>
+            <div class="view-monto-num">
+              {{ viewedDeduccion.Impuestos > 0 ? '₡' + fmtNum(viewedDeduccion.Impuestos) : '—' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid de campos -->
+        <div class="view-grid">
+          <div class="view-field">
+            <div class="view-label">ID Deducción</div>
+            <div class="view-val">#{{ viewedDeduccion.idDeducciones }}</div>
+          </div>
+          <div class="view-field">
+            <div class="view-label">Empleado</div>
+            <div class="view-val">{{ empName(viewedDeduccion.idEmpleado) }}</div>
+          </div>
+          <div class="view-field">
+            <div class="view-label">Usuario que registró</div>
+            <div class="view-val">#{{ viewedDeduccion.usuariosId }}</div>
+          </div>
+          <div class="view-field">
+            <div class="view-label">ID Préstamo vinculado</div>
+            <div class="view-val">
+              @if (viewedDeduccion.idPrestamo) {
+                <span class="prestamo-chip">#{{ viewedDeduccion.idPrestamo }}</span>
+              } @else {
+                <span style="color:var(--muted)">Sin préstamo</span>
+              }
+            </div>
+          </div>
+          <div class="view-field" style="grid-column:1/-1">
+            <div class="view-label">Monto neto total (deducción + impuestos)</div>
+            <div class="view-val view-total">₡{{ fmtNum(viewedDeduccion.Monto + viewedDeduccion.Impuestos) }}</div>
+          </div>
+        </div>
+      </div>
+    }
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="showViewModal = false">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MODAL CONFIRMAR ELIMINAR
+══════════════════════════════════ -->
+<div class="modal-overlay" [class.open]="showDeleteModal" (click)="onOverlayClick($event, 'delete')">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Confirmar eliminación</div>
+      <button class="modal-close" (click)="showDeleteModal = false">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+    <div class="confirm-body">
+      <div class="confirm-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="confirm-title">¿Eliminar deducción?</div>
+      <div class="confirm-desc">{{ deleteDesc }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancelar</button>
+      <button class="btn btn-danger" (click)="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
