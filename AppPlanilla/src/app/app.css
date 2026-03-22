@@ -1,9 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=DM+Sans:wght@400;500&display=swap');
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
+
 :root {
   --syne: 'Syne', sans-serif;
   --dm: 'DM Sans', sans-serif;
@@ -19,28 +21,34 @@
   --accent3: #185fa5;
   --accent4: #854f0b;
   --border: rgba(0, 0, 0, 0.07);
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
-/* Forzar que las variables del componente no sean sobreescritas */
+
+body {
+  font-family: var(--dm);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex; /* ← nuevo */
+  flex-direction: column; /* ← nuevo */
+}
+
+/* ── SHELL ── */
 .shell {
   --bg: #f7f6f2;
   --sidebar: #1a1a2e;
   --sidebar-text: #a0a0bb;
   --card: #ffffff;
   --text: #1a1a2e;
-}
-body {
-  font-family: var(--dm);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-}
 
-.shell {
   display: flex;
-  height: 620px;
+  flex: 1; /* ← ocupa todo el espacio entre header y footer */
+  width: 100%; /* ← todo el ancho */
+  min-height: 0; /* ← necesario en flexbox */
   overflow: hidden;
 }
 
+/* ── SIDEBAR ── */
 .sidebar {
   width: 220px;
   flex-shrink: 0;
@@ -48,7 +56,6 @@ body {
   border-right: 1px solid rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
-  margin: 0;
 }
 
 .sidebar-logo {
@@ -67,6 +74,7 @@ body {
   color: var(--sidebar-text);
   margin-top: 2px;
 }
+
 .sidebar-section {
   padding: 16px 14px 4px;
   font-size: 10px;
@@ -75,6 +83,7 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+
 .nav-item {
   display: flex;
   align-items: center;
@@ -85,6 +94,7 @@ body {
   cursor: pointer;
   font-size: 13px;
   color: var(--sidebar-text);
+  text-decoration: none; /* por si se usa como <a> */
   transition: all 0.15s;
 }
 .nav-item:hover {
@@ -99,10 +109,18 @@ body {
   width: 16px;
   height: 16px;
   opacity: 0.8;
+  flex-shrink: 0;
 }
 .nav-item.active .ni {
   opacity: 1;
 }
+.nav-item a {
+  color: inherit;
+  text-decoration: none;
+  font-size: inherit;
+  font-family: inherit;
+}
+
 .sidebar-bottom {
   margin-top: auto;
   padding: 16px;
@@ -136,11 +154,24 @@ body {
   color: var(--sidebar-text);
 }
 
+/* ── MAIN (router-outlet host) ── */
+main {
+  flex: 1; /* ← ocupa todo el ancho restante */
+  min-width: 0; /* ← evita el espacio en blanco a la derecha */
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* ── FOOTER ── */
 .footer {
   padding: 16px 24px;
   border-top: 1px solid var(--border);
   background: #1a1a2e;
-  justify-content: center;
+  flex-shrink: 0; /* ← nunca se encoge */
+  width: 100%;
 }
 .footer-content {
   display: flex;

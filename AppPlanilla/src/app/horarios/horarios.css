@@ -138,7 +138,7 @@
 .search-wrap {
   position: relative;
   flex: 1;
-  max-width: 320px;
+  max-width: 280px;
 }
 .search-wrap svg {
   position: absolute;
@@ -165,7 +165,8 @@
 .search-input:focus {
   border-color: var(--accent);
 }
-.filter-select {
+.filter-select,
+.filter-date {
   padding: 9px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -251,71 +252,91 @@ tbody tr:last-child td {
   font-size: 12px;
 }
 
-/* ── PUESTO CELL ── */
-.puesto-cell {
+/* ── EMP CELL ── */
+.emp-cell {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.puesto-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
+.emp-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
 }
-.puesto-name {
+.emp-name {
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
 }
-
-/* ── DESC CELL ── */
-.desc-cell {
-  max-width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.emp-id {
+  font-size: 11px;
   color: var(--muted);
-  font-size: 12px;
 }
 
-/* ── SALARY CHIP ── */
-.salary-chip {
+/* ── TIME CHIPS ── */
+.time-chip {
   display: inline-flex;
-  padding: 4px 10px;
-  border-radius: 7px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: monospace;
+}
+.time-chip.entrada {
   background: #e8f7f3;
   color: var(--accent2);
+}
+.time-chip.salida {
+  background: #e8f0fb;
+  color: #185fa5;
+}
+
+/* ── HORAS CELL ── */
+.horas-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 80px;
+}
+.horas-num {
   font-size: 12px;
   font-weight: 600;
   font-family: var(--syne);
 }
-
-/* ── EMP REF ── */
-.emp-ref {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text);
+.horas-num.normal {
+  color: var(--accent2);
 }
-.emp-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent2);
-  flex-shrink: 0;
+.horas-num.extra {
+  color: #854f0b;
+  background: #fef3e2;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 11px;
 }
-.no-emp {
-  font-size: 12px;
+.no-extra {
   color: var(--muted);
-  font-style: italic;
+  font-size: 12px;
+}
+.horas-bar {
+  height: 4px;
+  background: #ededea;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.horas-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.horas-fill.normal {
+  background: var(--accent2);
 }
 
 /* ── STATUS BADGES ── */
@@ -349,6 +370,13 @@ tbody tr:last-child td {
 .status-inactive::before {
   background: #bbb;
 }
+.status-tardanza {
+  background: #fef3e2;
+  color: #854f0b;
+}
+.status-tardanza::before {
+  background: #854f0b;
+}
 
 /* ── ACTIONS ── */
 .actions {
@@ -373,15 +401,15 @@ tbody tr:last-child td {
   width: 14px;
   height: 14px;
 }
-.icon-btn.view:hover {
-  border-color: var(--accent2);
-  color: var(--accent2);
-  background: #e8f7f3;
-}
 .icon-btn.edit:hover {
   border-color: #185fa5;
   color: #185fa5;
   background: #e8f0fb;
+}
+.icon-btn.approve:hover {
+  border-color: var(--accent2);
+  color: var(--accent2);
+  background: #e8f7f3;
 }
 .icon-btn.delete:hover {
   border-color: var(--accent);
@@ -455,7 +483,7 @@ tbody tr:last-child td {
 .modal {
   background: #fff;
   border-radius: 16px;
-  width: 540px;
+  width: 520px;
   max-width: 95vw;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
   transform: translateY(16px);
@@ -558,69 +586,6 @@ tbody tr:last-child td {
 }
 .form-input::placeholder {
   color: #bbb;
-}
-.form-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-/* ── VIEW MODAL ── */
-.view-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 8px;
-}
-.puesto-icon-lg {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-  flex-shrink: 0;
-}
-.view-name {
-  font-family: var(--syne);
-  font-size: 17px;
-  font-weight: 700;
-}
-.view-sub {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 3px;
-}
-.view-desc {
-  background: #f7f6f2;
-  border-radius: 8px;
-  padding: 12px 14px;
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.6;
-}
-.view-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.view-field {
-  background: #f7f6f2;
-  border-radius: 8px;
-  padding: 12px 14px;
-}
-.view-label {
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 4px;
-}
-.view-val {
-  font-size: 13px;
-  font-weight: 500;
 }
 
 /* ── CONFIRM DELETE ── */
