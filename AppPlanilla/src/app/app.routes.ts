@@ -8,6 +8,8 @@ import { Planilla } from './planilla/planilla';
 import { Pagos } from './pagos/pagos';
 import { Prestamos } from './prestamos/prestamos';
 import { Deducciones } from './deducciones/deducciones';
+import { Contratos } from './contratos/contratos';
+import { Vacaciones } from './vacaciones/vacaciones';
 export const routes: Routes = [
     {
         path: 'empleados',component:Empleados,
@@ -38,6 +40,11 @@ export const routes: Routes = [
     },
     {
         path: 'deducciones', component: Deducciones,
+    },
+    {
+        path: 'contratos', component:Contratos,
+    },
+     {
+        path: 'vacaciones', component:Vacaciones,
     }
-
 ];
