@@ -7,6 +7,9 @@ import { Planilla } from './planilla/planilla';
 import { Pagos } from './pagos/pagos';
 import { Prestamos } from './prestamos/prestamos';
 import { Deducciones } from './deducciones/deducciones';
+import { Aguinaldos } from './aguinaldos/aguinaldos';
+import { Usuarios } from './usuarios/usuarios';
+import { Roles } from './roles/roles';
 
 export const routes: Routes = [
     {
@@ -33,5 +36,14 @@ export const routes: Routes = [
     },
     {
         path: 'deducciones', component: Deducciones,
+    },
+    {
+        path: 'aguinaldos', component: Aguinaldos,
+    },
+    {
+        path: 'usuarios', component: Usuarios,
+    },
+    {
+        path: 'roles', component: Roles,
     }
 ];

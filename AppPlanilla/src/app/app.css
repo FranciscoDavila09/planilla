@@ -35,10 +35,18 @@ body {
   min-height: 100vh;
 }
 
-.shell {
+/* .shell {
   display: flex;
   height: 620px;
   overflow: hidden;
+} */
+ .shell {
+  display: flex;
+  min-height: 100vh;
+}
+main {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .sidebar {
