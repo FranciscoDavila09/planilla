@@ -41,11 +41,20 @@ body {
   --card: #ffffff;
   --text: #1a1a2e;
 
+/* .shell {
   display: flex;
   flex: 1; /* ← ocupa todo el espacio entre header y footer */
   width: 100%; /* ← todo el ancho */
   min-height: 0; /* ← necesario en flexbox */
   overflow: hidden;
+} */
+ .shell {
+  display: flex;
+  min-height: 100vh;
+}
+main {
+  flex: 1;
+  overflow-y: auto;
 }
 
 /* ── SIDEBAR ── */

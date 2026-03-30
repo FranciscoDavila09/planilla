@@ -10,6 +10,10 @@ import { Prestamos } from './prestamos/prestamos';
 import { Deducciones } from './deducciones/deducciones';
 import { Contratos } from './contratos/contratos';
 import { Vacaciones } from './vacaciones/vacaciones';
+import { Aguinaldos } from './aguinaldos/aguinaldos';
+import { Usuarios } from './usuarios/usuarios';
+import { Roles } from './roles/roles';
+
 export const routes: Routes = [
     {
         path: 'empleados',component:Empleados,
@@ -46,5 +50,15 @@ export const routes: Routes = [
     },
      {
         path: 'vacaciones', component:Vacaciones,
+        
+    },
+    {
+       path: 'aguinaldos', component: Aguinaldos,
+    },
+    {
+        path: 'usuarios', component: Usuarios,
+    },
+    {
+        path: 'roles', component: Roles,
     }
 ];
