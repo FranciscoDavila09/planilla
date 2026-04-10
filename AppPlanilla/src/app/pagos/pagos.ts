@@ -10,14 +10,12 @@ interface Pago {
   ReferenciaPago: string;
   IdUsuarioProcesa: number;
   FechaPago: string;
-  Estado: number;           // tinyint(1): 1 = Completado, 0 = Pendiente
+  Estado: number;
   IdFeriados: number;
   idDeduccion: number;
 }
 
-// Mapa ligero de empleados para mostrar nombre en tabla
-// En un proyecto real esto vendría del servicio de empleados
-interface EmpRef { nombre: string; color: string; inicial: string; }
+interface EmpRef { nombre: string; puesto: string; departamento: string; }
 
 @Component({
   selector: 'app-pagos',
@@ -30,20 +28,49 @@ export class Pagos {
   readonly perPage = 8;
   readonly COLORS  = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
 
-  // Referencia rápida de empleados (reemplazar con datos reales del servicio)
+  // ── Mapas de referencia (reemplazar con servicios reales en producción) ──
+
   readonly empMap: Record<number, EmpRef> = {
-    1:  { nombre: 'María Rodríguez',   color: 'av-red',    inicial: 'MR' },
-    2:  { nombre: 'Carlos Mendoza',    color: 'av-green',  inicial: 'CM' },
-    3:  { nombre: 'Sofía Vargas',      color: 'av-blue',   inicial: 'SV' },
-    4:  { nombre: 'Andrés Jiménez',    color: 'av-amber',  inicial: 'AJ' },
-    5:  { nombre: 'Lucía Pérez',       color: 'av-violet', inicial: 'LP' },
-    6:  { nombre: 'Diego Castillo',    color: 'av-teal',   inicial: 'DC' },
-    7:  { nombre: 'Valeria Núñez',     color: 'av-red',    inicial: 'VN' },
-    8:  { nombre: 'Felipe Aguilar',    color: 'av-green',  inicial: 'FA' },
-    9:  { nombre: 'Daniela Herrera',   color: 'av-blue',   inicial: 'DH' },
-    10: { nombre: 'Ricardo Soto',      color: 'av-amber',  inicial: 'RS' },
-    11: { nombre: 'Camila Quesada',    color: 'av-violet', inicial: 'CQ' },
-    12: { nombre: 'Pablo Araya',       color: 'av-teal',   inicial: 'PA' },
+    1:  { nombre: 'María Rodríguez',  puesto: 'Desarrolladora Senior', departamento: 'TI'          },
+    2:  { nombre: 'Carlos Mendoza',   puesto: 'Analista Financiero',    departamento: 'Finanzas'    },
+    3:  { nombre: 'Sofía Vargas',     puesto: 'Gerente de Ventas',      departamento: 'Ventas'      },
+    4:  { nombre: 'Andrés Jiménez',   puesto: 'Reclutador',             departamento: 'RRHH'        },
+    5:  { nombre: 'Lucía Pérez',      puesto: 'Jefa de Operaciones',    departamento: 'Operaciones' },
+    6:  { nombre: 'Diego Castillo',   puesto: 'DevOps Engineer',        departamento: 'TI'          },
+    7:  { nombre: 'Valeria Núñez',    puesto: 'Contadora',              departamento: 'Finanzas'    },
+    8:  { nombre: 'Felipe Aguilar',   puesto: 'Asesor Comercial',       departamento: 'Ventas'      },
+    9:  { nombre: 'Daniela Herrera',  puesto: 'Diseñadora UX',          departamento: 'TI'          },
+    10: { nombre: 'Ricardo Soto',     puesto: 'Auxiliar Contable',      departamento: 'Finanzas'    },
+    11: { nombre: 'Camila Quesada',   puesto: 'Analista de RRHH',       departamento: 'RRHH'        },
+    12: { nombre: 'Pablo Araya',      puesto: 'Técnico de Soporte',     departamento: 'TI'          },
+  };
+
+  readonly planillaMap: Record<number, { periodo: string; estado: string; montoTotal: number }> = {
+    1:  { periodo: 'Quincena 1 — Enero 2025',    estado: 'Pagada',      montoTotal: 19250000 },
+    2:  { periodo: 'Quincena 2 — Enero 2025',    estado: 'Pagada',      montoTotal: 18980000 },
+    3:  { periodo: 'Quincena 1 — Febrero 2025',  estado: 'Pagada',      montoTotal: 18540000 },
+    4:  { periodo: 'Quincena 2 — Febrero 2025',  estado: 'Pagada',      montoTotal: 18660000 },
+    5:  { periodo: 'Quincena 1 — Marzo 2025',    estado: 'Pagada',      montoTotal: 19100000 },
+    9:  { periodo: 'Quincena 1 — Mayo 2025',     estado: 'Cerrada',     montoTotal: 20150000 },
+    10: { periodo: 'Quincena 2 — Mayo 2025',     estado: 'En revisión', montoTotal: 19980000 },
+    11: { periodo: 'Quincena 1 — Junio 2025',    estado: 'Abierta',     montoTotal: 0        },
+  };
+
+  readonly deduccionMap: Record<number, { nombre: string; tipo: string; monto: number }> = {
+    1: { nombre: 'CCSS Obrero',       tipo: 'Seguro Social',     monto: 95000  },
+    2: { nombre: 'Renta mensual',     tipo: 'Impuesto de renta', monto: 154000 },
+    3: { nombre: 'Préstamo personal', tipo: 'Préstamo',          monto: 70000  },
+  };
+
+  readonly usuarioMap: Record<number, { nombre: string; rol: string }> = {
+    1: { nombre: 'María Rodríguez', rol: 'Administrador' },
+    2: { nombre: 'Carlos Mendoza',  rol: 'RRHH'          },
+  };
+
+  readonly feriadoMap: Record<number, { nombre: string; fecha: string }> = {
+    1: { nombre: 'Día del Trabajo',      fecha: '01/05/2025' },
+    2: { nombre: 'Día de la Madre',      fecha: '15/08/2025' },
+    3: { nombre: 'Día de la Independencia', fecha: '15/09/2025' },
   };
 
   showFormModal   = false;
@@ -86,9 +113,9 @@ export class Pagos {
     const q = this.searchQuery.toLowerCase();
     return this.pagos.filter(p => {
       const txt = `${p.IdPago} ${p.IdEmpleado} ${p.ReferenciaPago} ${this.empName(p.IdEmpleado)}`.toLowerCase();
-      const estadoMatch = this.estadoFilter === '' || p.Estado === +this.estadoFilter;
-      const metodoMatch = !this.metodoFilter || p.MetodoPago === this.metodoFilter;
-      return (!q || txt.includes(q)) && estadoMatch && metodoMatch;
+      const estadoOk = this.estadoFilter === '' || p.Estado === +this.estadoFilter;
+      const metodoOk = !this.metodoFilter || p.MetodoPago === this.metodoFilter;
+      return (!q || txt.includes(q)) && estadoOk && metodoOk;
     });
   }
 
@@ -102,31 +129,24 @@ export class Pagos {
     return Array.from({ length: count }, (_, i) => i + 1);
   }
 
-  // ── Helpers ──
+  // ── Helpers originales ──
   min(a: number, b: number) { return Math.min(a, b); }
 
-  empName(id: number) {
-    return this.empMap[id]?.nombre ?? `Empleado #${id}`;
-  }
-
+  empName(id: number)    { return this.empMap[id]?.nombre ?? `Empleado #${id}`; }
   empInitial(id: number) {
-    return this.empMap[id]?.inicial ?? `E${id}`;
+    const n = this.empMap[id]?.nombre;
+    if (!n) return `E${id}`;
+    const p = n.split(' ');
+    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
   }
+  colorFor(id: number)   { return this.COLORS[(id - 1) % this.COLORS.length]; }
 
-  colorFor(id: number) {
-    return this.COLORS[(id - 1) % this.COLORS.length];
-  }
-
-  fmtNum(n: number) {
-    return Number(n).toLocaleString('es-CR');
-  }
-
+  fmtNum(n: number) { return Number(n).toLocaleString('es-CR'); }
   fmtNumShort(n: number) {
     if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
     if (n >= 1_000)     return (n / 1_000).toFixed(0) + 'K';
     return String(n);
   }
-
   fmtDate(d: string) {
     if (!d) return '—';
     const dt = new Date(d);
@@ -134,9 +154,7 @@ export class Pagos {
       + ' ' + dt.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
   }
 
-  estadoClass(e: number) {
-    return e === 1 ? 'status-completado' : 'status-pendiente';
-  }
+  estadoClass(e: number) { return e === 1 ? 'status-completado' : 'status-pendiente'; }
 
   metodoClass(m: string) {
     const map: Record<string, string> = {
@@ -148,15 +166,8 @@ export class Pagos {
     return map[m] ?? '';
   }
 
-  countByEstado(e: number) {
-    return this.pagos.filter(p => p.Estado === e).length;
-  }
-
-  totalMonto() {
-    return this.pagos
-      .filter(p => p.Estado === 1)
-      .reduce((acc, p) => acc + p.MontoPagado, 0);
-  }
+  countByEstado(e: number) { return this.pagos.filter(p => p.Estado === e).length; }
+  totalMonto() { return this.pagos.filter(p => p.Estado === 1).reduce((acc, p) => acc + p.MontoPagado, 0); }
 
   // ── Filtro / paginación ──
   filterTable()   { this.currentPage = 1; }
@@ -170,13 +181,7 @@ export class Pagos {
   openModal(mode: 'create' | 'edit', id?: number) {
     if (mode === 'create') {
       this.editId = null;
-      this.form = {
-        Estado: 0,
-        FechaPago: new Date().toISOString().slice(0, 16),
-        IdFeriados: 0,
-        idDeduccion: 0,
-        IdUsuarioProcesa: 1,
-      };
+      this.form = { Estado: 0, FechaPago: new Date().toISOString().slice(0, 16), IdFeriados: 0, idDeduccion: 0, IdUsuarioProcesa: 1 };
     } else {
       const p = this.pagos.find(x => x.IdPago === id)!;
       this.editId = p.IdPago;
@@ -224,5 +229,52 @@ export class Pagos {
       if (modal === 'view')   this.showViewModal   = false;
       if (modal === 'delete') this.showDeleteModal = false;
     }
+  }
+
+  // ════════════════════════════════════════════════
+  // NUEVOS MÉTODOS — BLOQUES HIJO DEL DETALLE
+  // ════════════════════════════════════════════════
+
+  /** Bloque 2 — Detalle del empleado (puesto + departamento) */
+  empDetalle(id: number): { puesto: string; departamento: string } {
+    return {
+      puesto:       this.empMap[id]?.puesto       ?? '—',
+      departamento: this.empMap[id]?.departamento ?? '—',
+    };
+  }
+
+  /** Bloque 3 — Planilla asociada */
+  planillaDetalle(id: number): { periodo: string; estado: string; montoTotal: number } {
+    return this.planillaMap[id] ?? { periodo: `Período #${id}`, estado: '—', montoTotal: 0 };
+  }
+
+  /** Clase CSS del status de la planilla (reutiliza los status de planillas) */
+  planillaStatusClass(estado: string): string {
+    if (estado === 'Pagada')      return 'status-pagada';
+    if (estado === 'Abierta')     return 'status-abierta';
+    if (estado === 'En revisión') return 'status-revision';
+    if (estado === 'Cerrada')     return 'status-cerrada';
+    if (estado === 'Anulada')     return 'status-anulada';
+    return '';
+  }
+
+  /** Bloque 4 — Deducción aplicada */
+  deduccionDetalle(id: number): { nombre: string; tipo: string; monto: number } {
+    return this.deduccionMap[id] ?? { nombre: `Deducción #${id}`, tipo: '—', monto: 0 };
+  }
+
+  /** Bloque 5 — Usuario que procesó */
+  usuarioNombre(id: number): string { return this.usuarioMap[id]?.nombre ?? `Usuario #${id}`; }
+  usuarioRol(id: number):    string { return this.usuarioMap[id]?.rol    ?? '—'; }
+  usuarioInitial(id: number): string {
+    const n = this.usuarioMap[id]?.nombre;
+    if (!n) return `U${id}`;
+    const p = n.split(' ');
+    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
+  }
+
+  /** Bloque 6 — Feriado relacionado */
+  feriadoDetalle(id: number): { nombre: string; fecha: string } {
+    return this.feriadoMap[id] ?? { nombre: `Feriado #${id}`, fecha: '—' };
   }
 }

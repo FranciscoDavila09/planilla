@@ -128,9 +128,7 @@
           <td><span class="planilla-chip">#{{ p.IdPlanilla }}</span></td>
           <td><span class="monto-chip">₡{{ fmtNum(p.MontoPagado) }}</span></td>
           <td>
-            <span class="metodo-badge" [class]="metodoClass(p.MetodoPago)">
-              {{ p.MetodoPago }}
-            </span>
+            <span class="metodo-badge" [class]="metodoClass(p.MetodoPago)">{{ p.MetodoPago }}</span>
           </td>
           <td class="col-ref">{{ p.ReferenciaPago || '—' }}</td>
           <td>{{ fmtDate(p.FechaPago) }}</td>
@@ -169,7 +167,6 @@
     </tbody>
   </table>
 
-  <!-- PAGINACIÓN -->
   <div class="pagination">
     <div class="page-info">
       Mostrando {{ filteredPagos.length ? (currentPage - 1) * perPage + 1 : 0 }}–{{
@@ -196,7 +193,7 @@
 </div>
 
 <!-- ══════════════════════════════════
-     MODAL CREAR / EDITAR
+     MODAL CREAR / EDITAR  (sin cambios)
 ══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showFormModal" (click)="onOverlayClick($event, 'form')">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -279,10 +276,10 @@
 </div>
 
 <!-- ══════════════════════════════════
-     MODAL VER DETALLE
+     MODAL VER DETALLE  ← EXPANDIDO
 ══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showViewModal" (click)="onOverlayClick($event, 'view')">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title">Detalle del pago</div>
       <button class="modal-close" (click)="showViewModal = false">
@@ -291,9 +288,11 @@
         </svg>
       </button>
     </div>
+
     @if (showViewModal) {
       <div class="modal-body">
-        <!-- Header del modal -->
+
+        <!-- ── BLOQUE 1: ENCABEZADO + MONTO ── -->
         <div class="view-header">
           <div class="view-icon">
             <svg viewBox="0 0 24 24" fill="none">
@@ -304,62 +303,229 @@
           </div>
           <div>
             <div class="view-name">Pago #{{ viewedPago.IdPago }}</div>
-            <div class="view-sub">Planilla #{{ viewedPago.IdPlanilla }} · Empleado #{{ viewedPago.IdEmpleado }}</div>
+            <div class="view-sub">{{ fmtDate(viewedPago.FechaPago) }}</div>
           </div>
-          <span class="status-badge" [class]="estadoClass(viewedPago.Estado)" style="margin-left: auto">
+          <span class="status-badge" [class]="estadoClass(viewedPago.Estado)" style="margin-left:auto">
             {{ viewedPago.Estado === 1 ? 'Completado' : 'Pendiente' }}
           </span>
         </div>
-        <!-- Monto destacado -->
-        <div class="view-monto-card">
-          <div class="view-monto-label">Monto pagado</div>
-          <div class="view-monto-num">₡{{ fmtNum(viewedPago.MontoPagado) }}</div>
+
+        <div class="view-monto-hero">
+          <div class="view-monto-hero-label">Monto pagado</div>
+          <div class="view-monto-hero-num">₡{{ fmtNum(viewedPago.MontoPagado) }}</div>
+          <span class="metodo-badge" [class]="metodoClass(viewedPago.MetodoPago)">{{ viewedPago.MetodoPago }}</span>
         </div>
-        <!-- Grid de campos -->
-        <div class="view-grid">
-          <div class="view-field">
-            <div class="view-label">Método de pago</div>
-            <div class="view-val">
-              <span class="metodo-badge" [class]="metodoClass(viewedPago.MetodoPago)">
-                {{ viewedPago.MetodoPago }}
-              </span>
+
+        <div class="det-section">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <rect x="1" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M1 6h12" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="3.5" cy="9" r=".8" fill="currentColor"/>
+            </svg>
+            Información general
+          </div>
+          <div class="view-grid">
+            <div class="view-field">
+              <div class="view-label">Método de pago</div>
+              <div class="view-val">
+                <span class="metodo-badge" [class]="metodoClass(viewedPago.MetodoPago)">{{ viewedPago.MetodoPago }}</span>
+              </div>
+            </div>
+            <div class="view-field">
+              <div class="view-label">Fecha y hora</div>
+              <div class="view-val">{{ fmtDate(viewedPago.FechaPago) }}</div>
+            </div>
+            <div class="view-field" style="grid-column:1/-1">
+              <div class="view-label">Referencia</div>
+              <div class="view-val view-ref">{{ viewedPago.ReferenciaPago || '—' }}</div>
             </div>
           </div>
-          <div class="view-field">
-            <div class="view-label">Fecha de pago</div>
-            <div class="view-val">{{ fmtDate(viewedPago.FechaPago) }}</div>
+        </div>
+
+        <!-- ── BLOQUE 2: EMPLEADO ── -->
+        <div class="det-section">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M1.5 12c0-3 2.5-4.5 5.5-4.5s5.5 1.5 5.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Empleado
           </div>
-          <div class="view-field" style="grid-column: 1 / -1">
-            <div class="view-label">Referencia</div>
-            <div class="view-val view-ref">{{ viewedPago.ReferenciaPago || '—' }}</div>
-          </div>
-          <div class="view-field">
-            <div class="view-label">Procesado por (usuario)</div>
-            <div class="view-val">#{{ viewedPago.IdUsuarioProcesa }}</div>
-          </div>
-          <div class="view-field">
-            <div class="view-label">ID Feriados</div>
-            <div class="view-val">{{ viewedPago.IdFeriados }}</div>
-          </div>
-          <div class="view-field">
-            <div class="view-label">ID Deducción</div>
-            <div class="view-val">{{ viewedPago.idDeduccion }}</div>
-          </div>
-          <div class="view-field">
-            <div class="view-label">ID Planilla</div>
-            <div class="view-val">#{{ viewedPago.IdPlanilla }}</div>
+          <div class="hijo-card hijo-card-blue">
+            <div class="hijo-avatar" [class]="colorFor(viewedPago.IdEmpleado)">
+              {{ empInitial(viewedPago.IdEmpleado) }}
+            </div>
+            <div class="hijo-info">
+              <div class="hijo-titulo">{{ empName(viewedPago.IdEmpleado) }}</div>
+              <div class="hijo-sub">{{ empDetalle(viewedPago.IdEmpleado).puesto }} · {{ empDetalle(viewedPago.IdEmpleado).departamento }}</div>
+            </div>
+            <div class="hijo-meta">
+              <div class="view-label">ID Empleado</div>
+              <div class="hijo-id-chip">#{{ viewedPago.IdEmpleado }}</div>
+            </div>
           </div>
         </div>
+
+        <!-- ── BLOQUE 3: PLANILLA ASOCIADA ── -->
+        <div class="det-section">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M4 5h6M4 7.5h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            </svg>
+            Planilla asociada
+          </div>
+          <div class="hijo-card hijo-card-accent">
+            <div class="hijo-icon-box hijo-icon-red">
+              <svg viewBox="0 0 16 16" fill="none" width="18" height="18">
+                <rect x="2" y="2" width="12" height="13" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="hijo-info">
+              <div class="hijo-titulo">Planilla #{{ viewedPago.IdPlanilla }}</div>
+              <div class="hijo-sub">{{ planillaDetalle(viewedPago.IdPlanilla).periodo }}</div>
+            </div>
+            <div class="hijo-meta">
+              <div class="view-label">Estado planilla</div>
+              <span class="status-badge" [class]="planillaStatusClass(planillaDetalle(viewedPago.IdPlanilla).estado)">
+                {{ planillaDetalle(viewedPago.IdPlanilla).estado }}
+              </span>
+            </div>
+            <div class="hijo-meta">
+              <div class="view-label">Monto planilla</div>
+              <div class="hijo-monto-verde">₡{{ fmtNumShort(planillaDetalle(viewedPago.IdPlanilla).montoTotal) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── BLOQUE 4: DEDUCCIÓN APLICADA ── -->
+        <div class="det-section">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <path d="M7 1v12M10 4H5.5a2.5 2.5 0 000 5H8a2.5 2.5 0 010 5H3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Deducción aplicada
+          </div>
+          @if (viewedPago.idDeduccion > 0) {
+            <div class="hijo-card hijo-card-amber">
+              <div class="hijo-icon-box hijo-icon-amber">
+                <svg viewBox="0 0 16 16" fill="none" width="18" height="18">
+                  <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M8 5v3M8 10.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="hijo-info">
+                <div class="hijo-titulo">{{ deduccionDetalle(viewedPago.idDeduccion).nombre }}</div>
+                <div class="hijo-sub">{{ deduccionDetalle(viewedPago.idDeduccion).tipo }}</div>
+              </div>
+              <div class="hijo-meta">
+                <div class="view-label">Monto deducción</div>
+                <div class="hijo-monto-amber">-₡{{ fmtNum(deduccionDetalle(viewedPago.idDeduccion).monto) }}</div>
+              </div>
+              <div class="hijo-meta">
+                <div class="view-label">ID Deducción</div>
+                <div class="hijo-id-chip">#{{ viewedPago.idDeduccion }}</div>
+              </div>
+            </div>
+          } @else {
+            <div class="hijo-vacio">
+              <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M8 5v3M8 10.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              No aplica deducción en este pago
+            </div>
+          }
+        </div>
+
+        <!-- ── BLOQUE 5: PROCESADO POR ── -->
+        <div class="det-section">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <circle cx="7" cy="4" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M1.5 11.5c0-2.5 2.5-4 5.5-4s5.5 1.5 5.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M9.5 2l1 1 2-2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Procesado por
+          </div>
+          <div class="hijo-card hijo-card-green">
+            <div class="hijo-avatar" [class]="colorFor(viewedPago.IdUsuarioProcesa)">
+              {{ usuarioInitial(viewedPago.IdUsuarioProcesa) }}
+            </div>
+            <div class="hijo-info">
+              <div class="hijo-titulo">{{ usuarioNombre(viewedPago.IdUsuarioProcesa) }}</div>
+              <div class="hijo-sub">{{ usuarioRol(viewedPago.IdUsuarioProcesa) }}</div>
+            </div>
+            <div class="hijo-meta">
+              <div class="view-label">Fecha procesado</div>
+              <div class="view-val" style="font-size:12px">{{ fmtDate(viewedPago.FechaPago) }}</div>
+            </div>
+            <div class="hijo-meta">
+              <div class="view-label">ID Usuario</div>
+              <div class="hijo-id-chip">#{{ viewedPago.IdUsuarioProcesa }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── BLOQUE 6: FERIADO / EXTRA ── -->
+        <div class="det-section det-section-last">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M1 5.5h12M4.5 1v2M9.5 1v2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="5" cy="9" r=".9" fill="currentColor"/>
+              <circle cx="9" cy="9" r=".9" fill="currentColor"/>
+            </svg>
+            Observaciones extra
+          </div>
+          @if (viewedPago.IdFeriados > 0) {
+            <div class="hijo-card hijo-card-violet">
+              <div class="hijo-icon-box hijo-icon-violet">
+                <svg viewBox="0 0 16 16" fill="none" width="18" height="18">
+                  <rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M1 6h14M5 1v2M11 1v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="hijo-info">
+                <div class="hijo-titulo">Feriado asociado</div>
+                <div class="hijo-sub">{{ feriadoDetalle(viewedPago.IdFeriados).nombre }}</div>
+              </div>
+              <div class="hijo-meta">
+                <div class="view-label">Fecha feriado</div>
+                <div class="view-val" style="font-size:12px">{{ feriadoDetalle(viewedPago.IdFeriados).fecha }}</div>
+              </div>
+              <div class="hijo-meta">
+                <div class="view-label">ID Feriado</div>
+                <div class="hijo-id-chip">#{{ viewedPago.IdFeriados }}</div>
+              </div>
+            </div>
+          } @else {
+            <div class="hijo-vacio">
+              <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M5.5 8.5l2-2 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Sin feriado ni observaciones adicionales
+            </div>
+          }
+        </div>
+
       </div>
     }
+
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="showViewModal = false">Cerrar</button>
+      <button class="btn btn-primary" (click)="openModal('edit', viewedPago.IdPago); showViewModal = false">
+        Editar pago
+      </button>
     </div>
   </div>
 </div>
 
 <!-- ══════════════════════════════════
-     MODAL CONFIRMAR ELIMINAR
+     MODAL CONFIRMAR ELIMINAR  (sin cambios)
 ══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showDeleteModal" (click)="onOverlayClick($event, 'delete')">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">

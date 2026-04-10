@@ -184,7 +184,6 @@
     </tbody>
   </table>
 
-  <!-- PAGINACIÓN -->
   <div class="pagination">
     <div class="page-info">
       Mostrando {{ filteredDeducciones.length ? (currentPage - 1) * perPage + 1 : 0 }}–{{
@@ -211,7 +210,7 @@
 </div>
 
 <!-- ══════════════════════════════════
-     MODAL CREAR / EDITAR
+     MODAL CREAR / EDITAR  (sin cambios)
 ══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showFormModal" (click)="onOverlayClick($event, 'form')">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -272,10 +271,10 @@
 </div>
 
 <!-- ══════════════════════════════════
-     MODAL VER DETALLE
+     MODAL VER DETALLE  ← EXPANDIDO
 ══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showViewModal" (click)="onOverlayClick($event, 'view')">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title">Detalle de deducción</div>
       <button class="modal-close" (click)="showViewModal = false">
@@ -284,9 +283,11 @@
         </svg>
       </button>
     </div>
+
     @if (showViewModal) {
       <div class="modal-body">
-        <!-- Header -->
+
+        <!-- ── ENCABEZADO ── -->
         <div class="view-header">
           <div class="view-icon" [class]="'view-icon-' + tipoColor(viewedDeduccion.Nombre)">
             <svg viewBox="0 0 24 24" fill="none">
@@ -296,66 +297,205 @@
           </div>
           <div>
             <div class="view-name">{{ viewedDeduccion.Nombre }}</div>
-            <div class="view-sub">{{ tipoLabel(viewedDeduccion.Nombre) }} · Empleado #{{ viewedDeduccion.idEmpleado }}</div>
+            <div class="view-sub">{{ tipoLabel(viewedDeduccion.Nombre) }} · ID #{{ viewedDeduccion.idDeducciones }}</div>
           </div>
           <span class="status-badge" [class]="estadoClass(viewedDeduccion.Estado)" style="margin-left:auto">
             {{ viewedDeduccion.Estado === 1 ? 'Activa' : 'Inactiva' }}
           </span>
         </div>
 
-        <!-- Montos destacados -->
-        <div class="view-montos-row">
-          <div class="view-monto-card green">
-            <div class="view-monto-label">Monto deducción</div>
-            <div class="view-monto-num">₡{{ fmtNum(viewedDeduccion.Monto) }}</div>
+        <!-- ── BLOQUE 1: INFORMACIÓN GENERAL ── -->
+        <div class="det-section">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M4 5h6M4 7.5h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            </svg>
+            Información general
           </div>
-          <div class="view-monto-card amber">
-            <div class="view-monto-label">Impuestos</div>
-            <div class="view-monto-num">
-              {{ viewedDeduccion.Impuestos > 0 ? '₡' + fmtNum(viewedDeduccion.Impuestos) : '—' }}
+          <div class="view-montos-row">
+            <div class="view-monto-card green">
+              <div class="view-monto-label">Monto deducción</div>
+              <div class="view-monto-num">₡{{ fmtNum(viewedDeduccion.Monto) }}</div>
+            </div>
+            <div class="view-monto-card amber">
+              <div class="view-monto-label">Impuestos</div>
+              <div class="view-monto-num">
+                {{ viewedDeduccion.Impuestos > 0 ? '₡' + fmtNum(viewedDeduccion.Impuestos) : '—' }}
+              </div>
+            </div>
+          </div>
+          <div class="view-grid">
+            <div class="view-field">
+              <div class="view-label">Tipo de deducción</div>
+              <div class="view-val">
+                <span class="tipo-badge" [class]="'tipo-' + tipoColor(viewedDeduccion.Nombre)">
+                  {{ tipoLabel(viewedDeduccion.Nombre) }}
+                </span>
+              </div>
+            </div>
+            <div class="view-field">
+              <div class="view-label">Estado</div>
+              <div class="view-val">
+                <span class="status-badge" [class]="estadoClass(viewedDeduccion.Estado)">
+                  {{ viewedDeduccion.Estado === 1 ? 'Activa' : 'Inactiva' }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Grid de campos -->
-        <div class="view-grid">
-          <div class="view-field">
-            <div class="view-label">ID Deducción</div>
-            <div class="view-val">#{{ viewedDeduccion.idDeducciones }}</div>
+        <!-- ── BLOQUE 2: EMPLEADO RELACIONADO ── -->
+        <div class="det-section">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M1.5 12c0-3 2.5-4.5 5.5-4.5s5.5 1.5 5.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Empleado relacionado
           </div>
-          <div class="view-field">
-            <div class="view-label">Empleado</div>
-            <div class="view-val">{{ empName(viewedDeduccion.idEmpleado) }}</div>
-          </div>
-          <div class="view-field">
-            <div class="view-label">Usuario que registró</div>
-            <div class="view-val">#{{ viewedDeduccion.usuariosId }}</div>
-          </div>
-          <div class="view-field">
-            <div class="view-label">ID Préstamo vinculado</div>
-            <div class="view-val">
-              @if (viewedDeduccion.idPrestamo) {
-                <span class="prestamo-chip">#{{ viewedDeduccion.idPrestamo }}</span>
-              } @else {
-                <span style="color:var(--muted)">Sin préstamo</span>
-              }
+          <div class="hijo-card hijo-card-blue">
+            <div class="hijo-avatar" [class]="colorFor(viewedDeduccion.idEmpleado)">
+              {{ empInitial(viewedDeduccion.idEmpleado) }}
+            </div>
+            <div class="hijo-info">
+              <div class="hijo-titulo">{{ empName(viewedDeduccion.idEmpleado) }}</div>
+              <div class="hijo-sub">{{ empDetalle(viewedDeduccion.idEmpleado).puesto }} · {{ empDetalle(viewedDeduccion.idEmpleado).departamento }}</div>
+            </div>
+            <div class="hijo-meta">
+              <div class="view-label">Cédula</div>
+              <div class="hijo-id-chip">{{ empDetalle(viewedDeduccion.idEmpleado).cedula }}</div>
+            </div>
+            <div class="hijo-meta">
+              <div class="view-label">ID Empleado</div>
+              <div class="hijo-id-chip">#{{ viewedDeduccion.idEmpleado }}</div>
             </div>
           </div>
-          <div class="view-field" style="grid-column:1/-1">
-            <div class="view-label">Monto neto total (deducción + impuestos)</div>
-            <div class="view-val view-total">₡{{ fmtNum(viewedDeduccion.Monto + viewedDeduccion.Impuestos) }}</div>
+        </div>
+
+        <!-- ── BLOQUE 3: PRÉSTAMO RELACIONADO ── -->
+        <div class="det-section">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <rect x="1" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M1 6h12" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="3.5" cy="9" r=".8" fill="currentColor"/>
+            </svg>
+            Préstamo relacionado
+          </div>
+          @if (viewedDeduccion.idPrestamo) {
+            <div class="hijo-card hijo-card-amber">
+              <div class="hijo-icon-box hijo-icon-amber">
+                <svg viewBox="0 0 16 16" fill="none" width="18" height="18">
+                  <path d="M3 12V6l5-4 5 4v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 12V9h4v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="hijo-info">
+                <div class="hijo-titulo">Préstamo #{{ viewedDeduccion.idPrestamo }}</div>
+                <div class="hijo-sub">{{ prestamoDetalle(viewedDeduccion.idPrestamo).desc }}</div>
+              </div>
+              <div class="hijo-meta">
+                <div class="view-label">Monto total</div>
+                <div class="hijo-monto-verde">₡{{ fmtNum(prestamoDetalle(viewedDeduccion.idPrestamo).montoTotal) }}</div>
+              </div>
+              <div class="hijo-meta">
+                <div class="view-label">Saldo pendiente</div>
+                <div class="hijo-monto-amber">₡{{ fmtNum(prestamoDetalle(viewedDeduccion.idPrestamo).saldo) }}</div>
+              </div>
+              <div class="hijo-meta">
+                <div class="view-label">Cuota</div>
+                <div class="hijo-id-chip">₡{{ fmtNum(prestamoDetalle(viewedDeduccion.idPrestamo).cuota) }}</div>
+              </div>
+            </div>
+            <!-- Barra de progreso del préstamo -->
+            <div class="prestamo-progress-wrap">
+              <div class="prestamo-progress-info">
+                <span class="prestamo-progress-label">Progreso de pago</span>
+                <span class="prestamo-progress-pct">{{ prestamoDetalle(viewedDeduccion.idPrestamo).pct }}%</span>
+              </div>
+              <div class="prestamo-progress-track">
+                <div class="prestamo-progress-fill" [style.width.%]="prestamoDetalle(viewedDeduccion.idPrestamo).pct"></div>
+              </div>
+            </div>
+          } @else {
+            <div class="hijo-vacio">
+              <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M8 5v3M8 10.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Esta deducción no está vinculada a un préstamo
+            </div>
+          }
+        </div>
+
+        <!-- ── BLOQUE 4: USUARIO RESPONSABLE ── -->
+        <div class="det-section">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <circle cx="7" cy="4" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M1.5 11.5c0-2.5 2.5-4 5.5-4s5.5 1.5 5.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M9.5 2l1 1 2-2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Usuario responsable
+          </div>
+          <div class="hijo-card hijo-card-green">
+            <div class="hijo-avatar" [class]="colorFor(viewedDeduccion.usuariosId)">
+              {{ usuarioInitial(viewedDeduccion.usuariosId) }}
+            </div>
+            <div class="hijo-info">
+              <div class="hijo-titulo">{{ usuarioNombre(viewedDeduccion.usuariosId) }}</div>
+              <div class="hijo-sub">{{ usuarioRol(viewedDeduccion.usuariosId) }}</div>
+            </div>
+            <div class="hijo-meta">
+              <div class="view-label">ID Usuario</div>
+              <div class="hijo-id-chip">#{{ viewedDeduccion.usuariosId }}</div>
+            </div>
           </div>
         </div>
+
+        <!-- ── BLOQUE 5: RESUMEN FINAL ── -->
+        <div class="det-section det-section-last">
+          <div class="det-section-title">
+            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
+              <path d="M7 1v12M10 4H5.5a2.5 2.5 0 000 5H8a2.5 2.5 0 010 5H3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Resumen del impacto
+          </div>
+          <div class="resumen-final-grid">
+            <div class="resumen-final-card resumen-green">
+              <div class="view-label">Monto base</div>
+              <div class="resumen-final-num">₡{{ fmtNum(viewedDeduccion.Monto) }}</div>
+            </div>
+            <div class="resumen-final-card resumen-amber">
+              <div class="view-label">Impuesto aplicado</div>
+              <div class="resumen-final-num">
+                {{ viewedDeduccion.Impuestos > 0 ? '₡' + fmtNum(viewedDeduccion.Impuestos) : '₡0' }}
+              </div>
+            </div>
+            <div class="resumen-final-card resumen-red">
+              <div class="view-label">Total afectado al empleado</div>
+              <div class="resumen-final-num resumen-final-total">
+                ₡{{ fmtNum(viewedDeduccion.Monto + viewedDeduccion.Impuestos) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     }
+
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="showViewModal = false">Cerrar</button>
+      <button class="btn btn-primary" (click)="openModal('edit', viewedDeduccion.idDeducciones); showViewModal = false">
+        Editar deducción
+      </button>
     </div>
   </div>
 </div>
 
 <!-- ══════════════════════════════════
-     MODAL CONFIRMAR ELIMINAR
+     MODAL CONFIRMAR ELIMINAR  (sin cambios)
 ══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showDeleteModal" (click)="onOverlayClick($event, 'delete')">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">

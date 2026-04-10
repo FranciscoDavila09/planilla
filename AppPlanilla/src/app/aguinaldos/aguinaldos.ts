@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 interface Aguinaldo {
   IdAguinaldo: number;
   IdEmpleado: number;
-  Periodo: number;          // year
-  MontoCalculado: number;   // decimal(12,2)
-  FechaPago: string;        // date — puede ser ''
-  Estado: number;           // tinyint(1): 1 = Pagado, 0 = Pendiente
+  Periodo: number;
+  MontoCalculado: number;
+  FechaPago: string;
+  Estado: number;
   idUsuario: number;
 }
 
@@ -31,23 +31,48 @@ export class Aguinaldos {
   readonly perPage = 8;
   readonly COLORS  = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
 
-  // Mapa de empleados — reemplazar con datos reales del servicio
+  // ── Mapas de referencia (reemplazar con servicios reales en producción) ──
+
   readonly empMap: Record<number, EmpRef> = {
-    1:  { nombre: 'María Rodríguez' },
-    2:  { nombre: 'Carlos Mendoza' },
-    3:  { nombre: 'Sofía Vargas' },
-    4:  { nombre: 'Andrés Jiménez' },
-    5:  { nombre: 'Lucía Pérez' },
-    6:  { nombre: 'Diego Castillo' },
-    7:  { nombre: 'Valeria Núñez' },
-    8:  { nombre: 'Felipe Aguilar' },
-    9:  { nombre: 'Daniela Herrera' },
-    10: { nombre: 'Ricardo Soto' },
-    11: { nombre: 'Camila Quesada' },
-    12: { nombre: 'Pablo Araya' },
-    13: { nombre: 'Natalia Mora' },
-    14: { nombre: 'Sebastián Ugalde' },
-    15: { nombre: 'Adriana Blanco' },
+    1:  { nombre: 'María Rodríguez'   },
+    2:  { nombre: 'Carlos Mendoza'    },
+    3:  { nombre: 'Sofía Vargas'      },
+    4:  { nombre: 'Andrés Jiménez'    },
+    5:  { nombre: 'Lucía Pérez'       },
+    6:  { nombre: 'Diego Castillo'    },
+    7:  { nombre: 'Valeria Núñez'     },
+    8:  { nombre: 'Felipe Aguilar'    },
+    9:  { nombre: 'Daniela Herrera'   },
+    10: { nombre: 'Ricardo Soto'      },
+    11: { nombre: 'Camila Quesada'    },
+    12: { nombre: 'Pablo Araya'       },
+    13: { nombre: 'Natalia Mora'      },
+    14: { nombre: 'Sebastián Ugalde'  },
+    15: { nombre: 'Adriana Blanco'    },
+  };
+
+  // Detalle extendido del empleado para el bloque hijo
+  readonly empDetalleMap: Record<number, { puesto: string; departamento: string; cedula: string }> = {
+    1:  { puesto: 'Desarrolladora Senior',    departamento: 'TI',          cedula: '1-0234-5678' },
+    2:  { puesto: 'Analista Financiero',      departamento: 'Finanzas',    cedula: '2-0987-6543' },
+    3:  { puesto: 'Gerente de Ventas',        departamento: 'Ventas',      cedula: '3-1234-7890' },
+    4:  { puesto: 'Reclutador',               departamento: 'RRHH',        cedula: '1-0543-2109' },
+    5:  { puesto: 'Jefa de Operaciones',      departamento: 'Operaciones', cedula: '4-0321-8765' },
+    6:  { puesto: 'DevOps Engineer',          departamento: 'TI',          cedula: '2-1098-3456' },
+    7:  { puesto: 'Contadora',                departamento: 'Finanzas',    cedula: '5-0765-4321' },
+    8:  { puesto: 'Asesor Comercial',         departamento: 'Ventas',      cedula: '3-0432-9876' },
+    9:  { puesto: 'Diseñadora UX',            departamento: 'TI',          cedula: '1-0876-5432' },
+    10: { puesto: 'Auxiliar Contable',        departamento: 'Finanzas',    cedula: '2-0543-1098' },
+    11: { puesto: 'Analista de RRHH',         departamento: 'RRHH',        cedula: '4-0987-6543' },
+    12: { puesto: 'Técnico de Soporte',       departamento: 'TI',          cedula: '3-0654-3219' },
+    13: { puesto: 'Supervisora',              departamento: 'Operaciones', cedula: '5-0321-7654' },
+    14: { puesto: 'Programador Jr.',          departamento: 'TI',          cedula: '1-0789-4567' },
+    15: { puesto: 'Vendedora',                departamento: 'Ventas',      cedula: '2-0234-8901' },
+  };
+
+  readonly usuarioMap: Record<number, { nombre: string; rol: string }> = {
+    1: { nombre: 'María Rodríguez', rol: 'Administrador' },
+    2: { nombre: 'Carlos Mendoza',  rol: 'RRHH'          },
   };
 
   showFormModal   = false;
@@ -116,10 +141,10 @@ export class Aguinaldos {
     return Array.from({ length: count }, (_, i) => i + 1);
   }
 
-  // ── Helpers ──
+  // ── Helpers originales ──
   min(a: number, b: number) { return Math.min(a, b); }
 
-  empName(id: number)    { return this.empMap[id]?.nombre ?? `Empleado #${id}`; }
+  empName(id: number) { return this.empMap[id]?.nombre ?? `Empleado #${id}`; }
 
   empInitial(id: number) {
     const n = this.empMap[id]?.nombre;
@@ -128,9 +153,9 @@ export class Aguinaldos {
     return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
   }
 
-  colorFor(id: number)   { return this.COLORS[(id - 1) % this.COLORS.length]; }
+  colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
 
-  fmtNum(n: number)      { return Number(n).toLocaleString('es-CR'); }
+  fmtNum(n: number) { return Number(n).toLocaleString('es-CR'); }
 
   fmtShort(n: number) {
     if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
@@ -150,18 +175,13 @@ export class Aguinaldos {
   countByEstado(e: number) { return this.aguinaldos.filter(a => a.Estado === e).length; }
 
   totalMontoPagado() {
-    return this.aguinaldos
-      .filter(a => a.Estado === 1)
-      .reduce((acc, a) => acc + a.MontoCalculado, 0);
+    return this.aguinaldos.filter(a => a.Estado === 1).reduce((acc, a) => acc + a.MontoCalculado, 0);
   }
 
-  /** Resumen agrupado por período para las cards superiores */
   periodos(): PeriodoResumen[] {
     const map = new Map<number, PeriodoResumen>();
     for (const a of this.aguinaldos) {
-      if (!map.has(a.Periodo)) {
-        map.set(a.Periodo, { year: a.Periodo, total: 0, pagados: 0, monto: 0 });
-      }
+      if (!map.has(a.Periodo)) map.set(a.Periodo, { year: a.Periodo, total: 0, pagados: 0, monto: 0 });
       const r = map.get(a.Periodo)!;
       r.total++;
       r.monto += a.MontoCalculado;
@@ -188,12 +208,7 @@ export class Aguinaldos {
   openModal(mode: 'create' | 'edit', id?: number) {
     if (mode === 'create') {
       this.editId = null;
-      this.form = {
-        Estado: 0,
-        Periodo: new Date().getFullYear(),
-        FechaPago: '',
-        idUsuario: 1,
-      };
+      this.form = { Estado: 0, Periodo: new Date().getFullYear(), FechaPago: '', idUsuario: 1 };
     } else {
       const a = this.aguinaldos.find(x => x.IdAguinaldo === id)!;
       this.editId = a.IdAguinaldo;
@@ -241,5 +256,31 @@ export class Aguinaldos {
       if (modal === 'view')   this.showViewModal   = false;
       if (modal === 'delete') this.showDeleteModal = false;
     }
+  }
+
+  // ════════════════════════════════════════════════
+  // NUEVOS MÉTODOS — BLOQUES HIJO DEL DETALLE
+  // ════════════════════════════════════════════════
+
+  /**
+   * Bloque 2 — Empleado relacionado.
+   * Devuelve puesto, departamento y cédula para la tarjeta hijo.
+   * En producción esto viene del servicio de empleados.
+   */
+  empDetalle(id: number): { puesto: string; departamento: string; cedula: string } {
+    return this.empDetalleMap[id] ?? { puesto: '—', departamento: '—', cedula: '—' };
+  }
+
+  /**
+   * Bloque 3 — Usuario responsable.
+   * Nombre, rol e inicial para el avatar.
+   */
+  usuarioNombre(id: number): string { return this.usuarioMap[id]?.nombre ?? `Usuario #${id}`; }
+  usuarioRol(id: number):    string { return this.usuarioMap[id]?.rol    ?? '—'; }
+  usuarioInitial(id: number): string {
+    const n = this.usuarioMap[id]?.nombre;
+    if (!n) return `U${id}`;
+    const p = n.split(' ');
+    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
   }
 }
