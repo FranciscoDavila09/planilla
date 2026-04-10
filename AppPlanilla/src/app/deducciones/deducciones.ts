@@ -6,7 +6,7 @@ interface Deduccion {
   Nombre: string;
   Monto: number;
   Impuestos: number;
-  Estado: number;          // tinyint: 1 = Activa, 0 = Inactiva
+  Estado: number;
   idEmpleado: number;
   usuariosId: number;
   idPrestamo: number | null;
@@ -25,7 +25,8 @@ export class Deducciones {
   readonly perPage = 8;
   readonly COLORS  = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
 
-  // Mapa de empleados — reemplazar con datos reales del servicio
+  // ── Mapas de referencia (reemplazar con servicios reales en producción) ──
+
   readonly empMap: Record<number, EmpRef> = {
     1:  { nombre: 'María Rodríguez' },
     2:  { nombre: 'Carlos Mendoza' },
@@ -41,16 +42,45 @@ export class Deducciones {
     12: { nombre: 'Pablo Araya' },
   };
 
-  // Palabras clave para clasificar el tipo de deducción a partir del nombre
+  // Detalle extendido del empleado para el bloque hijo
+  readonly empDetalleMap: Record<number, { puesto: string; departamento: string; cedula: string }> = {
+    1:  { puesto: 'Desarrolladora Senior',  departamento: 'TI',          cedula: '1-0234-5678' },
+    2:  { puesto: 'Analista Financiero',    departamento: 'Finanzas',    cedula: '2-0987-6543' },
+    3:  { puesto: 'Gerente de Ventas',      departamento: 'Ventas',      cedula: '3-1234-7890' },
+    4:  { puesto: 'Reclutador',             departamento: 'RRHH',        cedula: '1-0543-2109' },
+    5:  { puesto: 'Jefa de Operaciones',    departamento: 'Operaciones', cedula: '4-0321-8765' },
+    6:  { puesto: 'DevOps Engineer',        departamento: 'TI',          cedula: '2-1098-3456' },
+    7:  { puesto: 'Contadora',              departamento: 'Finanzas',    cedula: '5-0765-4321' },
+    8:  { puesto: 'Asesor Comercial',       departamento: 'Ventas',      cedula: '3-0432-9876' },
+    9:  { puesto: 'Diseñadora UX',          departamento: 'TI',          cedula: '1-0876-5432' },
+    10: { puesto: 'Auxiliar Contable',      departamento: 'Finanzas',    cedula: '2-0543-1098' },
+    11: { puesto: 'Analista de RRHH',       departamento: 'RRHH',        cedula: '4-0987-6543' },
+    12: { puesto: 'Técnico de Soporte',     departamento: 'TI',          cedula: '3-0654-3219' },
+  };
+
+  // Mapa de préstamos relacionados — reemplazar con servicio real
+  readonly prestamoMap: Record<number, {
+    desc: string; montoTotal: number; saldo: number; cuota: number;
+  }> = {
+    7:  { desc: 'Préstamo personal',  montoTotal: 600000,  saldo: 350000, cuota: 50000 },
+    12: { desc: 'Préstamo vehículo',  montoTotal: 1000000, saldo: 708334, cuota: 41667 },
+    15: { desc: 'Préstamo personal',  montoTotal: 300000,  saldo: 100000, cuota: 50000 },
+  };
+
+  readonly usuarioMap: Record<number, { nombre: string; rol: string }> = {
+    1: { nombre: 'María Rodríguez', rol: 'Administrador' },
+    2: { nombre: 'Carlos Mendoza',  rol: 'RRHH'          },
+  };
+
   private readonly TIPO_KEYWORDS: { key: string; label: string; color: string }[] = [
-    { key: 'ccss',      label: 'Seguro Social',    color: 'dot-red'    },
-    { key: 'renta',     label: 'Impuesto de renta', color: 'dot-amber'  },
-    { key: 'prést',     label: 'Préstamo',          color: 'dot-blue'   },
-    { key: 'prestamo',  label: 'Préstamo',          color: 'dot-blue'   },
-    { key: 'embargo',   label: 'Embargo',           color: 'dot-violet' },
-    { key: 'ins',       label: 'INS / Seguro',      color: 'dot-green'  },
-    { key: 'sinpe',     label: 'SINPE',             color: 'dot-green'  },
-    { key: 'asociac',   label: 'Asociación',        color: 'dot-green'  },
+    { key: 'ccss',     label: 'Seguro Social',     color: 'dot-red'    },
+    { key: 'renta',    label: 'Impuesto de renta', color: 'dot-amber'  },
+    { key: 'prést',    label: 'Préstamo',          color: 'dot-blue'   },
+    { key: 'prestamo', label: 'Préstamo',          color: 'dot-blue'   },
+    { key: 'embargo',  label: 'Embargo',           color: 'dot-violet' },
+    { key: 'ins',      label: 'INS / Seguro',      color: 'dot-green'  },
+    { key: 'sinpe',    label: 'SINPE',             color: 'dot-green'  },
+    { key: 'asociac',  label: 'Asociación',        color: 'dot-green'  },
   ];
 
   showFormModal   = false;
@@ -72,22 +102,22 @@ export class Deducciones {
   deleteDesc = '';
 
   deducciones: Deduccion[] = [
-    { idDeducciones: 1,  Nombre: 'CCSS Obrero',             Monto: 95000,  Impuestos: 0,      Estado: 1, idEmpleado: 1,  usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 2,  Nombre: 'CCSS Obrero',             Monto: 82000,  Impuestos: 0,      Estado: 1, idEmpleado: 2,  usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 3,  Nombre: 'Renta mensual',           Monto: 154000, Impuestos: 28000,  Estado: 1, idEmpleado: 3,  usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 4,  Nombre: 'Préstamo personal',       Monto: 70000,  Impuestos: 0,      Estado: 1, idEmpleado: 4,  usuariosId: 2, idPrestamo: 7    },
-    { idDeducciones: 5,  Nombre: 'Renta mensual',           Monto: 210000, Impuestos: 48500,  Estado: 1, idEmpleado: 5,  usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 6,  Nombre: 'CCSS Obrero',             Monto: 98000,  Impuestos: 0,      Estado: 1, idEmpleado: 6,  usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 7,  Nombre: 'Embargo judicial',        Monto: 120000, Impuestos: 0,      Estado: 1, idEmpleado: 7,  usuariosId: 2, idPrestamo: null },
-    { idDeducciones: 8,  Nombre: 'Préstamo vehículo',       Monto: 95000,  Impuestos: 0,      Estado: 1, idEmpleado: 8,  usuariosId: 2, idPrestamo: 12   },
-    { idDeducciones: 9,  Nombre: 'CCSS Obrero',             Monto: 87000,  Impuestos: 0,      Estado: 1, idEmpleado: 9,  usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 10, Nombre: 'Renta mensual',           Monto: 62000,  Impuestos: 9500,   Estado: 0, idEmpleado: 10, usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 11, Nombre: 'Asociación solidarista',  Monto: 36500,  Impuestos: 0,      Estado: 1, idEmpleado: 11, usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 12, Nombre: 'CCSS Obrero',             Monto: 68000,  Impuestos: 0,      Estado: 1, idEmpleado: 12, usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 13, Nombre: 'Préstamo personal',       Monto: 50000,  Impuestos: 0,      Estado: 0, idEmpleado: 2,  usuariosId: 2, idPrestamo: 15   },
-    { idDeducciones: 14, Nombre: 'Renta mensual',           Monto: 190000, Impuestos: 41000,  Estado: 1, idEmpleado: 1,  usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 15, Nombre: 'INS accidente laboral',   Monto: 12000,  Impuestos: 0,      Estado: 1, idEmpleado: 5,  usuariosId: 1, idPrestamo: null },
-    { idDeducciones: 16, Nombre: 'Embargo judicial',        Monto: 85000,  Impuestos: 0,      Estado: 0, idEmpleado: 6,  usuariosId: 2, idPrestamo: null },
+    { idDeducciones: 1,  Nombre: 'CCSS Obrero',            Monto: 95000,  Impuestos: 0,     Estado: 1, idEmpleado: 1,  usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 2,  Nombre: 'CCSS Obrero',            Monto: 82000,  Impuestos: 0,     Estado: 1, idEmpleado: 2,  usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 3,  Nombre: 'Renta mensual',          Monto: 154000, Impuestos: 28000, Estado: 1, idEmpleado: 3,  usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 4,  Nombre: 'Préstamo personal',      Monto: 70000,  Impuestos: 0,     Estado: 1, idEmpleado: 4,  usuariosId: 2, idPrestamo: 7   },
+    { idDeducciones: 5,  Nombre: 'Renta mensual',          Monto: 210000, Impuestos: 48500, Estado: 1, idEmpleado: 5,  usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 6,  Nombre: 'CCSS Obrero',            Monto: 98000,  Impuestos: 0,     Estado: 1, idEmpleado: 6,  usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 7,  Nombre: 'Embargo judicial',       Monto: 120000, Impuestos: 0,     Estado: 1, idEmpleado: 7,  usuariosId: 2, idPrestamo: null },
+    { idDeducciones: 8,  Nombre: 'Préstamo vehículo',      Monto: 95000,  Impuestos: 0,     Estado: 1, idEmpleado: 8,  usuariosId: 2, idPrestamo: 12  },
+    { idDeducciones: 9,  Nombre: 'CCSS Obrero',            Monto: 87000,  Impuestos: 0,     Estado: 1, idEmpleado: 9,  usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 10, Nombre: 'Renta mensual',          Monto: 62000,  Impuestos: 9500,  Estado: 0, idEmpleado: 10, usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 11, Nombre: 'Asociación solidarista', Monto: 36500,  Impuestos: 0,     Estado: 1, idEmpleado: 11, usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 12, Nombre: 'CCSS Obrero',            Monto: 68000,  Impuestos: 0,     Estado: 1, idEmpleado: 12, usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 13, Nombre: 'Préstamo personal',      Monto: 50000,  Impuestos: 0,     Estado: 0, idEmpleado: 2,  usuariosId: 2, idPrestamo: 15  },
+    { idDeducciones: 14, Nombre: 'Renta mensual',          Monto: 190000, Impuestos: 41000, Estado: 1, idEmpleado: 1,  usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 15, Nombre: 'INS accidente laboral',  Monto: 12000,  Impuestos: 0,     Estado: 1, idEmpleado: 5,  usuariosId: 1, idPrestamo: null },
+    { idDeducciones: 16, Nombre: 'Embargo judicial',       Monto: 85000,  Impuestos: 0,     Estado: 0, idEmpleado: 6,  usuariosId: 2, idPrestamo: null },
   ];
 
   // ── Computed ──
@@ -96,8 +126,8 @@ export class Deducciones {
     return this.deducciones.filter(d => {
       const txt = `${d.Nombre} ${d.idDeducciones} ${this.empName(d.idEmpleado)} ${d.idPrestamo ?? ''}`.toLowerCase();
       const estadoOk = this.estadoFilter === '' || d.Estado === +this.estadoFilter;
-      const tipoOk   = !this.tipoFilter   || this.tipoLabel(d.Nombre).toLowerCase().includes(this.tipoFilter.toLowerCase())
-                                           || d.Nombre.toLowerCase().includes(this.tipoFilter.toLowerCase());
+      const tipoOk   = !this.tipoFilter || this.tipoLabel(d.Nombre).toLowerCase().includes(this.tipoFilter.toLowerCase())
+                                        || d.Nombre.toLowerCase().includes(this.tipoFilter.toLowerCase());
       return (!q || txt.includes(q)) && estadoOk && tipoOk;
     });
   }
@@ -112,60 +142,43 @@ export class Deducciones {
     return Array.from({ length: count }, (_, i) => i + 1);
   }
 
-  // ── Helpers ──
+  // ── Helpers originales ──
   min(a: number, b: number) { return Math.min(a, b); }
 
-  empName(id: number) {
-    return this.empMap[id]?.nombre ?? `Empleado #${id}`;
-  }
+  empName(id: number) { return this.empMap[id]?.nombre ?? `Empleado #${id}`; }
 
   empInitial(id: number) {
-    const name = this.empMap[id]?.nombre;
-    if (!name) return `E${id}`;
-    const parts = name.split(' ');
-    return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase();
+    const n = this.empMap[id]?.nombre;
+    if (!n) return `E${id}`;
+    const p = n.split(' ');
+    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
   }
 
-  colorFor(id: number) {
-    return this.COLORS[(id - 1) % this.COLORS.length];
-  }
+  colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
 
-  fmtNum(n: number) {
-    return Number(n).toLocaleString('es-CR');
-  }
-
+  fmtNum(n: number)   { return Number(n).toLocaleString('es-CR'); }
   fmtShort(n: number) {
     if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
     if (n >= 1_000)     return (n / 1_000).toFixed(0) + 'K';
     return String(n);
   }
 
-  /** Devuelve la clase CSS del punto de color según el nombre de la deducción */
   tipoColor(nombre: string): string {
     const n = nombre.toLowerCase();
-    const match = this.TIPO_KEYWORDS.find(t => n.includes(t.key));
-    return match?.color ?? 'dot-muted';
+    return this.TIPO_KEYWORDS.find(t => n.includes(t.key))?.color ?? 'dot-muted';
   }
 
-  /** Devuelve la etiqueta de categoría según el nombre de la deducción */
   tipoLabel(nombre: string): string {
     const n = nombre.toLowerCase();
-    const match = this.TIPO_KEYWORDS.find(t => n.includes(t.key));
-    return match?.label ?? 'Otra deducción';
+    return this.TIPO_KEYWORDS.find(t => n.includes(t.key))?.label ?? 'Otra deducción';
   }
 
-  estadoClass(e: number) {
-    return e === 1 ? 'status-activa' : 'status-inactiva';
-  }
+  estadoClass(e: number) { return e === 1 ? 'status-activa' : 'status-inactiva'; }
 
-  countByEstado(e: number) {
-    return this.deducciones.filter(d => d.Estado === e).length;
-  }
+  countByEstado(e: number) { return this.deducciones.filter(d => d.Estado === e).length; }
 
   totalMontos() {
-    return this.deducciones
-      .filter(d => d.Estado === 1)
-      .reduce((acc, d) => acc + d.Monto + d.Impuestos, 0);
+    return this.deducciones.filter(d => d.Estado === 1).reduce((acc, d) => acc + d.Monto + d.Impuestos, 0);
   }
 
   // ── Filtro / paginación ──
@@ -180,13 +193,7 @@ export class Deducciones {
   openModal(mode: 'create' | 'edit', id?: number) {
     if (mode === 'create') {
       this.editId = null;
-      this.form = {
-        Estado: 1,
-        Monto: undefined,
-        Impuestos: 0,
-        idPrestamo: null,
-        usuariosId: 1,
-      };
+      this.form = { Estado: 1, Monto: undefined, Impuestos: 0, idPrestamo: null, usuariosId: 1 };
     } else {
       const d = this.deducciones.find(x => x.idDeducciones === id)!;
       this.editId = d.idDeducciones;
@@ -196,28 +203,14 @@ export class Deducciones {
   }
 
   saveDeduccion() {
-    if (!this.form.Nombre?.trim()) {
-      alert('El nombre de la deducción es requerido.');
-      return;
-    }
-    if (!this.form.idEmpleado || !this.form.Monto) {
-      alert('Por favor completa el empleado y el monto.');
-      return;
-    }
+    if (!this.form.Nombre?.trim()) { alert('El nombre es requerido.'); return; }
+    if (!this.form.idEmpleado || !this.form.Monto) { alert('Completa empleado y monto.'); return; }
     if (this.editId) {
       const idx = this.deducciones.findIndex(x => x.idDeducciones === this.editId);
       this.deducciones[idx] = { ...this.deducciones[idx], ...this.form } as Deduccion;
     } else {
       const newId = Math.max(0, ...this.deducciones.map(x => x.idDeducciones)) + 1;
-      this.deducciones = [
-        ...this.deducciones,
-        {
-          idDeducciones: newId,
-          Impuestos: 0,
-          idPrestamo: null,
-          ...this.form,
-        } as Deduccion,
-      ];
+      this.deducciones = [...this.deducciones, { idDeducciones: newId, Impuestos: 0, idPrestamo: null, ...this.form } as Deduccion];
     }
     this.showFormModal = false;
   }
@@ -246,5 +239,38 @@ export class Deducciones {
       if (modal === 'view')   this.showViewModal   = false;
       if (modal === 'delete') this.showDeleteModal = false;
     }
+  }
+
+  // ════════════════════════════════════════════════
+  // NUEVOS MÉTODOS — BLOQUES HIJO DEL DETALLE
+  // ════════════════════════════════════════════════
+
+  /** Bloque 2 — Empleado relacionado */
+  empDetalle(id: number): { puesto: string; departamento: string; cedula: string } {
+    return this.empDetalleMap[id] ?? { puesto: '—', departamento: '—', cedula: '—' };
+  }
+
+  /**
+   * Bloque 3 — Préstamo relacionado.
+   * Incluye el porcentaje pagado para la barra de progreso.
+   */
+  prestamoDetalle(id: number): {
+    desc: string; montoTotal: number; saldo: number; cuota: number; pct: number;
+  } {
+    const p = this.prestamoMap[id];
+    if (!p) return { desc: '—', montoTotal: 0, saldo: 0, cuota: 0, pct: 0 };
+    const pagado = p.montoTotal - p.saldo;
+    const pct = Math.min(100, Math.round((pagado / p.montoTotal) * 100));
+    return { ...p, pct };
+  }
+
+  /** Bloque 4 — Usuario responsable */
+  usuarioNombre(id: number): string { return this.usuarioMap[id]?.nombre ?? `Usuario #${id}`; }
+  usuarioRol(id: number):    string { return this.usuarioMap[id]?.rol    ?? '—'; }
+  usuarioInitial(id: number): string {
+    const n = this.usuarioMap[id]?.nombre;
+    if (!n) return `U${id}`;
+    const p = n.split(' ');
+    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
   }
 }
