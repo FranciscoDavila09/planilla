@@ -24,18 +24,20 @@
   color: var(--accent);
 }
 
+/* ── BUTTONS ── */
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 18px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
   font-family: var(--dm);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all 0.15s;
+  transition: all 0.18s;
+  letter-spacing: 0.01em;
 }
 .btn svg {
   width: 15px;
@@ -44,25 +46,46 @@
 .btn-primary {
   background: var(--accent);
   color: #fff;
+  box-shadow: 0 4px 14px rgba(233, 69, 96, 0.35);
 }
 .btn-primary:hover {
   background: #d03050;
+  box-shadow: 0 6px 18px rgba(233, 69, 96, 0.45);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(233, 69, 96, 0.3);
 }
 .btn-secondary {
   background: #fff;
   color: var(--text);
   border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 .btn-secondary:hover {
   background: #f0ede8;
+  border-color: #ccc;
+  transform: translateY(-1px);
+}
+.btn-secondary:active {
+  transform: translateY(0);
 }
 .btn-danger {
   background: #fff0f2;
   color: var(--accent);
   border: 1px solid #fdd;
+  box-shadow: 0 1px 4px rgba(233, 69, 96, 0.08);
 }
 .btn-danger:hover {
-  background: #ffe0e4;
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 4px 14px rgba(233, 69, 96, 0.35);
+  transform: translateY(-1px);
+}
+.btn-danger:active {
+  transform: translateY(0);
 }
 
 /* ── STATS ── */
@@ -306,50 +329,63 @@ tbody tr:last-child td {
   background: #185fa5;
 }
 
+/* ── ACTION BUTTONS ── */
 .actions {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .icon-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.18s;
   color: var(--muted);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .icon-btn svg {
   width: 14px;
   height: 14px;
 }
-.icon-btn.edit:hover {
-  border-color: #185fa5;
-  color: #185fa5;
-  background: #e8f0fb;
+.icon-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-.icon-btn.delete:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: #fff0f2;
+.icon-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .icon-btn.view:hover {
   border-color: var(--accent2);
   color: var(--accent2);
   background: #e8f7f3;
+  box-shadow: 0 4px 10px rgba(15, 110, 86, 0.15);
+}
+.icon-btn.edit:hover {
+  border-color: #185fa5;
+  color: #185fa5;
+  background: #e8f0fb;
+  box-shadow: 0 4px 10px rgba(24, 95, 165, 0.15);
+}
+.icon-btn.delete:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #fff0f2;
+  box-shadow: 0 4px 10px rgba(233, 69, 96, 0.15);
 }
 
-/* ── PAGINATION ── */
+/* ── PAGINATION MINIMALISTA ── */
 .pagination {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 22px;
+  padding: 16px 22px;
   border-top: 1px solid var(--border);
 }
 .page-info {
@@ -358,35 +394,39 @@ tbody tr:last-child td {
 }
 .page-btns {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 0;
 }
 .page-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: #fff;
+  position: relative;
+  min-width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--muted);
+  cursor: pointer;
   transition: all 0.15s;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 0 8px;
 }
 .page-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  color: var(--text);
+  border-bottom: 2px solid #ddd;
 }
 .page-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  color: var(--accent);
+  font-weight: 700;
+  border-bottom: 2px solid var(--accent);
 }
 .page-btn svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
 }
 
 /* ── MODAL ── */
@@ -407,7 +447,6 @@ tbody tr:last-child td {
   opacity: 1;
   pointer-events: all;
 }
-
 .modal {
   background: #fff;
   border-radius: 16px;
@@ -424,7 +463,6 @@ tbody tr:last-child td {
 .modal-sm {
   width: 420px;
 }
-
 .modal-header {
   padding: 22px 26px 18px;
   border-bottom: 1px solid var(--border);
@@ -458,7 +496,6 @@ tbody tr:last-child td {
   width: 14px;
   height: 14px;
 }
-
 .modal-body {
   padding: 22px 26px;
   display: flex;
@@ -506,11 +543,14 @@ tbody tr:last-child td {
   color: var(--text);
   background: #fff;
   outline: none;
-  transition: border 0.15s;
+  transition:
+    border 0.15s,
+    box-shadow 0.15s;
 }
 .form-input:focus,
 .form-select:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.08);
 }
 .form-input::placeholder {
   color: #bbb;

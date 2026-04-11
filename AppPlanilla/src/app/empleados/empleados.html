@@ -24,7 +24,7 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ employees.length }}</div>
+      <div class="stat-num">{{ Empleados().length }}</div>
       <div class="stat-label">Total empleados</div>
     </div>
   </div>
@@ -41,7 +41,7 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ countByStatus('Activo') }}</div>
+      <div class="stat-num">{{ countByStatus(1) }}</div>
       <div class="stat-label">Activos</div>
     </div>
   </div>
@@ -66,7 +66,7 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ countByStatus('Vacaciones') }}</div>
+      <div class="stat-num">{{ countByStatus(2) }}</div>
       <div class="stat-label">De vacaciones</div>
     </div>
   </div>
@@ -78,7 +78,7 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ countByStatus('Inactivo') }}</div>
+      <div class="stat-num">{{ countByStatus(0) }}</div>
       <div class="stat-label">Inactivos</div>
     </div>
   </div>
@@ -101,17 +101,17 @@
   </div>
   <select class="filter-select" [(ngModel)]="statusFilter" (change)="filterTable()">
     <option value="">Todos los estados</option>
-    <option value="Activo">Activo</option>
-    <option value="Vacaciones">Vacaciones</option>
-    <option value="Inactivo">Inactivo</option>
+    <option value="1">Activo</option>
+    <option value="2">Vacaciones</option>
+    <option value="0">Inactivo</option>
   </select>
   <select class="filter-select" [(ngModel)]="deptFilter" (change)="filterTable()">
     <option value="">Todos los departamentos</option>
-    <option value="TI">TI</option>
-    <option value="Finanzas">Finanzas</option>
-    <option value="Ventas">Ventas</option>
-    <option value="RRHH">RRHH</option>
-    <option value="Operaciones">Operaciones</option>
+    <option value="1">TI</option>
+    <option value="2">Finanzas</option>
+    <option value="3">Ventas</option>
+    <option value="4">RRHH</option>
+    <option value="5">Operaciones</option>
   </select>
 </div>
 
@@ -127,9 +127,8 @@
     <thead>
       <tr>
         <th>Empleado</th>
-        <th>Cédula</th>
-        <th>Puesto</th>
-        <th>Departamento</th>
+        <th>Identificación</th>
+        <th>Código</th>
         <th>Salario</th>
         <th>Estado</th>
         <th>Ingreso</th>
@@ -137,30 +136,29 @@
       </tr>
     </thead>
     <tbody>
-      @for (e of pageSlice; track e.id) {
+      @for (e of pageSlice; track e.idEmpleado) {
         <tr>
           <td>
             <div class="emp-cell">
-              <div class="emp-avatar" [class]="colorFor(e.id)">{{ initials(e) }}</div>
+              <div class="emp-avatar" [class]="colorFor(e.idEmpleado!)">{{ initials(e) }}</div>
               <div>
-                <div class="emp-name">{{ e.nombre }} {{ e.apellidos }}</div>
-                <div class="emp-id">{{ e.correo }}</div>
+                <div class="emp-name">{{ e.Nombre }} {{ e.Apellidos }}</div>
+                <div class="emp-id">{{ e.Correo }}</div>
               </div>
             </div>
           </td>
-          <td>{{ e.cedula }}</td>
-          <td>{{ e.puesto }}</td>
-          <td>{{ e.departamento }}</td>
-          <td>{{ fmtSalary(e.salario) }}</td>
+          <td>{{ e.Identificacion }}</td>
+          <td>{{ e.CodigoEmpleado }}</td>
+          <td>{{ fmtSalary(e.Salario) }}</td>
           <td>
-            <span class="status-badge" [class]="'status-badge ' + statusClass(e.estado)">
-              {{ e.estado }}
+            <span class="status-badge" [class]="'status-badge ' + statusClass(e.Estado)">
+              {{ estadoLabel(e.Estado) }}
             </span>
           </td>
-          <td>{{ fmtDate(e.ingreso) }}</td>
+          <td>{{ fmtDate(e.FechaIngreso) }}</td>
           <td>
             <div class="actions">
-              <div class="icon-btn view" title="Ver" (click)="viewEmployee(e.id)">
+              <div class="icon-btn view" title="Ver" (click)="viewEmployee(e.idEmpleado!)">
                 <svg viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4" />
                   <path
@@ -170,7 +168,7 @@
                   />
                 </svg>
               </div>
-              <div class="icon-btn edit" title="Editar" (click)="openModal('edit', e.id)">
+              <div class="icon-btn edit" title="Editar" (click)="openModal('edit', e.idEmpleado!)">
                 <svg viewBox="0 0 16 16" fill="none">
                   <path
                     d="M11 2l3 3-8 8H3v-3l8-8z"
@@ -180,7 +178,7 @@
                   />
                 </svg>
               </div>
-              <div class="icon-btn delete" title="Eliminar" (click)="askDelete(e.id)">
+              <div class="icon-btn delete" title="Eliminar" (click)="askDelete(e.idEmpleado!)">
                 <svg viewBox="0 0 16 16" fill="none">
                   <path
                     d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9"
@@ -197,7 +195,7 @@
       }
       @if (pageSlice.length === 0) {
         <tr>
-          <td colspan="8" class="empty-row">No se encontraron empleados</td>
+          <td colspan="7" class="empty-row">No se encontraron empleados</td>
         </tr>
       }
     </tbody>
@@ -263,25 +261,25 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Nombre</label>
-          <input class="form-input" [(ngModel)]="form.nombre" placeholder="Ej. María" />
+          <input class="form-input" [(ngModel)]="form.Nombre" placeholder="Ej. María" />
         </div>
         <div class="form-group">
           <label class="form-label">Apellidos</label>
           <input
             class="form-input"
-            [(ngModel)]="form.apellidos"
+            [(ngModel)]="form.Apellidos"
             placeholder="Ej. Rodríguez López"
           />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Cédula</label>
-          <input class="form-input" [(ngModel)]="form.cedula" placeholder="1-1234-5678" />
+          <label class="form-label">Identificación</label>
+          <input class="form-input" [(ngModel)]="form.Identificacion" placeholder="1-1234-5678" />
         </div>
         <div class="form-group">
           <label class="form-label">Teléfono</label>
-          <input class="form-input" [(ngModel)]="form.telefono" placeholder="8888-8888" />
+          <input class="form-input" [(ngModel)]="form.Telefono" placeholder="8888-8888" />
         </div>
       </div>
       <div class="form-row">
@@ -290,49 +288,62 @@
           <input
             class="form-input"
             type="email"
-            [(ngModel)]="form.correo"
+            [(ngModel)]="form.Correo"
             placeholder="correo@empresa.com"
           />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Puesto</label>
-          <input
-            class="form-input"
-            [(ngModel)]="form.puesto"
-            placeholder="Ej. Desarrollador Senior"
-          />
+          <label class="form-label">Código empleado</label>
+          <input class="form-input" [(ngModel)]="form.CodigoEmpleado" placeholder="Ej. EMP001" />
         </div>
         <div class="form-group">
-          <label class="form-label">Departamento</label>
-          <select class="form-select" [(ngModel)]="form.departamento">
-            <option value="">Seleccionar…</option>
-            <option>TI</option>
-            <option>Finanzas</option>
-            <option>Ventas</option>
-            <option>RRHH</option>
-            <option>Operaciones</option>
-          </select>
+          <label class="form-label">Cuenta bancaria</label>
+          <input
+            class="form-input"
+            type="number"
+            [(ngModel)]="form.CuentaBancaria"
+            placeholder="Ej. 123456789"
+          />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Salario (₡)</label>
-          <input class="form-input" type="number" [(ngModel)]="form.salario" placeholder="750000" />
+          <input class="form-input" type="number" [(ngModel)]="form.Salario" placeholder="750000" />
         </div>
         <div class="form-group">
           <label class="form-label">Fecha de ingreso</label>
-          <input class="form-input" type="date" [(ngModel)]="form.ingreso" />
+          <input class="form-input" type="date" [(ngModel)]="form.FechaIngreso" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
+          <label class="form-label">Hora entrada</label>
+          <input class="form-input" type="time" [(ngModel)]="form.HoraEntrada" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora salida</label>
+          <input class="form-input" type="time" [(ngModel)]="form.HoraSalida" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Departamento</label>
+          <input
+            class="form-input"
+            type="number"
+            [(ngModel)]="form.idDepartamento"
+            placeholder="ID departamento"
+          />
+        </div>
+        <div class="form-group">
           <label class="form-label">Estado</label>
-          <select class="form-select" [(ngModel)]="form.estado">
-            <option value="Activo">Activo</option>
-            <option value="Vacaciones">Vacaciones</option>
-            <option value="Inactivo">Inactivo</option>
+          <select class="form-select" [(ngModel)]="form.Estado">
+            <option [ngValue]="1">Activo</option>
+            <option [ngValue]="2">Vacaciones</option>
+            <option [ngValue]="0">Inactivo</option>
           </select>
         </div>
       </div>
@@ -365,47 +376,55 @@
     @if (showViewModal) {
       <div class="modal-body">
         <div class="view-header">
-          <div class="emp-avatar view-avatar" [class]="colorFor(viewedEmployee.id)">
+          <div class="emp-avatar view-avatar" [class]="colorFor(viewedEmployee.idEmpleado!)">
             {{ initials(viewedEmployee) }}
           </div>
           <div>
-            <div class="view-name">{{ viewedEmployee.nombre }} {{ viewedEmployee.apellidos }}</div>
+            <div class="view-name">{{ viewedEmployee.Nombre }} {{ viewedEmployee.Apellidos }}</div>
             <div class="view-sub">
-              {{ viewedEmployee.puesto }} · {{ viewedEmployee.departamento }}
+              {{ viewedEmployee.CodigoEmpleado }} · Depto. {{ viewedEmployee.idDepartamento }}
             </div>
           </div>
           <span
             class="status-badge"
-            [class]="'status-badge ' + statusClass(viewedEmployee.estado)"
+            [class]="'status-badge ' + statusClass(viewedEmployee.Estado)"
             style="margin-left: auto"
           >
-            {{ viewedEmployee.estado }}
+            {{ estadoLabel(viewedEmployee.Estado) }}
           </span>
         </div>
         <div class="view-grid">
           <div class="view-field">
-            <div class="view-label">Cédula</div>
-            <div class="view-val">{{ viewedEmployee.cedula }}</div>
+            <div class="view-label">Identificación</div>
+            <div class="view-val">{{ viewedEmployee.Identificacion }}</div>
           </div>
           <div class="view-field">
             <div class="view-label">Teléfono</div>
-            <div class="view-val">{{ viewedEmployee.telefono }}</div>
+            <div class="view-val">{{ viewedEmployee.Telefono }}</div>
           </div>
           <div class="view-field">
             <div class="view-label">Correo</div>
-            <div class="view-val">{{ viewedEmployee.correo }}</div>
+            <div class="view-val">{{ viewedEmployee.Correo }}</div>
           </div>
           <div class="view-field">
             <div class="view-label">Salario</div>
-            <div class="view-val">{{ fmtSalary(viewedEmployee.salario) }}</div>
+            <div class="view-val">{{ fmtSalary(viewedEmployee.Salario) }}</div>
           </div>
           <div class="view-field">
             <div class="view-label">Fecha de ingreso</div>
-            <div class="view-val">{{ fmtDate(viewedEmployee.ingreso) }}</div>
+            <div class="view-val">{{ fmtDate(viewedEmployee.FechaIngreso) }}</div>
           </div>
           <div class="view-field">
-            <div class="view-label">Departamento</div>
-            <div class="view-val">{{ viewedEmployee.departamento }}</div>
+            <div class="view-label">Cuenta bancaria</div>
+            <div class="view-val">{{ viewedEmployee.CuentaBancaria }}</div>
+          </div>
+          <div class="view-field">
+            <div class="view-label">Hora entrada</div>
+            <div class="view-val">{{ viewedEmployee.HoraEntrada }}</div>
+          </div>
+          <div class="view-field">
+            <div class="view-label">Hora salida</div>
+            <div class="view-val">{{ viewedEmployee.HoraSalida }}</div>
           </div>
         </div>
       </div>

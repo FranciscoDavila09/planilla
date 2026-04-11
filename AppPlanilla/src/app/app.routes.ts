@@ -1,64 +1,62 @@
 import { Routes } from '@angular/router';
-import { Empleados } from './empleados/empleados';
-import { Panel } from './panel/panel';
-import { Puestos } from './puestos/puestos';
-import { Asistencia } from './asistencia/asistencia';
-import { Horarios } from './horarios/horarios';
-import { Planilla } from './planilla/planilla';
-import { Pagos } from './pagos/pagos';
-import { Prestamos } from './prestamos/prestamos';
-import { Deducciones } from './deducciones/deducciones';
-import { Contratos } from './contratos/contratos';
-import { Vacaciones } from './vacaciones/vacaciones';
-import { Aguinaldos } from './aguinaldos/aguinaldos';
-import { Usuarios } from './usuarios/usuarios';
-import { Roles } from './roles/roles';
 
 export const routes: Routes = [
-    {
-        path: 'empleados',component:Empleados,
-        
-    },
-    {
-        path: 'panel',component:Panel,
-    },
-    {
-
-        path: 'puestos',component:Puestos,
-    },
-    {
-
-        path: 'asistencia', component: Asistencia,
-    },
-    {
-        path: 'horarios', component: Horarios,
-    },
-    {
-        path: 'planilla', component: Planilla,
-    },
-    {
-        path: 'pagos', component: Pagos,
-    },
-    {
-        path: 'prestamos', component: Prestamos,
-    },
-    {
-        path: 'deducciones', component: Deducciones,
-    },
-    {
-        path: 'contratos', component:Contratos,
-    },
-     {
-        path: 'vacaciones', component:Vacaciones,
-        
-    },
-    {
-       path: 'aguinaldos', component: Aguinaldos,
-    },
-    {
-        path: 'usuarios', component: Usuarios,
-    },
-    {
-        path: 'roles', component: Roles,
-    }
+  {
+    path: 'panel',
+    loadComponent: () => import('./panel/panel').then(m => m.Panel)
+  },
+  {
+    path: 'empleados',
+    loadComponent: () => import('./empleados/empleados').then(m => m.Empleados)
+  },
+  {
+    path: 'puestos',
+    loadComponent: () => import('./puestos/puestos').then(m => m.Puestos)
+  },
+  {
+    path: 'asistencia',
+    loadComponent: () => import('./asistencia/asistencia').then(m => m.Asistencia)
+  },
+  {
+    path: 'horarios',
+    loadComponent: () => import('./horarios/horarios').then(m => m.Horarios)
+  },
+  {
+    path: 'contratos',
+    loadComponent: () => import('./contratos/contratos').then(m => m.Contratos)
+  },
+  {
+    path: 'vacaciones',
+    loadComponent: () => import('./vacaciones/vacaciones').then(m => m.Vacaciones)
+  },
+  {
+    path: 'planilla',
+    loadComponent: () => import('./planilla/planilla').then(m => m.Planilla)
+  },
+  {
+    path: 'pagos',
+    loadComponent: () => import('./pagos/pagos').then(m => m.Pagos)
+  },
+  {
+    path: 'prestamos',
+    loadComponent: () => import('./prestamos/prestamos').then(m => m.Prestamos)
+  },
+  {
+    path: 'deducciones',
+    loadComponent: () => import('./deducciones/deducciones').then(m => m.Deducciones)
+  },
+  {
+    path: 'aguinaldos',
+    loadComponent: () => import('./aguinaldos/aguinaldos').then(m => m.Aguinaldos)
+  },
+  {
+    path: 'usuarios',
+    loadComponent: () => import('./usuarios/usuarios').then(m => m.Usuarios)
+  },
+  {
+    path: 'roles',
+    loadComponent: () => import('./roles/roles').then(m => m.Roles)
+  },
+  { path: '', redirectTo: 'panel', pathMatch: 'full' },
+  { path: '**', redirectTo: 'panel' }
 ];
