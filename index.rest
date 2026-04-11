@@ -1,5 +1,6 @@
 ###
 @BASE_URL = http://localhost
+@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJQYW5jaG8iLCJDb3JyZW8iOiJwYW5jaG9wZXJlekBjb3JyZW8uY29tIiwiaWF0IjoxNzczNDQ1MTc4LCJleHAiOjE3NzM0NDU3Nzh9.7yIknjzDQ6f1hY0Ebt7zQJV7q05UgkSa1byn2jR8TSw
 
 //Parte del empleado 
 // get donde lista todos los empleados
@@ -12,7 +13,7 @@ Origin: {{ BASE_URL }}
 
 /// get donde lista empleado por id*/
 ###
-GET {{ BASE_URL }}/EmpleadoServicio/obtenerPorId?id=201 HTTP/1.1
+GET {{ BASE_URL }}/EmpleadoServicio/obtenerPorId?id=402 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -26,11 +27,11 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
- "CodigoEmpleado": "",
-  "Nombre": "Berny",
-  "Apellidos": "Davila",
+ "CodigoEmpleado": "E202",
+  "Nombre": "Randy",
+  "Apellidos": "Reyes",
   "Identificacion": "1-1111-1111",
-  "Correo": "bernys@correo.com",
+  "Correo": "Randy@correo.com",
   "Telefono": "8888-8888",
   "FechaIngreso": "2026-02-08",
   "Estado": 1,
@@ -55,15 +56,16 @@ Origin: {{ BASE_URL }}
 
 {
 
- "idEmpleado": 201,
-  "CodigoEmpleado": "E001",
-  "Nombre": "Berny",
-  "Apellidos": "Aguilar",
+ "IdEmpleado": 402,
+  
+ "CodigoEmpleado": "E202",
+  "Nombre": "Randy",
+  "Apellidos": "Reyes",
   "Identificacion": "1-1111-1111",
-  "Correo": "bernys@correo.com",
-  "Telefono": "6209-7471",
+  "Correo": "Randy@correo.com",
+  "Telefono": "8888-8888",
   "FechaIngreso": "2026-02-08",
-  "Estado": 1,
+  "Estado": 0,
   "HoraEntrada": "08:00:00",
   "CuentaBancaria": 123456,
   "Salario": 450000,
@@ -75,7 +77,7 @@ Origin: {{ BASE_URL }}
 
 //delete para eliminar un empleado por id
 ###
-DELETE {{ BASE_URL }}/EmpleadoServicio/eliminar?id=405 HTTP/1.1
+DELETE {{ BASE_URL }}/EmpleadoServicio/eliminar?id=402 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -106,6 +108,38 @@ Origin: {{ BASE_URL }}
 
 
 ///Parte del usuario
+
+
+///parte del usuario pero parte del jwt token 
+###
+POST {{ BASE_URL }}/UsuarioServicio/autenticar HTTP/1.1
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "CorreoElectronico": "panchoperez@correo.com",
+  "Clave": "password123"
+}
+
+### VALIDAR TOKEN
+POST {{ BASE_URL }}/UsuarioServicio/validarToken HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+### DESAUTENTICAR
+POST {{ BASE_URL }}/UsuarioServicio/desautenticar HTTP/1.1
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+{
+  "CorreoElectronico": "panchoperez@correo.com"
+}
+
+
+
+
 ###
 GET {{ BASE_URL }}/UsuarioServicio/listarUsuarios HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -115,7 +149,7 @@ Origin: {{ BASE_URL }}
 
 /// get donde lista usuario por id*/
 ###
-GET {{ BASE_URL }}/UsuarioServicio/obtenerPorId?id=20 HTTP/1.1
+GET {{ BASE_URL }}/UsuarioServicio/obtenerPorId?id=22 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -129,13 +163,13 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "Nombre": "Jeeyson",
-  "Apellidos": "Martinez",
+  "Nombre": "Francisco",
+  "Apellidos": "Perez",
   "Estado": 1,
-  "FechaCreacion": "2026-02-08",
-  "Clave": "password123",
-  "Telefono": "8888-8888",
-  "Correo": "bernys@correo.com",
+  "FechaCreacion": "2026-03-10",
+  "Clave": "12345678",
+  "telefono": "8888-8888",
+  "correo": "panchoperez@correo.com",
   "idRol": 1,
   "idDepartamento": 2
 }
@@ -148,26 +182,25 @@ Origin: {{ BASE_URL }}
 
 
 PUT {{ BASE_URL }}/UsuarioServicio/actualizar HTTP/1.1
-Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-    "idUsuario": 20,
-   "Nombre": "Jeeyson",
-  "Apellidos": "Martinez",
+  "idUsuario": 55,
+  "Nombre": "Berny",
+  "Apellidos": "Davila",
   "Estado": 1,
   "FechaCreacion": "2026-02-08",
   "Clave": "password123",
-  "Telefono": "8888-8888",
-  "Correo": "bernys@correo.com",
+  "telefono": "8888-8888",
+  "correo": "bernys@correo.com",
   "idRol": 1,
-  "idDepartamento": 2
+  "idDepartamento": 1
 }
 
 
 
-//delete para eliminar un usuario por id
+//delete para eliminar un usuario por id , este no esta borrando, se debe borrar primero control asistencia
 ###
 DELETE {{ BASE_URL }}/UsuarioServicio/eliminar?id=20 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -204,8 +237,8 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "Nombre": "IT Department",
-  "Descripcion": "Departamento de IT",
+  "Nombre": "Finanzas",
+  "Descripcion": "Departamento de Finanzas",
   "Estado": 1
 }
 
@@ -221,7 +254,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "idDepartamento": 1,
+  "IdDepartamento ": 1,
   "Nombre": "Recursos Humanos",
   "Descripcion": "Departamento de recursos humanos actualizado",
   "Estado": 1
@@ -229,7 +262,7 @@ Origin: {{ BASE_URL }}
 
 
 
-//delete para eliminar un departamento por id
+//delete para eliminar un departamento por id,tambien se debe eliminar primero el usuario que esta asociado a ese departamento, luego eliminar el departamento
 ###
 DELETE {{ BASE_URL }}/DepartamentoServicio/eliminar?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -246,9 +279,9 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 
-/// get donde lista planilla por id*/
+/// get donde lista planilla por id*/ revisar mañana
 ###
-GET {{ BASE_URL }}/PlanillaServicio/obtenerPorId?id=1 HTTP/1.1
+GET {{ BASE_URL }}/PlanillaServicio/obtenerPorId?id=24 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -263,8 +296,10 @@ Origin: {{ BASE_URL }}
 
 {
   "EstadoPlanilla": "Activa",
-  "Idusuario": 1,
-  "Fechacreacion": "2026-02-08"
+  "IdUsuario": 1,
+  "FechaCreacion": "2026-02-08",
+  "idControlHorarios": 1,
+  "idPeriodoPlanilla": 13
 }
 
 
@@ -287,7 +322,7 @@ Origin: {{ BASE_URL }}
 
   
 
-//delete para eliminar una planilla por id
+//delete para eliminar una planilla por id,revisar mañana, se debe eliminar primero el detalle planilla que esta asociado a esa planilla, luego eliminar la planilla
 ###
 DELETE {{ BASE_URL }}/PlanillaServicio/eliminar?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -311,7 +346,7 @@ Origin: {{ BASE_URL }}
 
 /// get donde lista pago por id*/
 ###
-GET {{ BASE_URL }}/PagoServicio/obtenerPorId?id=1 HTTP/1.1
+GET {{ BASE_URL }}/PagoServicio/obtenerPorId?id=2 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -358,8 +393,8 @@ Origin: {{ BASE_URL }}
   "IdUsuarioProcesa": 1,
   "FechaPago": "2026-02-08 10:00:00",
   "Estado": 1,
-  "idFeriados": 1,
-  "idDeduccion": 401
+  "idFeriados": null,
+  "idDeduccion": null
 }
 
 
@@ -398,7 +433,7 @@ Origin: {{ BASE_URL }}
 
 {
   "Fecha": "2026-12-25 00:00:00",
-  "Nombre": "Navidad",
+  "Nombre": "Navi",
   "EsObligatorio": 1
 }
 
@@ -424,7 +459,7 @@ Origin: {{ BASE_URL }}
 
 //delete para eliminar un feriado por id
 ###
-DELETE {{ BASE_URL }}/FeriadoServicio/eliminar?id=1 HTTP/1.1
+DELETE {{ BASE_URL }}/FeriadoServicio/eliminar?id=14 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -449,7 +484,7 @@ Origin: {{ BASE_URL }}
 
 /// get donde lista aguinaldo por id*/
 ###
-GET {{ BASE_URL }}/AguinaldosServicio/obtenerPorId?id=1 HTTP/1.1
+GET {{ BASE_URL }}/AguinaldosServicio/obtenerPorId?id=201 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -463,7 +498,7 @@ Origin: {{ BASE_URL }}
 
 {
   "IdEmpleado": 201,
-  "Periodo": "2026",
+  "Periodo": 2026,
   "MontoCalculado": 450000.00,
   "FechaPago": "2026-02-08",
   "idUsuario": 1,
@@ -478,9 +513,9 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "IdAguinaldo": 1,
+  "IdAguinaldo": 201,
   "IdEmpleado": 201,
-  "Periodo": "2026",
+  "Periodo": 2026,
   "MontoCalculado": 550000.00,
   "FechaPago": "2026-02-08",
   "idUsuario": 1,
@@ -489,7 +524,7 @@ Origin: {{ BASE_URL }}
 
 //delete para eliminar un aguinaldo por id
 ### 
-DELETE {{ BASE_URL }}/AguinaldosServicio/eliminar?id=1 HTTP/1.1
+DELETE {{ BASE_URL }}/AguinaldosServicio/eliminar?id=201 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -508,7 +543,7 @@ Origin: {{ BASE_URL }}
 
 /// get donde lista contrato por id*/
 ###
-GET {{ BASE_URL }}/ContratoServicio/obtenerPorId?id=1 HTTP/1.1
+GET {{ BASE_URL }}/ContratoServicio/obtenerPorId?id=2 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -520,14 +555,17 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+
 {
   "IdEmpleado": 201,
   "TipoContrato": "Indefinido",
   "FechaInicio": "2026-02-01",
   "FechaFin": null,
-  "Salario": 450000.00,
-  "Estado": 1
+  "SalarioPactado": 450000.00,
+  "Estado": 1,
+  "usuarioId": 1
 }
+
 
 //put para actualizar un contrato por id
 ###
@@ -537,18 +575,19 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "IdContrato": 1,
+  "IdContrato": 262,
   "IdEmpleado": 201,
   "TipoContrato": "Plazo fijo",
   "FechaInicio": "2026-02-01",
   "FechaFin": "2027-02-01",
-  "Salario": 500000.00,
-  "Estado": 1
+  "SalarioPactado": 500000.00,
+  "Estado": 1,
+  "usuarioId": 1
 }
 
 //delete para eliminar un contrato por id
 ### 
-DELETE {{ BASE_URL }}/ContratoServicio/eliminar?id=1 HTTP/1.1
+DELETE {{ BASE_URL }}/ContratoServicio/eliminar?id=2 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -565,7 +604,7 @@ Origin: {{ BASE_URL }}
 
 /// get donde lista prestamo por id*/
 ###
-GET {{ BASE_URL }}/PrestamoServicio/obtenerPorId?id=1 HTTP/1.1
+GET {{ BASE_URL }}/PrestamoServicio/obtenerPorId?id=2 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -585,7 +624,7 @@ Origin: {{ BASE_URL }}
   "MontoPorCuota": 83333.33,
   "SaldoPendiente": 1000000,
   "FechaInicio": "2026-02-10",
-  "Estado": "1",
+  "Estado": 1,
   "IdUsuario": 1
 }
 
@@ -602,14 +641,14 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "IdPrestamo": 1,
+  "IdPrestamo": 2,
   "IdEmpleado": 201,
   "MontoTotal": 1000000,
   "Cuotas": 12,
   "MontoPorCuota": 83333.33,
   "SaldoPendiente": 500000,
   "FechaInicio": "2026-02-10",
-  "Estado": "1",
+  "Estado": 1,
   "IdUsuario": 1
 }
 
@@ -617,7 +656,7 @@ Origin: {{ BASE_URL }}
 
 //delete para eliminar un prestamo por id
 ###
-DELETE {{ BASE_URL }}/PrestamoServicio/eliminar?id=1 HTTP/1.1
+DELETE {{ BASE_URL }}/PrestamoServicio/eliminar?id=2 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -633,7 +672,7 @@ Origin: {{ BASE_URL }}
 
 /// get donde lista detalleplanilla por id*/
 ###
-GET {{ BASE_URL }}/DetalleplanillaServicio/obtenerPorId?id=1 HTTP/1.1
+GET {{ BASE_URL }}/DetalleplanillaServicio/obtenerPorId?id=2 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -648,15 +687,13 @@ Origin: {{ BASE_URL }}
 
 {
   "SalarioBase": 450000,
-  "HorasExtra": "02:30:00",
-  "Deducciones": 50000,
-  "Bono": 25000,
   "TotalDeducciones": 50000,
   "SalarioNeto": 425000,
   "SalarioBruto": 475000,
-  "idPlanilla": 1
+  "idPlanilla": 1,
+  "idDeducciones": 601,
+  "idTipoIngreso": 1
 }
-
 
 
 
@@ -670,22 +707,21 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "idDetallePlanilla": 1,
+  "idDetallePlanilla": 202,
   "SalarioBase": 450000,
-  "HorasExtra": "03:00:00",
-  "Deducciones": 50000,
-  "Bono": 30000,
   "TotalDeducciones": 50000,
   "SalarioNeto": 430000,
   "SalarioBruto": 480000,
-  "idPlanilla": 1
+  "idPlanilla": 1,
+  "idDeducciones": 601,
+  "idTipoIngreso": 1
 }
 
 
 
 //delete para eliminar un detalleplanilla por id
 ###
-DELETE {{ BASE_URL }}/DetalleplanillaServicio/eliminar?id=1 HTTP/1.1
+DELETE {{ BASE_URL }}/DetalleplanillaServicio/eliminar?id=2 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -703,7 +739,7 @@ Origin: {{ BASE_URL }}
 
  // get donde lista controlAsistencia por id*/
 ###
-GET {{ BASE_URL }}/ControlAsistenciaServicio/obtenerPorId?id=1 HTTP/1.1
+GET {{ BASE_URL }}/ControlAsistenciaServicio/obtenerPorId?id=3 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -716,10 +752,9 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
- 
   "HoraEntrada": "08:00:00",
   "HoraSalida": "17:00:00",
-  "IdEmpleado": 201,
+  "idEmpleados": 201,
   "idUsuarios": 1
 }
 
@@ -731,16 +766,16 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "IdControlAsistencia": 1,
+  "idControlAsistencia": 204,
   "HoraEntrada": "08:30:00",
   "HoraSalida": "17:30:00",
-  "IdEmpleado": 202,
+  "idEmpleados": 202,
   "idUsuarios": 1
 }
 
 //delete para eliminar un controlAsistencia por id
 ###
-DELETE {{ BASE_URL }}/ControlAsistenciaServicio/eliminar?id=1 HTTP/1.1
+DELETE {{ BASE_URL }}/ControlAsistenciaServicio/eliminar?id=204 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -793,7 +828,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "IdControl": 2,
+  "IdControl": 1,
   "IdEmpleado": 201,
   "Fecha": "2024-01-01",
   "HoraEntrada": "08:30:00",
@@ -826,7 +861,7 @@ Origin: {{ BASE_URL }}
 
  // get donde lista deducciones por id*/
 ###
-GET {{ BASE_URL }}/DeduccionesServicio/obtenerPorId?id=1 HTTP/1.1
+GET {{ BASE_URL }}/DeduccionesServicio/obtenerPorId?id=401 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -841,12 +876,11 @@ Origin: {{ BASE_URL }}
 {
   "Nombre": "Seguro social",
   "Monto": 50000.00,
-  "Impuesto": 0.00,
+  "Impuestos": 0.00,
   "Estado": 1,
   "idEmpleado": 201,
   "usuariosId": 1,
   "idPrestamo": null
-  
 }
 
 //put para actualizar un deducciones por id
@@ -860,7 +894,7 @@ Origin: {{ BASE_URL }}
   "idDeducciones": 601,
   "Nombre": "Seguro social actualizado",
   "Monto": 60000.00,
-  "Impuesto": 0.00,
+  "Impuestos": 0.00,
   "Estado": 1,
   "idEmpleado": 201,
   "usuariosId": 1,
@@ -886,9 +920,9 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
- // get donde lista historialSalarios por id*/
+ // get donde lista historialSalarios por id
 ###
-GET {{ BASE_URL }}/HistorialSalarioServicio/obtenerPorId?id=1 HTTP/1.1
+GET {{ BASE_URL }}/HistorialSalarioServicio/obtenerPorId?id=22HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -934,7 +968,7 @@ Origin: {{ BASE_URL }}
 
 //delete para eliminar un historialSalarios por id
 ###
-DELETE {{ BASE_URL }}/HistorialSalarioServicio/eliminar?id=1 HTTP/1.1
+DELETE {{ BASE_URL }}/HistorialSalarioServicio/eliminar?id=22 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -950,7 +984,7 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
- // get donde lista licencias por id*/  
+ // get donde lista licencias por id
 ###
 GET {{ BASE_URL }}/LicenciaServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -1057,7 +1091,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 
-/// get donde lista puestos por id*/
+/// get donde lista puestos por id
 ###
 GET {{ BASE_URL }}/PuestosServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -1097,7 +1131,7 @@ Origin: {{ BASE_URL }}
   "IdPuestos": 1,
   "NombrePuesto": "Desarrollador Senior",
   "Descripcion": "Responsable senior del desarrollo de software",
-  "SalariosBase": 850000,
+  "SalarioBase": 850000,
   "Estado": 1,
   "idEmpleado": 201,
   "idUsuario": 1
@@ -1124,7 +1158,7 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
-/// get donde lista roles por id*/
+/// get donde lista roles por id
 ### 
 GET {{ BASE_URL }}/RolesServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -1139,7 +1173,7 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "Nombre": "Administrador",
+  "Nombre": "Gerente",
   "Descripcion": "Acceso completo al sistema",
   "Estado": 1
 }
@@ -1160,7 +1194,7 @@ Origin: {{ BASE_URL }}
 
 //delete para eliminar un rol por id
 ### 
-DELETE {{ BASE_URL }}/RolesServicio/eliminar?id=1 HTTP/1.1
+DELETE {{ BASE_URL }}/RolesServicio/eliminar?id=4 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
@@ -1177,7 +1211,7 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
-/// get donde lista tipoIngreso por id*/
+/// get donde lista tipoIngreso por id
 ###
 GET {{ BASE_URL }}/TipoIngresoServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
@@ -1235,7 +1269,7 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
- // get donde lista vacaciones por id*/
+ // get donde lista vacaciones por id
 ###
 GET {{ BASE_URL }}/VacacionesServicio/obtenerPorId?id=1 HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}

@@ -56,7 +56,7 @@ const sql = `
   UPDATE dbplanilla.empleados
       SET CodigoEmpleado = ?, Nombre = ?, Apellidos = ?, Identificacion = ?, Correo = ?, Telefono = ?,
           FechaIngreso = ?, Estado = ?, HoraEntrada = ?, CuentaBancaria = ?, Salario = ?, idDepartamento = ?, HoraSalida = ?
-      WHERE idEmpleado = ?
+      WHERE IdEmpleado = ?
 
 `;
 
@@ -75,7 +75,7 @@ datos.CuentaBancaria,
 datos.Salario,
 datos.idDepartamento,
 datos.HoraSalida,
-datos.idEmpleado
+datos.IdEmpleado
 ];
 
 return await ejecutarConsulta(sql, parametros);

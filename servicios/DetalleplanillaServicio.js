@@ -13,25 +13,25 @@ class DetalleplanillaServicio {
       [id]);
   }
 
-  async insertar(datos) {
-    const sql = `
+async insertar(datos) {
+  const sql = `
     INSERT INTO dbplanilla.detalleplanilla
-(SalarioBase, TotalDeducciones, SalarioNeto,, SalarioBruto, idPlanilla, idDeducciones, idTipoIngreso) VALUES 
-(?, ?, ?, ?, ?, ?, ?)
-    `;
+    (SalarioBase, TotalDeducciones, SalarioNeto, SalarioBruto, idPlanilla, idDeducciones, idTipoIngreso)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
 
-    const parametros = [
-      datos.SalarioBase,
-      datos.TotalDeducciones,
-      datos.SalarioNeto,
-      datos.SalarioBruto,
-      datos.idPlanilla,
-      datos.idDeducciones,
-      datos.idTipoIngreso
-    ];
+  const parametros = [
+    datos.SalarioBase,
+    datos.TotalDeducciones,
+    datos.SalarioNeto,
+    datos.SalarioBruto,
+    datos.idPlanilla,
+    datos.idDeducciones,
+    datos.idTipoIngreso
+  ];
 
-    return await ejecutarConsulta(sql, parametros);
-  }
+  return await ejecutarConsulta(sql, parametros);
+}
 
   async actualizar(datos) {
     const sql = `

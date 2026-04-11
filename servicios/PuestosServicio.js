@@ -37,7 +37,7 @@ class PuestosServicio {
     const sql = `
   UPDATE dbplanilla.puestos
       SET NombrePuesto = ?, Descripcion = ?, SalarioBase = ?, Estado = ?, idEmpleado = ?, idUsuario = ?
-      WHERE IdPuestos = ?
+      WHERE idPuestos = ?
 `;
 
     const parametros = [
@@ -47,7 +47,7 @@ class PuestosServicio {
       datos.Estado,
       datos.idEmpleado,
       datos.idUsuario,
-      datos.IdPuestos,
+      datos.idPuestos,
     ];
 
     return await ejecutarConsulta(sql, parametros);

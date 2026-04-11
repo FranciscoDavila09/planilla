@@ -14,8 +14,20 @@
   "author": "Berny Francisco Dávila Aguilar Jeeyson Martínez Zeledón",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.16.3",
     "nodemon": "^3.1.11"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FranciscoDavila09/planilla.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FranciscoDavila09/planilla/issues"
+  },
+  "homepage": "https://github.com/FranciscoDavila09/planilla#readme"
 }

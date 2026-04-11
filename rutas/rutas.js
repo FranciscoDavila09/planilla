@@ -63,6 +63,9 @@ const rutasDelTipoIngresos = require("./TipoIngresoServicio.js");
 // para asignar las rutas de vacaciones
 const rutasDelVacaciones = require("./VacacionesServicio.js");
 
+//para asignar las rutas de auditoria
+const rutasDelAuditoria = require("./AuditoriaServicio.js");
+
 function asignarRutasAExpress(app) {
   app.use("/Servicio1", rutasDelServicio1);
   app.use("/EmpleadoServicio", rutasDelEmpleado);
@@ -85,6 +88,7 @@ function asignarRutasAExpress(app) {
   app.use("/RolesServicio", rutasDelRoles);
   app.use("/TipoIngresoServicio", rutasDelTipoIngresos);
   app.use("/VacacionesServicio", rutasDelVacaciones);
+  app.use("/AuditoriaServicio", rutasDelAuditoria);
 }
 
 module.exports = asignarRutasAExpress;

@@ -1,20 +1,22 @@
-const {ejecutarConsulta} = require('../db.js');
+const { ejecutarConsulta } = require("../db.js");
 
 class ControlAsistenciaServicio {
+  constructor() {}
 
-  constructor() { };
-
-    async listarControlAsistencia() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`controlasistencia`");
+  async listarControlAsistencia() {
+    return await ejecutarConsulta(
+      "SELECT * FROM `dbplanilla`.`controlasistencia`",
+    );
   }
 
-    async obtenerPorId(id) {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`controlasistencia` WHERE `idControlAsistencia` = ?",
-      [id]);
+  async obtenerPorId(id) {
+    return await ejecutarConsulta(
+      "SELECT * FROM `dbplanilla`.`controlasistencia` WHERE `idControlAsistencia` = ?",
+      [id],
+    );
   }
 
-
-    async insertar(datos) {
+  async insertar(datos) {
     const sql = `
     INSERT INTO dbplanilla.controlasistencia
 (HoraEntrada, HoraSalida, idEmpleados, idUsuarios) VALUES 
@@ -24,33 +26,33 @@ class ControlAsistenciaServicio {
       datos.HoraEntrada,
       datos.HoraSalida,
       datos.idEmpleados,
-      datos.idUsuarios
+      datos.idUsuarios,
     ];
     return await ejecutarConsulta(sql, parametros);
-}
+  }
 
- async actualizar(datos) {
+  async actualizar(datos) {
     const sql = `
   UPDATE dbplanilla.controlasistencia
       SET HoraEntrada = ?, HoraSalida = ?, idEmpleados = ?, idUsuarios = ?
       WHERE idControlAsistencia = ?
 `;
-const parametros = [    
-        datos.HoraEntrada,
-        datos.HoraSalida,
-        datos.idEmpleados,
-        datos.idUsuarios,
-        datos.idControlAsistencia
+    const parametros = [
+      datos.HoraEntrada,
+      datos.HoraSalida,
+      datos.idEmpleados,
+      datos.idUsuarios,
+      datos.idControlAsistencia,
     ];
     return await ejecutarConsulta(sql, parametros);
-}
-
-async eliminar(id) {
-    return await ejecutarConsulta("DELETE FROM dbplanilla.controlasistencia WHERE idControlAsistencia = ?",
-         [id]);
-}
-
-
   }
 
-  module.exports =  new ControlAsistenciaServicio();
+  async eliminar(id) {
+    return await ejecutarConsulta(
+      "DELETE FROM dbplanilla.controlasistencia WHERE idUsuarios =?",
+      [id],
+    );
+  }
+}
+
+module.exports = new ControlAsistenciaServicio();
