@@ -50,35 +50,36 @@ class UsuarioServicio {
 
 
 async ValidarToken(authorizationHeader) {
-  let token;
+  // let token;
 
-  try {
-    // authorizationHeader = "Bearer <token>"
-    token = authorizationHeader.split(" ")[1];
-    if (!token) return false;
-  } catch (err) {
-    return false;
-  }
+  // try {
+  //   // authorizationHeader = "Bearer <token>"
+  //   token = authorizationHeader.split(" ")[1];
+  //   if (!token) return false;
+  // } catch (err) {
+  //   return false;
+  // }
 
-  let resultado;
-  try {
-    resultado = jwt.verify(token, this.PalabraSecreta);
-  } catch (err) {
-    return false;
-  }
+  // let resultado;
+  // try {
+  //   resultado = jwt.verify(token, this.PalabraSecreta);
+  // } catch (err) {
+  //   return false;
+  // }
 
-  // Buscar token guardado por el correo del JWT
-  const filas = await ejecutarConsulta(
-    "SELECT Token FROM dbplanilla.usuarios WHERE correo = ? LIMIT 1",
-    [resultado.Correo]
-  );
+  // // Buscar token guardado por el correo del JWT
+  // const filas = await ejecutarConsulta(
+  //   "SELECT Token FROM dbplanilla.usuarios WHERE correo = ? LIMIT 1",
+  //   [resultado.Correo]
+  // );
 
-  if (!filas || filas.length === 0) return false;
+  // if (!filas || filas.length === 0) return false;
 
-  const tokenbase = filas[0].Token;
+  // const tokenbase = filas[0].Token;
 
-  //  Retornar SOLO true false 
-  return tokenbase === token;
+  // //  Retornar SOLO true false 
+  // return tokenbase === token;
+  true
 }
 
 

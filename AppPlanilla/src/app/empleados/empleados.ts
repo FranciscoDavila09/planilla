@@ -1,4 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
+
+import { HttpClient } from '@angular/common/http';
+
 import { FormsModule } from '@angular/forms';
 
 interface Empleado {
@@ -18,7 +21,7 @@ interface Empleado {
 @Component({
   selector: 'app-empleados',
   standalone: true,
-  imports: [FormsModule],   // FormsModule cubre ngModel; @if/@for son built-in (no necesitan CommonModule)
+  imports: [FormsModule],   
   templateUrl: './empleados.html',
   styleUrl: './empleados.css',
 })

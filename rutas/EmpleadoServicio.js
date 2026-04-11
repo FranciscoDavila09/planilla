@@ -3,7 +3,7 @@ const express = require('express');
 const Router = express.Router();
 
 const EmpleadoServicio = require('../servicios/EmpleadoServicio.js');
-const { route } = require('./Servicio1.js');
+const { route } = require('./servicios/UsuarioServicio.js');
 
 
 Router.get('/listarEmpleados', async (solicitud, respuesta, next) => {
