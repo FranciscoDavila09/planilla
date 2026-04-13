@@ -11,7 +11,7 @@ class PlanillaServicio {
 
   async obtenerPorId(id) {
     return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`planillas` WHERE `idPlanilla` = ?",
+      "SELECT * FROM `dbplanilla`.`planillas` WHERE `idPlanillas` = ?",
       [id],
     );
   }

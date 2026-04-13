@@ -1,1 +1,429 @@
-<p>asistencia works!</p>
+<!-- ── PAGE HEADER ── -->
+<div class="page-header">
+  <div>
+    <div class="page-title">Control de <span>Asistencia</span></div>
+    <div class="page-sub">Registro y seguimiento de entradas y salidas</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" (click)="openModal('manual')">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      Registro manual
+    </button>
+    <button class="btn btn-primary" (click)="marcarEntrada()">
+      <svg viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
+        <path d="M8 5v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+      </svg>
+      Marcar entrada/salida
+    </button>
+  </div>
+</div>
+
+<!-- ── STATS ── -->
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path
+          d="M3 8l3.5 3.5L13 4"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+    <div>
+      <div class="stat-num">{{ countByEstado('Presente') }}</div>
+      <div class="stat-label">Presentes hoy</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path
+          d="M4 4l8 8M12 4l-8 8"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+      </svg>
+    </div>
+    <div>
+      <div class="stat-num">{{ countByEstado('Ausente') }}</div>
+      <div class="stat-label">Ausentes</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber">
+      <svg viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
+        <path d="M8 5v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+      </svg>
+    </div>
+    <div>
+      <div class="stat-num">{{ countByEstado('Tardanza') }}</div>
+      <div class="stat-label">Tardanzas</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <svg viewBox="0 0 16 16" fill="none">
+        <rect
+          x="2"
+          y="3"
+          width="12"
+          height="11"
+          rx="1.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+        />
+        <path
+          d="M5 1v4M11 1v4M2 7h12"
+          stroke="currentColor"
+          stroke-width="1.2"
+          stroke-linecap="round"
+        />
+      </svg>
+    </div>
+    <div>
+      <div class="stat-num">{{ getPorcentaje() }}%</div>
+      <div class="stat-label">Asistencia hoy</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOOLBAR ── -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg viewBox="0 0 16 16" fill="none">
+      <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.5" />
+      <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+    </svg>
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar empleado…"
+      [(ngModel)]="searchQuery"
+      (input)="filterTable()"
+    />
+  </div>
+  <input class="filter-date" type="date" [(ngModel)]="fechaFiltro" (change)="filterTable()" />
+  <select class="filter-select" [(ngModel)]="estadoFiltro" (change)="filterTable()">
+    <option value="">Todos los estados</option>
+    <option value="Presente">Presente</option>
+    <option value="Ausente">Ausente</option>
+    <option value="Tardanza">Tardanza</option>
+    <option value="Permiso">Permiso</option>
+  </select>
+</div>
+
+<!-- ── TABLE ── -->
+<div class="table-card">
+  <div class="table-card-header">
+    <div class="table-card-title">Registro de asistencia</div>
+    <span class="badge badge-total">
+      {{ filteredRegistros.length }} registro{{ filteredRegistros.length !== 1 ? 's' : '' }}
+    </span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Empleado</th>
+        <th>Fecha</th>
+        <th>Hora entrada</th>
+        <th>Hora salida</th>
+        <th>Horas trabajadas</th>
+        <th>Estado</th>
+        <th>Registrado por</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of pageSlice; track r.idControlAsistencia) {
+        <tr>
+          <td>
+            <div class="emp-cell">
+              <div class="emp-avatar" [class]="colorFor(r.idEmpleados)">
+                {{ inicialesNombre(r.nombreEmpleado) }}
+              </div>
+              <div>
+                <div class="emp-name">{{ r.nombreEmpleado }}</div>
+                <div class="emp-id">ID {{ r.idEmpleados }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ fmtFecha(r.fecha) }}</td>
+          <td>
+            <span class="time-chip entrada">{{ r.horaEntrada || '—' }}</span>
+          </td>
+          <td>
+            <span class="time-chip salida">{{ r.horaSalida || '—' }}</span>
+          </td>
+          <td>{{ calcularHoras(r.horaEntrada, r.horaSalida) }}</td>
+          <td>
+            <span class="status-badge" [class]="'status-badge ' + estadoClass(r.estado)">
+              {{ r.estado }}
+            </span>
+          </td>
+          <td>
+            <span class="reg-tipo" [class]="r.idUsuarios ? 'reg-admin' : 'reg-auto'">
+              {{ r.idUsuarios ? 'Admin' : 'Empleado' }}
+            </span>
+          </td>
+          <td>
+            <div class="actions">
+              <div class="icon-btn edit" title="Editar" (click)="openModal('edit', r)">
+                <svg viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M11 2l3 3-8 8H3v-3l8-8z"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+              <div
+                class="icon-btn delete"
+                title="Eliminar"
+                (click)="askDelete(r.idControlAsistencia)"
+              >
+                <svg viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+          </td>
+        </tr>
+      }
+      @if (pageSlice.length === 0) {
+        <tr>
+          <td colspan="8" class="empty-row">No se encontraron registros</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <!-- PAGINACIÓN -->
+  <div class="pagination">
+    <div class="page-info">
+      Mostrando {{ filteredRegistros.length ? (currentPage - 1) * perPage + 1 : 0 }}–{{
+        min(currentPage * perPage, filteredRegistros.length)
+      }}
+      de {{ filteredRegistros.length }}
+    </div>
+    <div class="page-btns">
+      <div class="page-btn" (click)="changePage(-1)">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            d="M10 4l-4 4 4 4"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      @for (p of totalPages; track p) {
+        <div class="page-btn" [class.active]="p === currentPage" (click)="goPage(p)">{{ p }}</div>
+      }
+      <div class="page-btn" (click)="changePage(1)">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            d="M6 4l4 4-4 4"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MODAL REGISTRO MANUAL / EDITAR
+══════════════════════════════════ -->
+<div class="modal-overlay" [class.open]="showFormModal" (click)="onOverlayClick($event, 'form')">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">{{ editId ? 'Editar registro' : 'Registro manual' }}</div>
+      <button class="modal-close" (click)="showFormModal = false">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            d="M4 4l8 8M12 4l-8 8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Empleado</label>
+          <select class="form-select" [(ngModel)]="form.idEmpleados" (change)="onEmpleadoChange()">
+            <option value="">Seleccionar empleado…</option>
+            @for (e of empleados; track e.id) {
+              <option [value]="e.id">{{ e.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha</label>
+          <input class="form-input" type="date" [(ngModel)]="form.fecha" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-select" [(ngModel)]="form.estado">
+            <option value="Presente">Presente</option>
+            <option value="Ausente">Ausente</option>
+            <option value="Tardanza">Tardanza</option>
+            <option value="Permiso">Permiso</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Hora de entrada</label>
+          <input class="form-input" type="time" [(ngModel)]="form.horaEntrada" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora de salida</label>
+          <input class="form-input" type="time" [(ngModel)]="form.horaSalida" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Observación</label>
+          <input class="form-input" [(ngModel)]="form.observacion" placeholder="Opcional…" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="showFormModal = false">Cancelar</button>
+      <button class="btn btn-primary" (click)="saveRegistro()">Guardar registro</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MODAL MARCAR ENTRADA/SALIDA
+══════════════════════════════════ -->
+<div class="modal-overlay" [class.open]="showMarcaModal" (click)="onOverlayClick($event, 'marca')">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Marcar asistencia</div>
+      <button class="modal-close" (click)="showMarcaModal = false">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            d="M4 4l8 8M12 4l-8 8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="clock-display">
+        <div class="clock-time">{{ horaActual }}</div>
+        <div class="clock-date">{{ fechaActual }}</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Empleado</label>
+          <select class="form-select" [(ngModel)]="marcaEmpleadoId">
+            <option value="">Seleccionar empleado…</option>
+            @for (e of empleados; track e.id) {
+              <option [value]="e.id">{{ e.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="marca-btns">
+        <button class="btn-marca entrada" (click)="registrarMarca('entrada')">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path
+              d="M8 3v10M3 8h10"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+          Marcar entrada
+        </button>
+        <button class="btn-marca salida" (click)="registrarMarca('salida')">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path
+              d="M3 8h10M10 5l3 3-3 3"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Marcar salida
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MODAL CONFIRMAR ELIMINAR
+══════════════════════════════════ -->
+<div
+  class="modal-overlay"
+  [class.open]="showDeleteModal"
+  (click)="onOverlayClick($event, 'delete')"
+>
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Confirmar eliminación</div>
+      <button class="modal-close" (click)="showDeleteModal = false">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            d="M4 4l8 8M12 4l-8 8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+    </div>
+    <div class="confirm-body">
+      <div class="confirm-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path
+            d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <div class="confirm-title">¿Eliminar registro?</div>
+      <div class="confirm-desc">
+        Esta acción no se puede deshacer. El registro de asistencia será eliminado permanentemente.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancelar</button>
+      <button class="btn btn-danger" (click)="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>

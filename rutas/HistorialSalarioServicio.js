@@ -4,6 +4,9 @@ const Router = express.Router();
 
 const HistorialSalarioServicio = require('../servicios/HistorialSalarioServicio.js');
 
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
+
+
 Router.get('/listarHistorialSalario', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
     try {

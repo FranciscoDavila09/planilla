@@ -692,7 +692,8 @@ Origin: {{ BASE_URL }}
   "SalarioBruto": 475000,
   "idPlanilla": 1,
   "idDeducciones": 601,
-  "idTipoIngreso": 1
+  "idTipoIngreso": 1,
+  "idEmpleado": 201
 }
 
 

@@ -1,4 +1,3 @@
-<!-- ── PAGE HEADER ── -->
 <div class="page-header">
   <div class="page-title">Gestión de <span>Planillas</span></div>
   <button class="btn btn-primary" (click)="openModal('create')">
@@ -9,7 +8,6 @@
   </button>
 </div>
 
-<!-- ── STATS ── -->
 <div class="stats">
   <div class="stat-card">
     <div class="stat-icon red">
@@ -19,10 +17,11 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ planillas.length }}</div>
+      <div class="stat-num">{{ planillas().length }}</div>
       <div class="stat-label">Total planillas</div>
     </div>
   </div>
+
   <div class="stat-card">
     <div class="stat-icon green">
       <svg viewBox="0 0 16 16" fill="none">
@@ -34,6 +33,7 @@
       <div class="stat-label">Pagadas</div>
     </div>
   </div>
+
   <div class="stat-card">
     <div class="stat-icon blue">
       <svg viewBox="0 0 16 16" fill="none">
@@ -46,6 +46,7 @@
       <div class="stat-label">Abiertas</div>
     </div>
   </div>
+
   <div class="stat-card">
     <div class="stat-icon amber">
       <svg viewBox="0 0 16 16" fill="none">
@@ -60,7 +61,6 @@
   </div>
 </div>
 
-<!-- ── TOOLBAR ── -->
 <div class="toolbar">
   <div class="search-wrap">
     <svg viewBox="0 0 16 16" fill="none">
@@ -75,6 +75,7 @@
       (input)="filterTable()"
     />
   </div>
+
   <select class="filter-select" [(ngModel)]="statusFilter" (change)="filterTable()">
     <option value="">Todos los estados</option>
     <option value="Abierta">Abierta</option>
@@ -83,14 +84,15 @@
     <option value="Pagada">Pagada</option>
     <option value="Anulada">Anulada</option>
   </select>
+
   <select class="filter-select" [(ngModel)]="yearFilter" (change)="filterTable()">
     <option value="">Todos los años</option>
+    <option value="2026">2026</option>
     <option value="2025">2025</option>
     <option value="2024">2024</option>
   </select>
 </div>
 
-<!-- ── TABLE ── -->
 <div class="table-card">
   <div class="table-card-header">
     <div class="table-card-title">Registro de planillas</div>
@@ -98,16 +100,15 @@
       {{ filteredPlanillas.length }} planilla{{ filteredPlanillas.length !== 1 ? 's' : '' }}
     </span>
   </div>
+
   <table>
     <thead>
       <tr>
         <th>ID</th>
         <th>Período</th>
         <th>Fecha creación</th>
+        <th>Usuario</th>
         <th>Control horarios</th>
-        <th>ID Período</th>
-        <th>Empleados</th>
-        <th>Monto total</th>
         <th>Estado</th>
         <th></th>
       </tr>
@@ -116,21 +117,16 @@
       @for (p of pageSlice; track p.idPlanillas) {
         <tr>
           <td><span class="id-chip">#{{ p.idPlanillas }}</span></td>
-          <td><span class="periodo-chip">{{ p.descPeriodo }}</span></td>
-          <td>{{ fmtDate(p.FechaCreacion) }}</td>
-          <td class="col-muted">{{ p.idControlHorarios }}</td>
-          <td class="col-muted">{{ p.idPeriodoPlanilla }}</td>
           <td>
-            <span class="empleados-num">{{ p.empleados }}</span>
-            <span class="col-muted"> emp.</span>
-          </td>
-          <td>
-            @if (p.montoTotal) {
-              <span class="monto-chip">₡{{ fmtNum(p.montoTotal) }}</span>
+            @if (p.descPeriodo) {
+              <span class="periodo-chip">{{ p.descPeriodo }}</span>
             } @else {
-              <span class="col-muted" style="font-size:12px">Sin calcular</span>
+              <span class="col-muted">Período #{{ p.idPeriodoPlanilla }}</span>
             }
           </td>
+          <td class="col-muted">{{ fmtDate(p.FechaCreacion) }}</td>
+          <td class="col-muted">#{{ p.IdUsuario }}</td>
+          <td class="col-muted">#{{ p.idControlHorarios }}</td>
           <td>
             <span class="status-badge" [class]="statusClass(p.EstadoPlanilla)">
               {{ p.EstadoPlanilla }}
@@ -151,22 +147,23 @@
               </div>
               <div class="icon-btn delete" title="Eliminar" (click)="askDelete(p.idPlanillas)">
                 <svg viewBox="0 0 16 16" fill="none">
-                  <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9"
+                    stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </div>
             </div>
           </td>
         </tr>
       }
+
       @if (pageSlice.length === 0) {
         <tr>
-          <td colspan="9" class="empty-row">No se encontraron planillas</td>
+          <td colspan="7" class="empty-row">No se encontraron planillas</td>
         </tr>
       }
     </tbody>
   </table>
 
-  <!-- PAGINACIÓN -->
   <div class="pagination">
     <div class="page-info">
       Mostrando {{ filteredPlanillas.length ? (currentPage - 1) * perPage + 1 : 0 }}–{{
@@ -174,15 +171,18 @@
       }}
       de {{ filteredPlanillas.length }}
     </div>
+
     <div class="page-btns">
       <div class="page-btn" (click)="changePage(-1)">
         <svg viewBox="0 0 16 16" fill="none">
           <path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </div>
+
       @for (pg of totalPages; track pg) {
         <div class="page-btn" [class.active]="pg === currentPage" (click)="goPage(pg)">{{ pg }}</div>
       }
+
       <div class="page-btn" (click)="changePage(1)">
         <svg viewBox="0 0 16 16" fill="none">
           <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -192,9 +192,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MODAL CREAR / EDITAR  (sin cambios)
-══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showFormModal" (click)="onOverlayClick($event, 'form')">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -205,50 +202,53 @@
         </svg>
       </button>
     </div>
+
     <div class="modal-body">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Estado</label>
           <select class="form-select" [(ngModel)]="form.EstadoPlanilla">
-            <option value="Abierta">Abierta</option>
-            <option value="En revisión">En revisión</option>
-            <option value="Cerrada">Cerrada</option>
-            <option value="Pagada">Pagada</option>
-            <option value="Anulada">Anulada</option>
+          <option value="Activa">Activa</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Cerrada">Cerrada</option>
+          <option value="Procesada">Procesada</option>
           </select>
         </div>
+
         <div class="form-group">
           <label class="form-label">Fecha de creación</label>
           <input class="form-input" type="date" [(ngModel)]="form.FechaCreacion" />
         </div>
       </div>
+
       <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ID Usuario</label>
+          <input class="form-input" type="number" [(ngModel)]="form.IdUsuario" placeholder="Ej. 1" />
+        </div>
+
         <div class="form-group">
           <label class="form-label">ID Control de horarios</label>
-          <input class="form-input" type="number" [(ngModel)]="form.idControlHorarios" placeholder="Ej. 1001" />
+          <input class="form-input" type="number" [(ngModel)]="form.idControlHorarios" placeholder="Ej. 1" />
         </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <label class="form-label">ID Período de planilla</label>
-          <input class="form-input" type="number" [(ngModel)]="form.idPeriodoPlanilla" placeholder="Ej. 5" />
+          <input class="form-input" type="number" [(ngModel)]="form.idPeriodoPlanilla" placeholder="Ej. 13" />
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Descripción del período</label>
-          <input class="form-input" [(ngModel)]="form.descPeriodo" placeholder="Ej. Quincena 1 — Enero 2025" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">N° empleados</label>
-          <input class="form-input" type="number" [(ngModel)]="form.empleados" placeholder="24" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group full">
-          <label class="form-label">Monto total (₡)</label>
-          <input class="form-input" type="number" [(ngModel)]="form.montoTotal" placeholder="18500000" />
-        </div>
+
+      <div class="info-box">
+        <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+          <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" />
+          <path d="M8 7v5M8 5.5v-.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        El detalle de empleados se gestiona desde el módulo de Detalle de Planilla.
       </div>
     </div>
+
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="showFormModal = false">Cancelar</button>
       <button class="btn btn-primary" (click)="savePlanilla()">Guardar planilla</button>
@@ -256,9 +256,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MODAL VER DETALLE  ← EXPANDIDO
-══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showViewModal" (click)="onOverlayClick($event, 'view')">
   <div class="modal modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -272,8 +269,6 @@
 
     @if (showViewModal) {
       <div class="modal-body">
-
-        <!-- ── BLOQUE 1: ENCABEZADO ── -->
         <div class="view-header">
           <div class="view-icon">
             <svg viewBox="0 0 24 24" fill="none">
@@ -281,32 +276,33 @@
               <path d="M7 8h10M7 12h7M7 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
           </div>
+
           <div>
             <div class="view-name">Planilla #{{ viewedPlanilla.idPlanillas }}</div>
-            <div class="view-sub">{{ viewedPlanilla.descPeriodo }}</div>
+            <div class="view-sub">
+              @if (viewedPlanilla.descPeriodo) {
+                {{ viewedPlanilla.descPeriodo }}
+              } @else {
+                Período #{{ viewedPlanilla.idPeriodoPlanilla }}
+              }
+            </div>
           </div>
+
           <span class="status-badge" [class]="statusClass(viewedPlanilla.EstadoPlanilla)" style="margin-left:auto">
             {{ viewedPlanilla.EstadoPlanilla }}
           </span>
         </div>
 
-        <!-- ── BLOQUE 2: DATOS GENERALES ── -->
         <div class="det-section">
-          <div class="det-section-title">
-            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
-              <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/>
-              <path d="M4 5h6M4 7.5h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-            </svg>
-            Datos generales
-          </div>
+          <div class="det-section-title">Datos generales</div>
           <div class="view-grid">
             <div class="view-field">
               <div class="view-label">Fecha de creación</div>
               <div class="view-val">{{ fmtDate(viewedPlanilla.FechaCreacion) }}</div>
             </div>
             <div class="view-field">
-              <div class="view-label">N° empleados</div>
-              <div class="view-val">{{ viewedPlanilla.empleados }}</div>
+              <div class="view-label">ID Usuario</div>
+              <div class="view-val">#{{ viewedPlanilla.IdUsuario }}</div>
             </div>
             <div class="view-field">
               <div class="view-label">ID Control horarios</div>
@@ -316,177 +312,63 @@
               <div class="view-label">ID Período planilla</div>
               <div class="view-val">#{{ viewedPlanilla.idPeriodoPlanilla }}</div>
             </div>
-            <div class="view-field" style="grid-column:1/-1">
-              <div class="view-label">Monto total</div>
-              <div class="view-val view-monto">
-                {{ viewedPlanilla.montoTotal ? '₡' + fmtNum(viewedPlanilla.montoTotal) : 'Sin calcular' }}
-              </div>
-            </div>
           </div>
         </div>
 
-        <!-- ── BLOQUE 3: PERÍODO DE PLANILLA ── -->
-        <div class="det-section">
-          <div class="det-section-title">
-            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
-              <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
-              <path d="M1 5.5h12M4.5 1v2M9.5 1v2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-            </svg>
-            Período de planilla
-          </div>
-          <div class="periodo-detail-card">
-            <div class="periodo-detail-id">
-              <span class="id-chip">#{{ viewedPlanilla.idPeriodoPlanilla }}</span>
-              <span class="periodo-detail-desc">{{ viewedPlanilla.descPeriodo }}</span>
-            </div>
-            <div class="periodo-detail-grid">
-              <div class="periodo-detail-field">
-                <div class="view-label">Fecha inicio</div>
-                <div class="view-val">{{ periodoDetalle(viewedPlanilla).inicio }}</div>
-              </div>
-              <div class="periodo-detail-field">
-                <div class="view-label">Fecha fin</div>
-                <div class="view-val">{{ periodoDetalle(viewedPlanilla).fin }}</div>
-              </div>
-              <div class="periodo-detail-field">
-                <div class="view-label">Días hábiles</div>
-                <div class="view-val">{{ periodoDetalle(viewedPlanilla).dias }}</div>
-              </div>
-              <div class="periodo-detail-field">
-                <div class="view-label">Estado del período</div>
-                <div class="view-val">
-                  <span class="status-badge" [class]="statusClass(viewedPlanilla.EstadoPlanilla)">
-                    {{ viewedPlanilla.EstadoPlanilla }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── BLOQUE 4: DETALLE POR EMPLEADO ── -->
-        <div class="det-section">
-          <div class="det-section-title">
-            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
-              <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
-              <path d="M1.5 12c0-3 2.5-4.5 5.5-4.5s5.5 1.5 5.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-            </svg>
-            Detalle por empleado
-          </div>
-          <div class="det-table-wrap">
-            <table class="det-table">
-              <thead>
-                <tr>
-                  <th>Empleado</th>
-                  <th>Salario base</th>
-                  <th>Ingresos extra</th>
-                  <th>Deducciones</th>
-                  <th>Neto a pagar</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (e of detalleEmpleados(viewedPlanilla); track e.id) {
-                  <tr>
-                    <td>
-                      <div class="det-emp-cell">
-                        <div class="det-emp-avatar" [class]="colorFor(e.id)">{{ e.inicial }}</div>
-                        <div class="det-emp-name">{{ e.nombre }}</div>
-                      </div>
-                    </td>
-                    <td class="det-num">₡{{ fmtNum(e.salario) }}</td>
-                    <td>
-                      @if (e.ingresos > 0) {
-                        <span class="det-chip-green">+₡{{ fmtNum(e.ingresos) }}</span>
-                      } @else {
-                        <span class="col-muted">—</span>
-                      }
-                    </td>
-                    <td>
-                      @if (e.deducciones > 0) {
-                        <span class="det-chip-amber">-₡{{ fmtNum(e.deducciones) }}</span>
-                      } @else {
-                        <span class="col-muted">—</span>
-                      }
-                    </td>
-                    <td>
-                      <span class="det-neto">₡{{ fmtNum(e.neto) }}</span>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-              <tfoot>
-                <tr class="det-total-row">
-                  <td>Totales</td>
-                  <td class="det-num">₡{{ fmtNum(totalesDetalle(viewedPlanilla).salarios) }}</td>
-                  <td><span class="det-chip-green">+₡{{ fmtNum(totalesDetalle(viewedPlanilla).ingresos) }}</span></td>
-                  <td><span class="det-chip-amber">-₡{{ fmtNum(totalesDetalle(viewedPlanilla).deducciones) }}</span></td>
-                  <td><span class="det-neto det-neto-total">₡{{ fmtNum(totalesDetalle(viewedPlanilla).neto) }}</span></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-
-        <!-- ── BLOQUE 5: INGRESOS EXTRA ── -->
-        <div class="det-section">
-          <div class="det-section-title">
-            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
-              <path d="M7 1v12M10 4H5.5a2.5 2.5 0 000 5H8a2.5 2.5 0 010 5H3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-            </svg>
-            Ingresos extra utilizados
-          </div>
-          <div class="ingresos-grid">
-            @for (ing of ingresosExtra(viewedPlanilla); track ing.tipo) {
-              <div class="ingreso-item">
-                <div class="ingreso-dot" [class]="ing.dotClass"></div>
-                <div class="ingreso-tipo">{{ ing.tipo }}</div>
-                <div class="ingreso-monto">₡{{ fmtNum(ing.monto) }}</div>
-              </div>
-            }
-          </div>
-          <div class="ingresos-total">
-            <span>Total ingresos extra</span>
-            <span class="ingresos-total-num">₡{{ fmtNum(totalIngresosExtra(viewedPlanilla)) }}</span>
-          </div>
-        </div>
-
-        <!-- ── BLOQUE 6: PAGOS RELACIONADOS ── -->
         <div class="det-section det-section-last">
-          <div class="det-section-title">
-            <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
-              <rect x="1" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
-              <path d="M1 6h12" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-              <circle cx="3.5" cy="9" r=".8" fill="currentColor"/>
-            </svg>
-            Pagos relacionados
-          </div>
-          <div class="pagos-resumen-grid">
-            <div class="pagos-resumen-card pagos-estado-card">
-              <div class="view-label">Estado de pago</div>
-              <span class="status-badge mt-4" [class]="statusClass(viewedPlanilla.EstadoPlanilla)">
-                {{ viewedPlanilla.EstadoPlanilla === 'Pagada' ? 'Pagada' : 'Pendiente de pago' }}
-              </span>
-            </div>
-            <div class="pagos-resumen-card">
-              <div class="view-label">Total de pagos</div>
-              <div class="pagos-num">{{ viewedPlanilla.empleados }}</div>
-              <div class="pagos-sub">registros</div>
-            </div>
-            <div class="pagos-resumen-card">
-              <div class="view-label">Monto pagado</div>
-              <div class="pagos-monto-num">
-                {{ viewedPlanilla.EstadoPlanilla === 'Pagada' && viewedPlanilla.montoTotal
-                    ? '₡' + fmtNum(viewedPlanilla.montoTotal)
-                    : '—' }}
-              </div>
-            </div>
-            <div class="pagos-resumen-card">
-              <div class="view-label">Fecha estimada de pago</div>
-              <div class="view-val">{{ periodoDetalle(viewedPlanilla).fechaPago }}</div>
-            </div>
-          </div>
-        </div>
+          <div class="det-section-title">Detalle por empleado</div>
 
+          @if (detalle().length === 0) {
+            <div class="empty-det">No hay detalle asociado o aún se está cargando.</div>
+          } @else {
+            <div class="det-table-wrap">
+              <table class="det-table">
+                <thead>
+                  <tr>
+                    <th>Empleado</th>
+                    <th>Salario base</th>
+                    <th>Deducciones</th>
+                    <th>Salario bruto</th>
+                    <th>Neto a pagar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (e of detalle(); track e.idDetallePlanilla) {
+                    <tr>
+                      <td>
+                        <div class="det-emp-cell">
+                          <div class="det-emp-avatar" [class]="colorFor(e.idEmpleado)">
+                            {{ initialsFromDetalle(e) }}
+                          </div>
+                          <div class="det-emp-name">
+                            @if (e.NombreEmpleado) {
+                              {{ e.NombreEmpleado }} {{ e.ApellidosEmpleado }}
+                            } @else {
+                              Empleado #{{ e.idEmpleado }}
+                            }
+                          </div>
+                        </div>
+                      </td>
+                      <td class="det-num">₡{{ fmtNum(e.SalarioBase) }}</td>
+                      <td><span class="det-chip-amber">-₡{{ fmtNum(e.TotalDeducciones) }}</span></td>
+                      <td class="det-num">₡{{ fmtNum(e.SalarioBruto) }}</td>
+                      <td><span class="det-neto">₡{{ fmtNum(e.SalarioNeto) }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr class="det-total-row">
+                    <td>Totales</td>
+                    <td class="det-num">₡{{ fmtNum(totalesDetalle.salarios) }}</td>
+                    <td><span class="det-chip-amber">-₡{{ fmtNum(totalesDetalle.deducciones) }}</span></td>
+                    <td class="det-num">—</td>
+                    <td><span class="det-neto det-neto-total">₡{{ fmtNum(totalesDetalle.neto) }}</span></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          }
+        </div>
       </div>
     }
 
@@ -499,9 +381,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MODAL CONFIRMAR ELIMINAR  (sin cambios)
-══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showDeleteModal" (click)="onOverlayClick($event, 'delete')">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -512,6 +391,7 @@
         </svg>
       </button>
     </div>
+
     <div class="confirm-body">
       <div class="confirm-icon">
         <svg viewBox="0 0 24 24" fill="none">
@@ -522,6 +402,7 @@
       <div class="confirm-title">¿Eliminar planilla?</div>
       <div class="confirm-desc">{{ deleteDesc }}</div>
     </div>
+
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancelar</button>
       <button class="btn btn-danger" (click)="confirmDelete()">Eliminar</button>

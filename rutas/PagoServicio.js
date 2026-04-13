@@ -3,7 +3,7 @@ const express = require('express');
 const Router = express.Router();
 
 const PagoServicio = require('../servicios/PagoServicio.js');
-
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get('/listarPagos', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {

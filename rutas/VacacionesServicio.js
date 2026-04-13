@@ -2,6 +2,7 @@ const express = require('express');
 const Router = express.Router();
 
 const VacacionesServicio = require('../servicios/VacacionesServicio.js');
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get('/listarVacaciones', async (solicitud, respuesta, next) => {
   // return respuesta.json(await VacacionesServicio.listarVacaciones());

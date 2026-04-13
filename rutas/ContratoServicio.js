@@ -3,6 +3,8 @@ const Router = express.Router();
 
 const ContratoServicio = require('../servicios/ContratoServicio.js');
 
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
+
 Router.get('/listarContratos', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
     try {

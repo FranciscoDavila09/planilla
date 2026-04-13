@@ -2,6 +2,7 @@ const express = require('express');
 const Router = express.Router();
 
 const AguinaldosServicio = require('../servicios/AguinaldosServicio.js');
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get('/listarAguinaldos', async (solicitud, respuesta, next) => {
   // return respuesta.json(await AguinaldosServicio.listarAguinaldos());

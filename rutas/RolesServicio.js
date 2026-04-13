@@ -3,6 +3,7 @@ const express = require("express");
 const Router = express.Router();
 
 const RolesServicio = require("../servicios/RolesServicio.js");
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get("/listarRoles", async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
