@@ -9,13 +9,12 @@ class PlanillaServicio {
 
   //Get para obtener planillas por el id
 
-  async obtenerPorId(id) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`planillas` WHERE `idPlanillas` = ?",
-      [id],
-    );
-  }
-
+ async obtenerPorId(id) {
+  return await ejecutarConsulta(
+    "SELECT * FROM `dbplanilla`.`planillas` WHERE `idPlanillas` = ?",
+    [id],
+  );
+}
   //Insertar datos
 
 async insertar(datos) {
