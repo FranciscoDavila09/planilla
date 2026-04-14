@@ -8,6 +8,52 @@ class PagoServicio {
     return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`pagos`");
   }
 
+  //get para obtner los pagos con nombre del empleado y planilla y demas 
+
+  async listarPagosVista() {
+  const sql = `
+    SELECT 
+      p.IdPago,
+      p.IdPlanilla,
+      p.IdEmpleado,
+      p.MontoPagado,
+      p.MetodoPago,
+      p.ReferenciaPago,
+      p.IdUsuarioProcesa,
+      p.FechaPago,
+      p.Estado,
+      p.idFeriados,
+      p.idDeduccion,
+
+      e.Nombre AS NombreEmpleado,
+      e.Apellidos AS ApellidosEmpleado,
+      e.CodigoEmpleado,
+
+      pl.EstadoPlanilla,
+
+      u.Nombre AS NombreUsuarioProcesa,
+      u.Apellidos AS ApellidosUsuarioProcesa,
+
+      f.Nombre AS NombreFeriado,
+
+      d.Nombre AS NombreDeduccion
+    FROM dbplanilla.pagos p
+    LEFT JOIN dbplanilla.empleados e
+      ON p.IdEmpleado = e.idEmpleado
+    LEFT JOIN dbplanilla.planillas pl
+      ON p.IdPlanilla = pl.idPlanillas
+    LEFT JOIN dbplanilla.usuarios u
+      ON p.IdUsuarioProcesa = u.idUsuario
+    LEFT JOIN dbplanilla.feriados f
+      ON p.idFeriados = f.IdFeriado
+    LEFT JOIN dbplanilla.deducciones d
+      ON p.idDeduccion = d.idDeducciones
+    ORDER BY p.IdPago DESC
+  `;
+
+  return await ejecutarConsulta(sql);
+}
+
 
   //Get para obtener pagos por el id 
 

@@ -18,6 +18,22 @@ Router.get('/listarPrestamos', async (solicitud, respuesta, next) => {
   return respuesta.status(401).json();
 });
 
+
+
+Router.get('/listarPrestamosVista', async (solicitud, respuesta, next) => {
+  if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
+    try {
+      return respuesta.json(await PrestamoServicio.listarPrestamosVista());
+    } catch (error) {
+      console.error(error);
+      return respuesta.status(500).json(error);
+    }
+  }
+  return respuesta.status(401).json();
+});
+
+
+
 Router.get('/obtenerPorId', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
     try {

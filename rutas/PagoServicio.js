@@ -17,6 +17,21 @@ Router.get('/listarPagos', async (solicitud, respuesta, next) => {
   return respuesta.status(401).json();
 });
 
+
+Router.get('/listarPagosVista', async (solicitud, respuesta, next) => {
+  if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
+    try {
+      return respuesta.json(await PagoServicio.listarPagosVista());
+    } catch (error) {
+      console.error(error);
+      return respuesta.status(500).json(error);
+    }
+  }
+  return respuesta.status(401).json();
+});
+
+
+
 Router.get('/obtenerPorId', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
     try {

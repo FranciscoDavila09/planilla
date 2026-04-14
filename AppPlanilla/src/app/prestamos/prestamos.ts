@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 interface Prestamo {
   IdPrestamo: number;
@@ -9,11 +10,45 @@ interface Prestamo {
   MontoPorCuota: number;
   SaldoPendiente: number;
   FechaInicio: string;
-  Estado: number;     // tinyint(1): 0 = En curso, 1 = Cancelado
-  idUsuario: number;
+  Estado: number;
+  IdUsuario: number;
+
+  NombreEmpleado?: string;
+  ApellidosEmpleado?: string;
+  CodigoEmpleado?: string;
+
+  NombreUsuario?: string;
+  ApellidosUsuario?: string;
 }
 
-interface EmpRef { nombre: string; }
+interface Empleado {
+  idEmpleado: number;
+  CodigoEmpleado: string;
+  Nombre: string;
+  Apellidos: string;
+  Identificacion: string;
+  Correo: string;
+  Telefono: string;
+  FechaIngreso: string;
+  Estado: number;
+  HoraEntrada: string;
+  CuentaBancaria: number;
+  Salario: number;
+  idDepartamento: number;
+  HoraSalida: string;
+}
+
+interface Usuario {
+  idUsuario: number;
+  Nombre: string;
+  Apellidos: string;
+  Estado: number;
+  FechaCreacion: string;
+  telefono: string;
+  correo: string;
+  idRol: number;
+  idDepartamento: number;
+}
 
 @Component({
   selector: 'app-prestamos',
@@ -22,33 +57,28 @@ interface EmpRef { nombre: string; }
   templateUrl: './prestamos.html',
   styleUrl: './prestamos.css',
 })
-export class Prestamos {
+export class Prestamos implements OnInit {
+  private readonly http = inject(HttpClient);
+
+  private readonly BASE_URL = 'http://localhost';
+  private readonly PRESTAMO_URL = `${this.BASE_URL}/PrestamoServicio`;
+  private readonly EMPLEADO_URL = `${this.BASE_URL}/EmpleadoServicio`;
+  private readonly USUARIO_URL = `${this.BASE_URL}/UsuarioServicio`;
+
+  protected readonly prestamosSignal = signal<Prestamo[]>([]);
+  protected readonly empleadosSignal = signal<Empleado[]>([]);
+  protected readonly usuariosSignal = signal<Usuario[]>([]);
+
   readonly perPage = 8;
-  readonly COLORS  = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
+  readonly COLORS = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
 
-  // Mapa de empleados — reemplazar con datos reales del servicio
-  readonly empMap: Record<number, EmpRef> = {
-    1:  { nombre: 'María Rodríguez' },
-    2:  { nombre: 'Carlos Mendoza' },
-    3:  { nombre: 'Sofía Vargas' },
-    4:  { nombre: 'Andrés Jiménez' },
-    5:  { nombre: 'Lucía Pérez' },
-    6:  { nombre: 'Diego Castillo' },
-    7:  { nombre: 'Valeria Núñez' },
-    8:  { nombre: 'Felipe Aguilar' },
-    9:  { nombre: 'Daniela Herrera' },
-    10: { nombre: 'Ricardo Soto' },
-    11: { nombre: 'Camila Quesada' },
-    12: { nombre: 'Pablo Araya' },
-  };
-
-  showFormModal   = false;
-  showViewModal   = false;
+  showFormModal = false;
+  showViewModal = false;
   showDeleteModal = false;
 
-  searchQuery  = '';
+  searchQuery = '';
   estadoFilter = '';
-  yearFilter   = '';
+  yearFilter = '';
 
   currentPage = 1;
 
@@ -60,29 +90,65 @@ export class Prestamos {
   deleteTargetId: number | null = null;
   deleteDesc = '';
 
-  prestamos: Prestamo[] = [
-    { IdPrestamo: 1,  IdEmpleado: 4,  MontoTotal: 600000,  Cuotas: 12, MontoPorCuota: 50000,  SaldoPendiente: 350000,  FechaInicio: '2024-07-01', Estado: 0, idUsuario: 1 },
-    { IdPrestamo: 2,  IdEmpleado: 8,  MontoTotal: 400000,  Cuotas: 8,  MontoPorCuota: 50000,  SaldoPendiente: 100000,  FechaInicio: '2024-10-01', Estado: 0, idUsuario: 1 },
-    { IdPrestamo: 3,  IdEmpleado: 12, MontoTotal: 1000000, Cuotas: 24, MontoPorCuota: 41667,  SaldoPendiente: 708334,  FechaInicio: '2024-03-15', Estado: 0, idUsuario: 2 },
-    { IdPrestamo: 4,  IdEmpleado: 2,  MontoTotal: 300000,  Cuotas: 6,  MontoPorCuota: 50000,  SaldoPendiente: 0,       FechaInicio: '2024-01-01', Estado: 1, idUsuario: 1 },
-    { IdPrestamo: 5,  IdEmpleado: 7,  MontoTotal: 750000,  Cuotas: 15, MontoPorCuota: 50000,  SaldoPendiente: 500000,  FechaInicio: '2024-08-01', Estado: 0, idUsuario: 2 },
-    { IdPrestamo: 6,  IdEmpleado: 1,  MontoTotal: 500000,  Cuotas: 10, MontoPorCuota: 50000,  SaldoPendiente: 0,       FechaInicio: '2023-11-01', Estado: 1, idUsuario: 1 },
-    { IdPrestamo: 7,  IdEmpleado: 9,  MontoTotal: 850000,  Cuotas: 17, MontoPorCuota: 50000,  SaldoPendiente: 600000,  FechaInicio: '2024-06-01', Estado: 0, idUsuario: 1 },
-    { IdPrestamo: 8,  IdEmpleado: 5,  MontoTotal: 1200000, Cuotas: 24, MontoPorCuota: 50000,  SaldoPendiente: 900000,  FechaInicio: '2024-09-01', Estado: 0, idUsuario: 2 },
-    { IdPrestamo: 9,  IdEmpleado: 11, MontoTotal: 200000,  Cuotas: 4,  MontoPorCuota: 50000,  SaldoPendiente: 0,       FechaInicio: '2024-02-01', Estado: 1, idUsuario: 1 },
-    { IdPrestamo: 10, IdEmpleado: 3,  MontoTotal: 950000,  Cuotas: 19, MontoPorCuota: 50000,  SaldoPendiente: 650000,  FechaInicio: '2024-11-01', Estado: 0, idUsuario: 1 },
-    { IdPrestamo: 11, IdEmpleado: 6,  MontoTotal: 480000,  Cuotas: 12, MontoPorCuota: 40000,  SaldoPendiente: 240000,  FechaInicio: '2025-01-01', Estado: 0, idUsuario: 2 },
-    { IdPrestamo: 12, IdEmpleado: 10, MontoTotal: 660000,  Cuotas: 12, MontoPorCuota: 55000,  SaldoPendiente: 330000,  FechaInicio: '2025-02-01', Estado: 0, idUsuario: 1 },
-  ];
+  get prestamos(): Prestamo[] {
+    return this.prestamosSignal();
+  }
 
-  // ── Computed ──
+  ngOnInit(): void {
+    this.cargarTodo();
+  }
+
+  cargarTodo(): void {
+    this.getPrestamosVista();
+    this.getEmpleados();
+    this.getUsuarios();
+  }
+
+  getPrestamosVista(): void {
+    this.http.get<Prestamo[]>(`${this.PRESTAMO_URL}/listarPrestamosVista`).subscribe({
+      next: (data) => this.prestamosSignal.set(data || []),
+      error: (err) => {
+        console.error('Error al obtener préstamos vista:', err);
+        this.prestamosSignal.set([]);
+      },
+    });
+  }
+
+  getEmpleados(): void {
+    this.http.get<Empleado[]>(`${this.EMPLEADO_URL}/listarEmpleados`).subscribe({
+      next: (data) => this.empleadosSignal.set(data || []),
+      error: (err) => {
+        console.error('Error al obtener empleados:', err);
+        this.empleadosSignal.set([]);
+      },
+    });
+  }
+
+  getUsuarios(): void {
+    this.http.get<Usuario[]>(`${this.USUARIO_URL}/listarUsuarios`).subscribe({
+      next: (data) => this.usuariosSignal.set(data || []),
+      error: (err) => {
+        console.error('Error al obtener usuarios:', err);
+        this.usuariosSignal.set([]);
+      },
+    });
+  }
+
   get filteredPrestamos(): Prestamo[] {
-    const q = this.searchQuery.toLowerCase();
-    return this.prestamos.filter(p => {
-      const txt = `${p.IdPrestamo} ${this.empName(p.IdEmpleado)}`.toLowerCase();
-      const estadoOk = this.estadoFilter === '' || p.Estado === +this.estadoFilter;
-      const yearOk   = !this.yearFilter   || p.FechaInicio.startsWith(this.yearFilter);
-      return (!q || txt.includes(q)) && estadoOk && yearOk;
+    const q = this.searchQuery.toLowerCase().trim();
+
+    return this.prestamos.filter((p) => {
+      const texto = `
+        ${p.IdPrestamo}
+        ${this.empName(p.IdEmpleado)}
+        ${p.MontoTotal}
+        ${p.SaldoPendiente}
+      `.toLowerCase();
+
+      const estadoOk = this.estadoFilter === '' || Number(p.Estado) === Number(this.estadoFilter);
+      const yearOk = !this.yearFilter || (p.FechaInicio || '').startsWith(this.yearFilter);
+
+      return (!q || texto.includes(q)) && estadoOk && yearOk;
     });
   }
 
@@ -92,165 +158,277 @@ export class Prestamos {
   }
 
   get totalPages(): number[] {
-    const count = Math.ceil(this.filteredPrestamos.length / this.perPage) || 1;
-    return Array.from({ length: count }, (_, i) => i + 1);
+    const total = Math.ceil(this.filteredPrestamos.length / this.perPage) || 1;
+    const pages: number[] = [];
+
+    let start = Math.max(1, this.currentPage - 2);
+    let end = Math.min(total, start + 4);
+
+    if (end - start < 4) {
+      start = Math.max(1, end - 4);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   }
 
-  // ── Helpers ──
-  min(a: number, b: number) { return Math.min(a, b); }
-
-  empName(id: number) { return this.empMap[id]?.nombre ?? `Empleado #${id}`; }
-
-  empInitial(id: number) {
-    const n = this.empMap[id]?.nombre;
-    if (!n) return `E${id}`;
-    const p = n.split(' ');
-    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
+  min(a: number, b: number): number {
+    return Math.min(a, b);
   }
 
-  colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
+  empName(id: number): string {
+    const desdeVista = this.prestamos.find((p) => Number(p.IdEmpleado) === Number(id) && p.NombreEmpleado);
+    if (desdeVista?.NombreEmpleado) {
+      return `${desdeVista.NombreEmpleado} ${desdeVista.ApellidosEmpleado || ''}`.trim();
+    }
 
-  fmtNum(n: number) { return Number(n).toLocaleString('es-CR'); }
-
-  fmtShort(n: number) {
-    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-    if (n >= 1_000)     return (n / 1_000).toFixed(0) + 'K';
-    return String(n);
+    const emp = this.empleadosSignal().find((e) => Number(e.idEmpleado) === Number(id));
+    return emp ? `${emp.Nombre} ${emp.Apellidos}` : `Empleado #${id}`;
   }
 
-  fmtDateShort(d: string) {
+  empInitial(id: number): string {
+    const name = this.empName(id);
+    const p = name.split(' ').filter(Boolean);
+    return ((p[0]?.[0] || 'E') + (p[1]?.[0] || '')).toUpperCase();
+  }
+
+  colorFor(id: number): string {
+    const safeId = Number(id || 1);
+    return this.COLORS[(safeId - 1) % this.COLORS.length];
+  }
+
+  fmtNum(n: number): string {
+    return Number(n || 0).toLocaleString('es-CR');
+  }
+
+  fmtShort(n: number): string {
+    const value = Number(n || 0);
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';
+    if (value >= 1_000) return (value / 1_000).toFixed(0) + 'K';
+    return String(value);
+  }
+
+  fmtDateShort(d: string): string {
     if (!d) return '—';
-    const [y, m, day] = d.split('-');
-    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `${+day} ${meses[+m - 1]} ${y}`;
+    const soloFecha = d.includes('T') ? d.split('T')[0] : d;
+    const [y, m, day] = soloFecha.split('-');
+    if (!y || !m || !day) return soloFecha;
+
+    const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    return `${Number(day)} ${meses[Number(m) - 1]} ${y}`;
   }
 
-  estadoClass(e: number) { return e === 0 ? 'status-encurso' : 'status-cancelado'; }
+  estadoClass(e: number): string {
+    return Number(e) === 0 ? 'status-encurso' : 'status-cancelado';
+  }
 
-  countByEstado(e: number) { return this.prestamos.filter(p => p.Estado === e).length; }
+  countByEstado(e: number): number {
+    return this.prestamos.filter((p) => Number(p.Estado) === Number(e)).length;
+  }
 
-  totalSaldoPendiente() {
+  totalSaldoPendiente(): number {
     return this.prestamos
-      .filter(p => p.Estado === 0)
-      .reduce((acc, p) => acc + p.SaldoPendiente, 0);
+      .filter((p) => Number(p.Estado) === 0)
+      .reduce((acc, p) => acc + Number(p.SaldoPendiente || 0), 0);
   }
 
-  /** Porcentaje del monto total ya pagado (0–100) */
   porcentajePagado(p: Prestamo): number {
     if (!p.MontoTotal) return 0;
-    const pagado = p.MontoTotal - p.SaldoPendiente;
-    return Math.min(100, Math.round((pagado / p.MontoTotal) * 100));
+    const pagado = Number(p.MontoTotal) - Number(p.SaldoPendiente);
+    return Math.min(100, Math.max(0, Math.round((pagado / Number(p.MontoTotal)) * 100)));
   }
 
-  /** Cuotas ya abonadas inferidas del saldo */
   cuotasPagadas(p: Prestamo): number {
-    if (!p.MontoPorCuota) return 0;
-    const pagado = p.MontoTotal - p.SaldoPendiente;
-    return Math.round(pagado / p.MontoPorCuota);
+    if (!p.MontoPorCuota || Number(p.MontoPorCuota) <= 0) return 0;
+    const pagado = Number(p.MontoTotal) - Number(p.SaldoPendiente);
+    return Math.max(0, Math.round(pagado / Number(p.MontoPorCuota)));
   }
 
-  /** Array para renderizar la cuadrícula de cuotas en el modal de detalle */
   cuotasArray(p: Prestamo): { num: number; pagada: boolean }[] {
     const pagadas = this.cuotasPagadas(p);
-    return Array.from({ length: p.Cuotas }, (_, i) => ({
+    return Array.from({ length: Number(p.Cuotas || 0) }, (_, i) => ({
       num: i + 1,
       pagada: i < pagadas,
     }));
   }
 
-  /** Top 3 préstamos activos para las progress cards */
   topPrestamos(): Prestamo[] {
     return this.prestamos
-      .filter(p => p.Estado === 0)
-      .sort((a, b) => b.SaldoPendiente - a.SaldoPendiente)
+      .filter((p) => Number(p.Estado) === 0)
+      .sort((a, b) => Number(b.SaldoPendiente) - Number(a.SaldoPendiente))
       .slice(0, 3);
   }
 
-  /** Calcula la cuota estimada para preview en el formulario */
   calcMontoCuota(): number {
-    if (!this.form.MontoTotal || !this.form.Cuotas || this.form.Cuotas <= 0) return 0;
-    return Math.round(this.form.MontoTotal / this.form.Cuotas);
+    if (!this.form.MontoTotal || !this.form.Cuotas || Number(this.form.Cuotas) <= 0) return 0;
+    return Math.round(Number(this.form.MontoTotal) / Number(this.form.Cuotas));
   }
 
-  /** Autocompleta la cuota al escribir en el form */
-  calcularCuota() {
+  calcularCuota(): void {
     const cuota = this.calcMontoCuota();
     if (cuota > 0) {
       this.form.MontoPorCuota = cuota;
-      this.form.SaldoPendiente = this.form.MontoTotal;
+      this.form.SaldoPendiente = Number(this.form.MontoTotal);
     }
   }
 
-  // ── Filtro / paginación ──
-  filterTable()   { this.currentPage = 1; }
-  changePage(d: number) {
-    const max = this.totalPages.length;
+  usuarioName(id: number): string {
+    const desdeVista = this.prestamos.find((p) => Number(p.IdUsuario) === Number(id) && p.NombreUsuario);
+    if (desdeVista?.NombreUsuario) {
+      return `${desdeVista.NombreUsuario} ${desdeVista.ApellidosUsuario || ''}`.trim();
+    }
+
+    const user = this.usuariosSignal().find((u) => Number(u.idUsuario) === Number(id));
+    return user ? `${user.Nombre} ${user.Apellidos}` : `Usuario #${id}`;
+  }
+
+  filterTable(): void {
+    this.currentPage = 1;
+  }
+
+  changePage(d: number): void {
+    const max = Math.ceil(this.filteredPrestamos.length / this.perPage) || 1;
     this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
   }
-  goPage(n: number) { this.currentPage = n; }
 
-  // ── CRUD ──
-  openModal(mode: 'create' | 'edit', id?: number) {
+  goPage(n: number): void {
+    this.currentPage = n;
+  }
+
+  openModal(mode: 'create' | 'edit', id?: number): void {
     if (mode === 'create') {
       this.editId = null;
       this.form = {
-        Estado: 0,
+        IdEmpleado: 0,
+        MontoTotal: 0,
+        Cuotas: 0,
+        MontoPorCuota: 0,
+        SaldoPendiente: 0,
         FechaInicio: new Date().toISOString().slice(0, 10),
-        idUsuario: 1,
-        Cuotas: undefined,
-        MontoTotal: undefined,
-        MontoPorCuota: undefined,
-        SaldoPendiente: undefined,
+        Estado: 0,
+        IdUsuario: 1,
       };
     } else {
-      const p = this.prestamos.find(x => x.IdPrestamo === id)!;
+      const p = this.prestamos.find((x) => x.IdPrestamo === id);
+      if (!p) return;
+
       this.editId = p.IdPrestamo;
-      this.form = { ...p };
+      this.form = {
+        IdPrestamo: p.IdPrestamo,
+        IdEmpleado: p.IdEmpleado,
+        MontoTotal: p.MontoTotal,
+        Cuotas: p.Cuotas,
+        MontoPorCuota: p.MontoPorCuota,
+        SaldoPendiente: p.SaldoPendiente,
+        FechaInicio: p.FechaInicio?.includes('T') ? p.FechaInicio.split('T')[0] : p.FechaInicio,
+        Estado: p.Estado,
+        IdUsuario: p.IdUsuario,
+      };
     }
+
     this.showFormModal = true;
   }
 
-  savePrestamo() {
-    if (!this.form.IdEmpleado || !this.form.MontoTotal || !this.form.Cuotas) {
-      alert('Por favor completa empleado, monto y número de cuotas.');
+  savePrestamo(): void {
+    if (!this.form.IdEmpleado || Number(this.form.IdEmpleado) <= 0) {
+      alert('Debes ingresar un ID de empleado válido.');
       return;
     }
-    if (!this.form.MontoPorCuota) this.form.MontoPorCuota = this.calcMontoCuota();
-    if (!this.form.SaldoPendiente && this.form.SaldoPendiente !== 0) {
-      this.form.SaldoPendiente = this.form.MontoTotal;
+
+    if (!this.form.IdUsuario || Number(this.form.IdUsuario) <= 0) {
+      alert('Debes ingresar un ID de usuario válido.');
+      return;
     }
+
+    if (!this.form.MontoTotal || Number(this.form.MontoTotal) <= 0) {
+      alert('Debes ingresar un monto total válido.');
+      return;
+    }
+
+    if (!this.form.Cuotas || Number(this.form.Cuotas) <= 0) {
+      alert('Debes ingresar un número de cuotas válido.');
+      return;
+    }
+
+    if (!this.form.FechaInicio) {
+      alert('Debes ingresar la fecha de inicio.');
+      return;
+    }
+
+    const montoPorCuota = Number(this.form.MontoPorCuota) > 0 ? Number(this.form.MontoPorCuota) : this.calcMontoCuota();
+    const saldoPendiente =
+      this.form.SaldoPendiente !== undefined && this.form.SaldoPendiente !== null
+        ? Number(this.form.SaldoPendiente)
+        : Number(this.form.MontoTotal);
+
+    const payload = {
+      IdPrestamo: this.editId ?? undefined,
+      IdEmpleado: Number(this.form.IdEmpleado),
+      MontoTotal: Number(this.form.MontoTotal),
+      Cuotas: Number(this.form.Cuotas),
+      MontoPorCuota: Number(montoPorCuota),
+      SaldoPendiente: Number(saldoPendiente),
+      FechaInicio: this.form.FechaInicio,
+      Estado: Number(this.form.Estado ?? 0),
+      IdUsuario: Number(this.form.IdUsuario),
+    };
+
     if (this.editId) {
-      const idx = this.prestamos.findIndex(x => x.IdPrestamo === this.editId);
-      this.prestamos[idx] = { ...this.prestamos[idx], ...this.form } as Prestamo;
+      this.http.put(`${this.PRESTAMO_URL}/actualizar`, payload).subscribe({
+        next: () => {
+          this.getPrestamosVista();
+          this.showFormModal = false;
+        },
+        error: (err) => console.error('Error al editar préstamo:', err),
+      });
     } else {
-      const newId = Math.max(0, ...this.prestamos.map(x => x.IdPrestamo)) + 1;
-      this.prestamos = [...this.prestamos, { IdPrestamo: newId, ...this.form } as Prestamo];
+      this.http.post(`${this.PRESTAMO_URL}/insertar`, payload).subscribe({
+        next: () => {
+          this.getPrestamosVista();
+          this.showFormModal = false;
+        },
+        error: (err) => console.error('Error al crear préstamo:', err),
+      });
     }
-    this.showFormModal = false;
   }
 
-  viewPrestamo(id: number) {
-    this.viewedPrestamo = this.prestamos.find(x => x.IdPrestamo === id)!;
+  viewPrestamo(id: number): void {
+    const prestamo = this.prestamos.find((x) => x.IdPrestamo === id);
+    if (!prestamo) return;
+
+    this.viewedPrestamo = prestamo;
     this.showViewModal = true;
   }
 
-  askDelete(id: number) {
-    const p = this.prestamos.find(x => x.IdPrestamo === id)!;
+  askDelete(id: number): void {
+    const p = this.prestamos.find((x) => x.IdPrestamo === id);
+    if (!p) return;
+
     this.deleteTargetId = id;
     this.deleteDesc = `Estás a punto de eliminar el Préstamo #${p.IdPrestamo} de ${this.empName(p.IdEmpleado)} por ₡${this.fmtNum(p.MontoTotal)}. Esta acción no se puede deshacer.`;
     this.showDeleteModal = true;
   }
 
-  confirmDelete() {
-    this.prestamos = this.prestamos.filter(x => x.IdPrestamo !== this.deleteTargetId);
-    this.deleteTargetId = null;
-    this.showDeleteModal = false;
+  confirmDelete(): void {
+    if (!this.deleteTargetId) return;
+
+    this.http.delete(`${this.PRESTAMO_URL}/eliminar?id=${this.deleteTargetId}`).subscribe({
+      next: () => {
+        this.getPrestamosVista();
+        this.deleteTargetId = null;
+        this.showDeleteModal = false;
+      },
+      error: (err) => console.error('Error al eliminar préstamo:', err),
+    });
   }
 
-  onOverlayClick(event: MouseEvent, modal: 'form' | 'view' | 'delete') {
+  onOverlayClick(event: MouseEvent, modal: 'form' | 'view' | 'delete'): void {
     if (event.target === event.currentTarget) {
-      if (modal === 'form')   this.showFormModal   = false;
-      if (modal === 'view')   this.showViewModal   = false;
+      if (modal === 'form') this.showFormModal = false;
+      if (modal === 'view') this.showViewModal = false;
       if (modal === 'delete') this.showDeleteModal = false;
     }
   }

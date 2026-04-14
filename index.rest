@@ -343,6 +343,12 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+//Listar pagos de la vista con nombre 
+###
+GET {{ BASE_URL }}/PagoServicio/listarPagosVista HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
 
 /// get donde lista pago por id*/
 ###
@@ -597,6 +603,13 @@ Origin: {{ BASE_URL }}
 // get donde lista todos los prestamos
 ###
 GET {{ BASE_URL }}/PrestamoServicio/listarPrestamos HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+//get donde se lista el prestamo con el nombre del empleado y el nombre del usuario 
+###
+GET {{ BASE_URL }}/PrestamoServicio/listarPrestamosVista HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}

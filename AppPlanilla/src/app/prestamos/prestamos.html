@@ -125,6 +125,7 @@
   </select>
   <select class="filter-select" [(ngModel)]="yearFilter" (change)="filterTable()">
     <option value="">Todos los años</option>
+    <option value="2026">2026</option>
     <option value="2025">2025</option>
     <option value="2024">2024</option>
     <option value="2023">2023</option>
@@ -278,7 +279,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">ID Usuario</label>
-          <input class="form-input" type="number" [(ngModel)]="form.idUsuario" placeholder="Ej. 1"/>
+          <input class="form-input" type="number" [(ngModel)]="form.IdUsuario" placeholder="Ej. 1"/>
         </div>
       </div>
       <div class="form-row">
@@ -291,7 +292,7 @@
           <input class="form-input" type="number" [(ngModel)]="form.Cuotas" placeholder="12" (input)="calcularCuota()"/>
         </div>
       </div>
-      <!-- Preview cuota calculada -->
+
       @if (form.MontoTotal && form.Cuotas && form.Cuotas > 0) {
         <div class="cuota-preview">
           <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
@@ -302,6 +303,7 @@
           <strong>₡{{ fmtNum(calcMontoCuota()) }}</strong>
         </div>
       }
+
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Monto por cuota (₡)</label>
@@ -348,7 +350,6 @@
     </div>
     @if (showViewModal) {
       <div class="modal-body">
-        <!-- Header empleado -->
         <div class="view-header">
           <div class="emp-avatar lg" [class]="colorFor(viewedPrestamo.IdEmpleado)">
             {{ empInitial(viewedPrestamo.IdEmpleado) }}
@@ -362,7 +363,6 @@
           </span>
         </div>
 
-        <!-- Barra de progreso grande -->
         <div class="view-progress-card">
           <div class="view-progress-header">
             <span class="view-progress-label">Progreso de pago</span>
@@ -381,7 +381,6 @@
           </div>
         </div>
 
-        <!-- Montos en grid 3 columnas -->
         <div class="view-montos-row">
           <div class="view-monto-card red">
             <div class="view-monto-label">Monto total</div>
@@ -397,7 +396,6 @@
           </div>
         </div>
 
-        <!-- Cuotas visuales -->
         <div class="cuotas-grid-wrap">
           <div class="cuotas-grid-title">Cuotas ({{ viewedPrestamo.Cuotas }} total)</div>
           <div class="cuotas-grid">
@@ -409,7 +407,6 @@
           </div>
         </div>
 
-        <!-- Campos extra -->
         <div class="view-grid">
           <div class="view-field">
             <div class="view-label">Cuotas pagadas</div>
@@ -417,7 +414,7 @@
           </div>
           <div class="view-field">
             <div class="view-label">Usuario que aprobó</div>
-            <div class="view-val">#{{ viewedPrestamo.idUsuario }}</div>
+            <div class="view-val">{{ usuarioName(viewedPrestamo.IdUsuario) }}</div>
           </div>
         </div>
       </div>
