@@ -1,4 +1,3 @@
-<!-- ── PAGE HEADER ── -->
 <div class="page-header">
   <div class="page-title">Gestión de <span>Deducciones</span></div>
   <button class="btn btn-primary" (click)="openModal('create')">
@@ -9,7 +8,6 @@
   </button>
 </div>
 
-<!-- ── STATS ── -->
 <div class="stats">
   <div class="stat-card">
     <div class="stat-icon red">
@@ -18,7 +16,7 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ deducciones.length }}</div>
+      <div class="stat-num">{{ deducciones().length }}</div>
       <div class="stat-label">Total deducciones</div>
     </div>
   </div>
@@ -59,7 +57,6 @@
   </div>
 </div>
 
-<!-- ── TOOLBAR ── -->
 <div class="toolbar">
   <div class="search-wrap">
     <svg viewBox="0 0 16 16" fill="none">
@@ -89,7 +86,6 @@
   </select>
 </div>
 
-<!-- ── TABLE ── -->
 <div class="table-card">
   <div class="table-card-header">
     <div class="table-card-title">Registro de deducciones</div>
@@ -128,7 +124,7 @@
             <div class="emp-cell">
               <div class="emp-avatar" [class]="colorFor(d.idEmpleado)">{{ empInitial(d.idEmpleado) }}</div>
               <div>
-                <div class="emp-name">{{ empName(d.idEmpleado) }}</div>
+                <div class="emp-name">{{ empName(d) }}</div>
                 <div class="emp-id">ID #{{ d.idEmpleado }}</div>
               </div>
             </div>
@@ -148,7 +144,7 @@
               <span class="col-muted">—</span>
             }
           </td>
-          <td class="col-muted">#{{ d.usuariosId }}</td>
+          <td class="col-muted">{{ usuarioNombre(d) }}</td>
           <td>
             <span class="status-badge" [class]="estadoClass(d.Estado)">
               {{ d.Estado === 1 ? 'Activa' : 'Inactiva' }}
@@ -209,9 +205,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MODAL CREAR / EDITAR  (sin cambios)
-══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showFormModal" (click)="onOverlayClick($event, 'form')">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -270,9 +263,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MODAL VER DETALLE  ← EXPANDIDO
-══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showViewModal" (click)="onOverlayClick($event, 'view')">
   <div class="modal modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -286,8 +276,6 @@
 
     @if (showViewModal) {
       <div class="modal-body">
-
-        <!-- ── ENCABEZADO ── -->
         <div class="view-header">
           <div class="view-icon" [class]="'view-icon-' + tipoColor(viewedDeduccion.Nombre)">
             <svg viewBox="0 0 24 24" fill="none">
@@ -304,7 +292,6 @@
           </span>
         </div>
 
-        <!-- ── BLOQUE 1: INFORMACIÓN GENERAL ── -->
         <div class="det-section">
           <div class="det-section-title">
             <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
@@ -345,7 +332,6 @@
           </div>
         </div>
 
-        <!-- ── BLOQUE 2: EMPLEADO RELACIONADO ── -->
         <div class="det-section">
           <div class="det-section-title">
             <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
@@ -359,7 +345,7 @@
               {{ empInitial(viewedDeduccion.idEmpleado) }}
             </div>
             <div class="hijo-info">
-              <div class="hijo-titulo">{{ empName(viewedDeduccion.idEmpleado) }}</div>
+              <div class="hijo-titulo">{{ empName(viewedDeduccion) }}</div>
               <div class="hijo-sub">{{ empDetalle(viewedDeduccion.idEmpleado).puesto }} · {{ empDetalle(viewedDeduccion.idEmpleado).departamento }}</div>
             </div>
             <div class="hijo-meta">
@@ -373,7 +359,6 @@
           </div>
         </div>
 
-        <!-- ── BLOQUE 3: PRÉSTAMO RELACIONADO ── -->
         <div class="det-section">
           <div class="det-section-title">
             <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
@@ -408,7 +393,7 @@
                 <div class="hijo-id-chip">₡{{ fmtNum(prestamoDetalle(viewedDeduccion.idPrestamo).cuota) }}</div>
               </div>
             </div>
-            <!-- Barra de progreso del préstamo -->
+
             <div class="prestamo-progress-wrap">
               <div class="prestamo-progress-info">
                 <span class="prestamo-progress-label">Progreso de pago</span>
@@ -429,7 +414,6 @@
           }
         </div>
 
-        <!-- ── BLOQUE 4: USUARIO RESPONSABLE ── -->
         <div class="det-section">
           <div class="det-section-title">
             <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
@@ -444,7 +428,7 @@
               {{ usuarioInitial(viewedDeduccion.usuariosId) }}
             </div>
             <div class="hijo-info">
-              <div class="hijo-titulo">{{ usuarioNombre(viewedDeduccion.usuariosId) }}</div>
+              <div class="hijo-titulo">{{ usuarioNombre(viewedDeduccion) }}</div>
               <div class="hijo-sub">{{ usuarioRol(viewedDeduccion.usuariosId) }}</div>
             </div>
             <div class="hijo-meta">
@@ -454,7 +438,6 @@
           </div>
         </div>
 
-        <!-- ── BLOQUE 5: RESUMEN FINAL ── -->
         <div class="det-section det-section-last">
           <div class="det-section-title">
             <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
@@ -481,7 +464,6 @@
             </div>
           </div>
         </div>
-
       </div>
     }
 
@@ -494,9 +476,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MODAL CONFIRMAR ELIMINAR  (sin cambios)
-══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showDeleteModal" (click)="onOverlayClick($event, 'delete')">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">

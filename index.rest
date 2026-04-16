@@ -873,6 +873,13 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+
+###
+GET {{ BASE_URL }}/DeduccionesServicio/listarDeduccionesVista HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
  // get donde lista deducciones por id*/
 ###
 GET {{ BASE_URL }}/DeduccionesServicio/obtenerPorId?id=401 HTTP/1.1
