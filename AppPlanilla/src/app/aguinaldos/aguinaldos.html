@@ -1,4 +1,3 @@
-<!-- ── PAGE HEADER ── -->
 <div class="page-header">
   <div class="page-title">Gestión de <span>Aguinaldos</span></div>
   <button class="btn btn-primary" (click)="openModal('create')">
@@ -9,7 +8,6 @@
   </button>
 </div>
 
-<!-- ── STATS ── -->
 <div class="stats">
   <div class="stat-card">
     <div class="stat-icon red">
@@ -19,10 +17,11 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ aguinaldos.length }}</div>
+      <div class="stat-num">{{ aguinaldos().length }}</div>
       <div class="stat-label">Total aguinaldos</div>
     </div>
   </div>
+
   <div class="stat-card">
     <div class="stat-icon green">
       <svg viewBox="0 0 16 16" fill="none">
@@ -34,6 +33,7 @@
       <div class="stat-label">Pagados</div>
     </div>
   </div>
+
   <div class="stat-card">
     <div class="stat-icon amber">
       <svg viewBox="0 0 16 16" fill="none">
@@ -46,6 +46,7 @@
       <div class="stat-label">Pendientes</div>
     </div>
   </div>
+
   <div class="stat-card">
     <div class="stat-icon blue">
       <svg viewBox="0 0 16 16" fill="none">
@@ -62,7 +63,6 @@
   </div>
 </div>
 
-<!-- ── PERIODO CARDS ── -->
 <div class="periodo-section">
   <div class="periodo-section-title">Resumen por período</div>
   <div class="periodo-row">
@@ -76,7 +76,7 @@
         </div>
         <div class="periodo-bar-wrap">
           <div class="periodo-bar-track">
-            <div class="periodo-bar-fill" [style.width.%]="(p.pagados / p.total) * 100"></div>
+            <div class="periodo-bar-fill" [style.width.%]="p.total ? (p.pagados / p.total) * 100 : 0"></div>
           </div>
           <span class="periodo-bar-pct">{{ p.pagados }}/{{ p.total }} pagados</span>
         </div>
@@ -85,7 +85,6 @@
   </div>
 </div>
 
-<!-- ── TOOLBAR ── -->
 <div class="toolbar">
   <div class="search-wrap">
     <svg viewBox="0 0 16 16" fill="none">
@@ -100,11 +99,13 @@
       (input)="filterTable()"
     />
   </div>
+
   <select class="filter-select" [(ngModel)]="estadoFilter" (change)="filterTable()">
     <option value="">Todos los estados</option>
     <option value="1">Pagado</option>
     <option value="0">Pendiente</option>
   </select>
+
   <select class="filter-select" [(ngModel)]="periodoFilter" (change)="filterTable()">
     <option value="">Todos los períodos</option>
     @for (p of periodos(); track p.year) {
@@ -113,14 +114,14 @@
   </select>
 </div>
 
-<!-- ── TABLE ── -->
 <div class="table-card">
   <div class="table-card-header">
     <div class="table-card-title">Registro de aguinaldos</div>
     <span class="badge badge-total">
-      {{ filteredAguinaldos.length }} registro{{ filteredAguinaldos.length !== 1 ? 's' : '' }}
+      {{ filteredAguinaldos().length }} registro{{ filteredAguinaldos().length !== 1 ? 's' : '' }}
     </span>
   </div>
+
   <table>
     <thead>
       <tr>
@@ -135,7 +136,7 @@
       </tr>
     </thead>
     <tbody>
-      @for (a of pageSlice; track a.IdAguinaldo) {
+      @for (a of pageSlice(); track a.IdAguinaldo) {
         <tr>
           <td><span class="id-chip">#{{ a.IdAguinaldo }}</span></td>
           <td>
@@ -164,7 +165,7 @@
               <span class="col-muted">Sin fecha</span>
             }
           </td>
-          <td class="col-muted">#{{ a.idUsuario }}</td>
+          <td class="col-muted">{{ usuarioNombre(a.idUsuario) }}</td>
           <td>
             <span class="status-badge" [class]="estadoClass(a.Estado)">
               {{ a.Estado === 1 ? 'Pagado' : 'Pendiente' }}
@@ -193,7 +194,8 @@
           </td>
         </tr>
       }
-      @if (pageSlice.length === 0) {
+
+      @if (pageSlice().length === 0) {
         <tr>
           <td colspan="8" class="empty-row">No se encontraron aguinaldos</td>
         </tr>
@@ -203,10 +205,10 @@
 
   <div class="pagination">
     <div class="page-info">
-      Mostrando {{ filteredAguinaldos.length ? (currentPage - 1) * perPage + 1 : 0 }}–{{
-        min(currentPage * perPage, filteredAguinaldos.length)
+      Mostrando {{ filteredAguinaldos().length ? (currentPage - 1) * perPage + 1 : 0 }}–{{
+        min(currentPage * perPage, filteredAguinaldos().length)
       }}
-      de {{ filteredAguinaldos.length }}
+      de {{ filteredAguinaldos().length }}
     </div>
     <div class="page-btns">
       <div class="page-btn" (click)="changePage(-1)">
@@ -214,7 +216,7 @@
           <path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      @for (pg of totalPages; track pg) {
+      @for (pg of totalPages(); track pg) {
         <div class="page-btn" [class.active]="pg === currentPage" (click)="goPage(pg)">{{ pg }}</div>
       }
       <div class="page-btn" (click)="changePage(1)">
@@ -226,9 +228,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MODAL CREAR / EDITAR  (sin cambios)
-══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showFormModal" (click)="onOverlayClick($event, 'form')">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -278,8 +277,7 @@
           <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>
           <path d="M8 7v5M8 5.5v-.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        El aguinaldo equivale a 1 mes de salario por año trabajado (Art. 166 Código de Trabajo, CR).
-        Se paga entre el 1 y el 20 de diciembre.
+        El aguinaldo equivale a 1 mes de salario por año trabajado.
       </div>
     </div>
     <div class="modal-footer">
@@ -289,9 +287,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MODAL VER DETALLE  ← EXPANDIDO
-══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showViewModal" (click)="onOverlayClick($event, 'view')">
   <div class="modal modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -305,8 +300,6 @@
 
     @if (showViewModal) {
       <div class="modal-body">
-
-        <!-- ── ENCABEZADO ── -->
         <div class="view-header">
           <div class="emp-avatar lg" [class]="colorFor(viewedAguinaldo.IdEmpleado)">
             {{ empInitial(viewedAguinaldo.IdEmpleado) }}
@@ -320,14 +313,12 @@
           </span>
         </div>
 
-        <!-- Monto hero -->
         <div class="view-monto-hero">
           <div class="view-monto-hero-label">Monto aguinaldo</div>
           <div class="view-monto-hero-num">₡{{ fmtNum(viewedAguinaldo.MontoCalculado) }}</div>
           <div class="view-monto-hero-sub">Período {{ viewedAguinaldo.Periodo }}</div>
         </div>
 
-        <!-- ── BLOQUE 1: INFORMACIÓN GENERAL ── -->
         <div class="det-section">
           <div class="det-section-title">
             <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
@@ -360,7 +351,6 @@
           </div>
         </div>
 
-        <!-- ── BLOQUE 2: EMPLEADO RELACIONADO ── -->
         <div class="det-section">
           <div class="det-section-title">
             <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
@@ -388,7 +378,6 @@
           </div>
         </div>
 
-        <!-- ── BLOQUE 3: USUARIO RESPONSABLE ── -->
         <div class="det-section">
           <div class="det-section-title">
             <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
@@ -419,7 +408,6 @@
           </div>
         </div>
 
-        <!-- ── BLOQUE 4: PERÍODO Y RESUMEN ── -->
         <div class="det-section det-section-last">
           <div class="det-section-title">
             <svg viewBox="0 0 14 14" fill="none" width="13" height="13">
@@ -429,7 +417,6 @@
             Período y resumen
           </div>
 
-          <!-- Timeline del estado -->
           <div class="timeline">
             <div class="tl-item tl-done">
               <div class="tl-dot tl-dot-green"></div>
@@ -443,18 +430,17 @@
               <div class="tl-content">
                 <div class="tl-title">{{ viewedAguinaldo.Estado === 1 ? 'Pago realizado' : 'Pago pendiente' }}</div>
                 <div class="tl-sub">
-                  {{ viewedAguinaldo.FechaPago ? fmtDate(viewedAguinaldo.FechaPago) : 'Sin fecha asignada · Plazo: antes del 20 dic.' }}
+                  {{ viewedAguinaldo.FechaPago ? fmtDate(viewedAguinaldo.FechaPago) : 'Sin fecha asignada' }}
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Resumen de montos del período -->
           <div class="resumen-periodo-grid">
             <div class="resumen-card resumen-card-red">
               <div class="view-label">Tipo de pago</div>
               <div class="resumen-titulo">Aguinaldo anual</div>
-              <div class="resumen-sub">Art. 166 · Código de Trabajo CR</div>
+              <div class="resumen-sub">Pago correspondiente al período</div>
             </div>
             <div class="resumen-card resumen-card-green">
               <div class="view-label">Monto a pagar</div>
@@ -463,11 +449,10 @@
             <div class="resumen-card resumen-card-blue">
               <div class="view-label">Período de cálculo</div>
               <div class="resumen-titulo">Ene – Dic {{ viewedAguinaldo.Periodo }}</div>
-              <div class="resumen-sub">12 meses completos</div>
+              <div class="resumen-sub">12 meses</div>
             </div>
           </div>
         </div>
-
       </div>
     }
 
@@ -480,9 +465,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     MODAL CONFIRMAR ELIMINAR  (sin cambios)
-══════════════════════════════════ -->
 <div class="modal-overlay" [class.open]="showDeleteModal" (click)="onOverlayClick($event, 'delete')">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">

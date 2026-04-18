@@ -40,7 +40,6 @@
 .stat-num   { font-family: var(--syne); font-size: 20px; font-weight: 700; color: var(--text); line-height: 1; }
 .stat-label { font-size: 11px; color: var(--muted); margin-top: 3px; }
 
-/* ── PERÍODO CARDS ── */
 .periodo-section { display: flex; flex-direction: column; gap: 12px; }
 .periodo-section-title { font-family: var(--syne); font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
 .periodo-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
@@ -59,7 +58,6 @@
 .periodo-activo .periodo-bar-fill { background: var(--accent); }
 .periodo-bar-pct { font-size: 10px; color: var(--muted); }
 
-/* ── TOOLBAR ── */
 .toolbar { display: flex; align-items: center; gap: 12px; }
 .search-wrap { position: relative; flex: 1; max-width: 340px; }
 .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--muted); pointer-events: none; }
@@ -67,7 +65,6 @@
 .search-input:focus { border-color: var(--accent); }
 .filter-select { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: var(--dm); font-size: 13px; background: #fff; color: var(--text); outline: none; cursor: pointer; }
 
-/* ── TABLE CARD ── */
 .table-card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
 .table-card-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .table-card-title { font-family: var(--syne); font-size: 14px; font-weight: 700; }
@@ -147,7 +144,6 @@ tbody tr:last-child td { border-bottom: none; }
 .info-box { display: flex; align-items: flex-start; gap: 8px; background: #e8f0fb; color: #185fa5; border-radius: 8px; padding: 12px 14px; font-size: 12px; line-height: 1.6; font-weight: 500; }
 .info-box svg { flex-shrink: 0; margin-top: 1px; }
 
-/* ── VIEW MODAL partes originales ── */
 .view-header { display: flex; align-items: center; gap: 16px; padding: 16px; background: #f7f6f2; border-radius: 10px; }
 .view-name { font-family: var(--syne); font-size: 17px; font-weight: 700; }
 .view-sub  { font-size: 12px; color: var(--muted); margin-top: 3px; }
@@ -187,16 +183,11 @@ tbody tr:last-child td { border-bottom: none; }
 .confirm-title { font-family: var(--syne); font-size: 16px; font-weight: 700; }
 .confirm-desc  { font-size: 13px; color: var(--muted); max-width: 300px; line-height: 1.6; }
 
-/* ══════════════════════════════════════════════════
-   NUEVOS ESTILOS — MODAL DETALLE EXPANDIDO
-══════════════════════════════════════════════════ */
-
 .det-section { display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
 .det-section-last { border-bottom: none; padding-bottom: 0; }
 .det-section-title { display: flex; align-items: center; gap: 7px; font-family: var(--syne); font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
 .det-section-title svg { flex-shrink: 0; }
 
-/* Tarjetas hijo */
 .hijo-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border); }
 .hijo-card-blue  { background: #f0f6ff; border-color: #c8dcf5; }
 .hijo-card-green { background: #f0faf6; border-color: #b6e4d3; }
@@ -208,7 +199,6 @@ tbody tr:last-child td { border-bottom: none; }
 .hijo-meta   { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; min-width: 90px; }
 .hijo-id-chip { font-family: var(--syne); font-size: 12px; font-weight: 700; color: var(--text); background: #f0ede8; padding: 2px 7px; border-radius: 6px; display: inline-block; }
 
-/* Resumen período grid */
 .resumen-periodo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .resumen-card { border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 5px; }
 .resumen-card-red   { background: #fff0f2; border: 1px solid #fdd; }
@@ -217,3 +207,74 @@ tbody tr:last-child td { border-bottom: none; }
 .resumen-titulo { font-size: 13px; font-weight: 600; color: var(--text); }
 .resumen-sub    { font-size: 11px; color: var(--muted); }
 .resumen-monto  { font-family: var(--syne); font-size: 18px; font-weight: 700; color: var(--accent2); }
+
+@media (max-width: 1100px) {
+  .stats,
+  .resumen-periodo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  :host {
+    padding: 22px 18px;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 900px;
+  }
+
+  .modal-xl {
+    width: 96vw;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .stats,
+  .view-grid,
+  .form-row,
+  .resumen-periodo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .modal,
+  .modal-sm,
+  .modal-xl {
+    width: 96vw;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
+
+  .modal-header,
+  .modal-footer {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}

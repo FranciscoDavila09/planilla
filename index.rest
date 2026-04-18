@@ -488,6 +488,14 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+// get donde se lista el aguinaldo con el nombre del empleado y el nombre del usuario
+###
+GET {{ BASE_URL }}/AguinaldosServicio/listarAguinaldosVista HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
 /// get donde lista aguinaldo por id*/
 ###
 GET {{ BASE_URL }}/AguinaldosServicio/obtenerPorId?id=201 HTTP/1.1

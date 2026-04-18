@@ -10,6 +10,37 @@ async listarAguinaldos() {
 
 }
 
+// para listar los aguinaldos con propiedades de otras tablas hijas 
+
+async listarAguinaldosVista() {
+  const sql = `
+    SELECT
+      a.IdAguinaldo,
+      a.IdEmpleado,
+      a.Periodo,
+      a.MontoCalculado,
+      a.FechaPago,
+      a.Estado,
+      a.idUsuario,
+
+      e.Nombre AS NombreEmpleado,
+      e.Apellidos AS ApellidosEmpleado,
+      e.CodigoEmpleado,
+
+      u.Nombre AS NombreUsuario,
+      u.Apellidos AS ApellidosUsuario
+
+    FROM dbplanilla.aguinaldos a
+    LEFT JOIN dbplanilla.empleados e
+      ON a.IdEmpleado = e.idEmpleado
+    LEFT JOIN dbplanilla.usuarios u
+      ON a.idUsuario = u.idUsuario
+    ORDER BY a.IdAguinaldo DESC
+  `;
+
+  return await ejecutarConsulta(sql);
+}
+
 
 //Get para obtener aguinaldos por el id
 async obtenerPorId(id) {
