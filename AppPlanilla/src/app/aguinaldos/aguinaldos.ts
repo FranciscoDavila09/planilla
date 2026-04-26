@@ -1,6 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
+
 
 interface Aguinaldo {
   IdAguinaldo: number;
@@ -55,6 +57,7 @@ interface PeriodoResumen {
 })
 export class Aguinaldos implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
   private readonly BASE_URL = 'http://localhost';
   private readonly AGUINALDO_URL = `${this.BASE_URL}/AguinaldosServicio`;
@@ -80,12 +83,12 @@ export class Aguinaldos implements OnInit {
   showViewModal = false;
   showDeleteModal = false;
 
-  searchQuery = '';
-  estadoFilter = '';
-  periodoFilter = '';
+  searchQuery = signal('');
+  estadoFilter = signal('');
+  periodoFilter = signal('');
   periodoActivo = new Date().getFullYear();
 
-  currentPage = 1;
+  currentPage = signal(1);
 
   editId: number | null = null;
   form: Partial<Aguinaldo> = {};
@@ -162,23 +165,44 @@ export class Aguinaldos implements OnInit {
       });
   }
 
-  readonly filteredAguinaldos = computed(() => {
-    const q = this.searchQuery.toLowerCase().trim();
+readonly filteredAguinaldos = computed(() => {
+  const q = this.searchQuery().toLowerCase().trim();
+  const estado = this.estadoFilter();
+  const periodo = this.periodoFilter();
 
-    return this.aguinaldos().filter((a) => {
-      const texto = `${a.IdAguinaldo} ${this.empName(a.IdEmpleado)} ${a.Periodo} ${this.usuarioNombre(a.idUsuario)}`.toLowerCase();
+  return this.aguinaldos().filter((a) => {
+    const texto = `${a.IdAguinaldo} ${this.empName(a.IdEmpleado)} ${a.Periodo} ${this.usuarioNombre(a.idUsuario)}`.toLowerCase();
 
-      const estadoOk = this.estadoFilter === '' || Number(a.Estado) === Number(this.estadoFilter);
-      const periodoOk = this.periodoFilter === '' || Number(a.Periodo) === Number(this.periodoFilter);
+    const estadoOk = estado === '' || Number(a.Estado) === Number(estado);
+    const periodoOk = periodo === '' || Number(a.Periodo) === Number(periodo);
 
-      return (!q || texto.includes(q)) && estadoOk && periodoOk;
-    });
+    return (!q || texto.includes(q)) && estadoOk && periodoOk;
   });
+});
 
-  readonly pageSlice = computed(() => {
-    const start = (this.currentPage - 1) * this.perPage;
-    return this.filteredAguinaldos().slice(start, start + this.perPage);
-  });
+
+onSearchChange(value: string): void {
+  this.searchQuery.set(value);
+  this.filterTable();
+}
+
+onEstadoChange(value: string): void {
+  this.estadoFilter.set(value);
+  this.filterTable();
+}
+
+onPeriodoChange(value: string): void {
+  this.periodoFilter.set(value);
+  this.periodoActivo = value ? Number(value) : new Date().getFullYear();
+  this.filterTable();
+}
+
+
+
+readonly pageSlice = computed(() => {
+  const start = (this.currentPage() - 1) * this.perPage;
+  return this.filteredAguinaldos().slice(start, start + this.perPage);
+});
 
   readonly totalPages = computed(() => {
     const count = Math.ceil(this.filteredAguinaldos().length / this.perPage) || 1;
@@ -313,25 +337,52 @@ export class Aguinaldos implements OnInit {
       .reduce((acc, a) => acc + Number(a.MontoCalculado ?? 0), 0);
   }
 
-  setPeriodo(year: number): void {
-    this.periodoActivo = year;
-    this.periodoFilter = String(year);
-    this.filterTable();
+setPeriodo(year: number): void {
+  this.periodoActivo = year;
+  this.periodoFilter.set(String(year));
+  this.filterTable();
+}
+ filterTable(): void {
+  this.currentPage.set(1);
+}
+
+
+readonly visiblePages = computed(() => {
+  const pages = this.totalPages();
+  const total = pages.length;
+  const current = this.currentPage();
+
+  if (total <= 7) return pages;
+
+  let start = Math.max(1, current - 3);
+  let end = Math.min(total, current + 3);
+
+  if (current <= 4) {
+    start = 1;
+    end = 7;
   }
 
-  filterTable(): void {
-    this.currentPage = 1;
+  if (current >= total - 3) {
+    start = total - 6;
+    end = total;
   }
 
-  changePage(d: number): void {
-    const max = this.totalPages().length;
-    this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
-  }
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+});
 
-  goPage(n: number): void {
-    this.currentPage = n;
-  }
 
+
+
+
+changePage(d: number): void {
+  const max = this.totalPages().length;
+  const nextPage = Math.max(1, Math.min(max, this.currentPage() + d));
+  this.currentPage.set(nextPage);
+}
+
+goPage(n: number): void {
+  this.currentPage.set(n);
+}
   openModal(mode: 'create' | 'edit', id?: number): void {
     if (mode === 'create') {
       this.editId = null;
@@ -421,6 +472,28 @@ export class Aguinaldos implements OnInit {
     this.viewedAguinaldo = a;
     this.showViewModal = true;
   }
+
+
+viewInAnotherPage(a: Aguinaldo): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del aguinaldo',
+    volver: '/aguinaldos',
+    datos: {
+      ID: `#${a.IdAguinaldo}`,
+      Empleado: this.empName(a.IdEmpleado),
+      'ID Empleado': `#${a.IdEmpleado}`,
+      Período: a.Periodo,
+      'Monto calculado': `₡${this.fmtNum(a.MontoCalculado)}`,
+      'Fecha de pago': a.FechaPago ? this.fmtDate(a.FechaPago) : 'Sin fecha',
+      Estado: Number(a.Estado) === 1 ? 'Pagado' : 'Pendiente',
+      'Procesado por': this.usuarioNombre(a.idUsuario)
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
 
   askDelete(id: number): void {
     const a = this.aguinaldos().find((x) => Number(x.IdAguinaldo) === Number(id));

@@ -1,6 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+
 
 interface Prestamo {
   IdPrestamo: number;
@@ -59,6 +61,7 @@ interface Usuario {
 })
 export class Prestamos implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
   private readonly BASE_URL = 'http://localhost';
   private readonly PRESTAMO_URL = `${this.BASE_URL}/PrestamoServicio`;
@@ -402,6 +405,32 @@ export class Prestamos implements OnInit {
     this.viewedPrestamo = prestamo;
     this.showViewModal = true;
   }
+
+viewInAnotherPage(p: Prestamo): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del préstamo',
+    volver: '/prestamos',
+    datos: {
+      ID: `#${p.IdPrestamo}`,
+      Empleado: this.empName(p.IdEmpleado),
+      'ID Empleado': `#${p.IdEmpleado}`,
+      'Monto total': `₡${this.fmtNum(p.MontoTotal)}`,
+      Cuotas: `${this.cuotasPagadas(p)} de ${p.Cuotas}`,
+      'Monto por cuota': `₡${this.fmtNum(p.MontoPorCuota)}`,
+      'Saldo pendiente': `₡${this.fmtNum(p.SaldoPendiente)}`,
+      'Fecha de inicio': this.fmtDateShort(p.FechaInicio),
+      Progreso: `${this.porcentajePagado(p)}%`,
+      'Usuario responsable': this.usuarioName(p.IdUsuario),
+      Estado: Number(p.Estado) === 0 ? 'En curso' : 'Cancelado'
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
+
+
 
   askDelete(id: number): void {
     const p = this.prestamos.find((x) => x.IdPrestamo === id);

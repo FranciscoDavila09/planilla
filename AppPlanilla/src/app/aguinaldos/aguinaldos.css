@@ -278,3 +278,29 @@ tbody tr:last-child td { border-bottom: none; }
     padding-right: 18px;
   }
 }
+
+.page-btns {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 760px;
+}
+
+.pagination {
+  gap: 14px;
+}
+
+.filter-select {
+  min-width: 180px;
+}
+
+@media (max-width: 900px) {
+  .page-btns {
+    justify-content: flex-start;
+    max-width: 100%;
+  }
+
+  .filter-select {
+    flex: 1;
+    min-width: 180px;
+  }
+}

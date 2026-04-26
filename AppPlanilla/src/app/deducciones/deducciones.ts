@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface Deduccion {
   idDeducciones: number;
@@ -36,6 +37,7 @@ interface Deduccion {
 })
 export class Deducciones implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
   private readonly BASE_URL = 'http://localhost';
   private readonly DEDUCCIONES_URL = `${this.BASE_URL}/DeduccionesServicio`;
@@ -324,6 +326,33 @@ export class Deducciones implements OnInit {
     this.viewedDeduccion = d;
     this.showViewModal = true;
   }
+
+
+
+viewInAnotherPage(d: Deduccion): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle de la deducción',
+    volver: '/deducciones',
+    datos: {
+      ID: `#${d.idDeducciones}`,
+      Nombre: d.Nombre,
+      Tipo: this.tipoLabel(d.Nombre),
+      Empleado: this.empName(d),
+      'ID Empleado': `#${d.idEmpleado}`,
+      Monto: `₡${this.fmtNum(d.Monto)}`,
+      Impuestos: d.Impuestos > 0 ? `₡${this.fmtNum(d.Impuestos)}` : '₡0',
+      'Total afectado': `₡${this.fmtNum(d.Monto + d.Impuestos)}`,
+      Préstamo: d.idPrestamo ? `#${d.idPrestamo}` : 'No aplica',
+      Usuario: this.usuarioNombre(d),
+      Estado: d.Estado === 1 ? 'Activa' : 'Inactiva'
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
+
 
   askDelete(id: number): void {
     const d = this.deducciones().find((x) => x.idDeducciones === id);

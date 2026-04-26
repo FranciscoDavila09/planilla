@@ -1,0 +1,138 @@
+:host {
+  display: block;
+  padding: 32px 36px;
+  min-height: 100%;
+  background: #f7f6f2;
+  font-family: var(--dm);
+  color: var(--text);
+}
+
+.display-container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.display-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.display-header h2,
+.empty-card h2 {
+  font-family: var(--syne);
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+
+.display-header p,
+.empty-card p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.card,
+.empty-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.data-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-row:last-of-type {
+  border-bottom: none;
+}
+
+.data-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.data-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+}
+
+.clear-btn {
+  margin-top: 22px;
+  background: #fff0f2;
+  color: var(--accent);
+  border: 1px solid #fdd;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.clear-btn:hover {
+  background: #ffe0e4;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.back-link:hover {
+  background: #d03050;
+}
+
+.empty-card {
+  text-align: center;
+}
+
+.empty-card .back-link {
+  margin-top: 18px;
+}
+
+@media (max-width: 640px) {
+  :host {
+    padding: 22px 18px;
+  }
+
+  .display-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .data-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .data-value {
+    text-align: left;
+  }
+}

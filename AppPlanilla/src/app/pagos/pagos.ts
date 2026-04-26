@@ -1,6 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+
 
 interface PagoVista {
   IdPago: number;
@@ -94,6 +96,7 @@ interface Deduccion {
 })
 export class Pagos implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
   private readonly BASE_URL = 'http://localhost';
   private readonly PAGO_URL = `${this.BASE_URL}/PagoServicio`;
@@ -577,6 +580,32 @@ export class Pagos implements OnInit {
     this.viewedPago = pago;
     this.showViewModal = true;
   }
+
+
+viewInAnotherPage(p: PagoVista): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del pago',
+    volver: '/pagos',
+    datos: {
+      ID: `#${p.IdPago}`,
+      Empleado: this.empName(p.IdEmpleado),
+      'ID Empleado': `#${p.IdEmpleado}`,
+      Planilla: `#${p.IdPlanilla}`,
+      'Monto pagado': `₡${this.fmtNum(p.MontoPagado)}`,
+      'Método de pago': p.MetodoPago,
+      Referencia: p.ReferenciaPago || '—',
+      'Fecha de pago': this.fmtDate(p.FechaPago),
+      'Procesado por': this.usuarioNombre(p.IdUsuarioProcesa),
+      Deducción: p.idDeduccion && p.idDeduccion > 0 ? `#${p.idDeduccion}` : 'No aplica',
+      Feriado: p.idFeriados && p.idFeriados > 0 ? `#${p.idFeriados}` : 'No aplica',
+      Estado: Number(p.Estado) === 1 ? 'Completado' : 'Pendiente'
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
 
   askDelete(id: number): void {
     const pago = this.pagos.find((x) => x.IdPago === id);
