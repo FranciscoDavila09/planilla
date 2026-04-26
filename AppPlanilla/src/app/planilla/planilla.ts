@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface PlanillaData {
   idPlanillas: number;
@@ -42,6 +43,7 @@ interface PeriodoPlanilla {
 })
 export class Planilla implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
   private readonly BASE_URL = 'http://localhost';
   private readonly PLANILLA_URL = `${this.BASE_URL}/PlanillaServicio`;
@@ -329,6 +331,28 @@ statusClass(estado: string): string {
     this.getDetalle(id);
     this.showViewModal = true;
   }
+
+
+viewInAnotherPage(p: PlanillaData): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle de la planilla',
+    volver: '/planilla',
+    datos: {
+      ID: `#${p.idPlanillas}`,
+      Período: p.descPeriodo || `Período #${p.idPeriodoPlanilla}`,
+      'Fecha de creación': this.fmtDate(p.FechaCreacion),
+      Usuario: `#${p.IdUsuario}`,
+      'Control de horarios': `#${p.idControlHorarios}`,
+      'Período planilla': `#${p.idPeriodoPlanilla}`,
+      Estado: p.EstadoPlanilla
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
+
 
   askDelete(id: number): void {
     const planilla = this.planillas().find((p) => p.idPlanillas === id);

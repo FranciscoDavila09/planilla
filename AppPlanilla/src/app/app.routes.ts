@@ -1,6 +1,14 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
+
+{
+  path: 'ver-datos',
+  loadComponent: () => import('./display/display').then(m => m.DisplayComponent)
+},
+
+
+
   {
     path: 'panel',
     loadComponent: () => import('./panel/panel').then(m => m.Panel)

@@ -91,27 +91,27 @@
       <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.5"/>
       <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
     </svg>
-    <input
-      class="search-input"
-      type="text"
-      placeholder="Buscar por ID, empleado…"
-      [(ngModel)]="searchQuery"
-      (input)="filterTable()"
-    />
+<input
+  class="search-input"
+  type="text"
+  placeholder="Buscar por ID, empleado…"
+  [ngModel]="searchQuery()"
+  (ngModelChange)="onSearchChange($event)"
+/>
   </div>
 
-  <select class="filter-select" [(ngModel)]="estadoFilter" (change)="filterTable()">
-    <option value="">Todos los estados</option>
-    <option value="1">Pagado</option>
-    <option value="0">Pendiente</option>
-  </select>
+<select class="filter-select" [ngModel]="estadoFilter()" (ngModelChange)="onEstadoChange($event)">
+  <option value="">Todos los estados</option>
+  <option value="1">Pagado</option>
+  <option value="0">Pendiente</option>
+</select>
 
-  <select class="filter-select" [(ngModel)]="periodoFilter" (change)="filterTable()">
-    <option value="">Todos los períodos</option>
-    @for (p of periodos(); track p.year) {
-      <option [value]="p.year">{{ p.year }}</option>
-    }
-  </select>
+<select class="filter-select" [ngModel]="periodoFilter()" (ngModelChange)="onPeriodoChange($event)">
+  <option value="">Todos los períodos</option>
+  @for (p of periodos(); track p.year) {
+    <option [value]="p.year">{{ p.year }}</option>
+  }
+</select>
 </div>
 
 <div class="table-card">
@@ -173,7 +173,8 @@
           </td>
           <td>
             <div class="actions">
-              <div class="icon-btn view" title="Ver" (click)="viewAguinaldo(a.IdAguinaldo)">
+              <!-- <div class="icon-btn view" title="Ver" (click)="viewAguinaldo(a.IdAguinaldo)"> -->
+                <div class="icon-btn view" title="Ver más" (click)="viewInAnotherPage(a)">
                 <svg viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
                   <path d="M2 8c1.5-3 9-4.5 12 0-1.5 3-9 4.5-12 0z" stroke="currentColor" stroke-width="1.4"/>
@@ -205,8 +206,8 @@
 
   <div class="pagination">
     <div class="page-info">
-      Mostrando {{ filteredAguinaldos().length ? (currentPage - 1) * perPage + 1 : 0 }}–{{
-        min(currentPage * perPage, filteredAguinaldos().length)
+      Mostrando {{ filteredAguinaldos().length ? (currentPage() - 1) * perPage + 1 : 0 }}–{{
+        min(currentPage() * perPage, filteredAguinaldos().length)
       }}
       de {{ filteredAguinaldos().length }}
     </div>
@@ -216,8 +217,8 @@
           <path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      @for (pg of totalPages(); track pg) {
-        <div class="page-btn" [class.active]="pg === currentPage" (click)="goPage(pg)">{{ pg }}</div>
+      @for (pg of visiblePages(); track pg) {
+        <div class="page-btn" [class.active]="pg === currentPage()" (click)="goPage(pg)">{{ pg }}</div>
       }
       <div class="page-btn" (click)="changePage(1)">
         <svg viewBox="0 0 16 16" fill="none">
