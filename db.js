@@ -4,7 +4,8 @@
 //   return await mysql.createConnection({
 //     host: process.env.DB_HOST || "127.0.0.1",
 //     user: process.env.DB_USER || "root",
-//     password: process.env.MYSQLPASS || "123456",
+//     password: process.env.MYSQLPASS || "admin
+// ",
 //     database: process.env.DB_NAME || "dbplanilla",
 //     port: process.env.MYSQLPORT || 3306,
 //     multipleStatements: true,
@@ -54,8 +55,8 @@
 //     if (!tabla || tabla === "auditoria") return;
 
 //     const sqlAuditoria = `
-//       INSERT INTO auditoria 
-//       (tabla_afectada, accion, usuario, registro_id, datos_anteriores, datos_nuevos) 
+//       INSERT INTO auditoria
+//       (tabla_afectada, accion, usuario, registro_id, datos_anteriores, datos_nuevos)
 //       VALUES (?, ?, ?, ?, ?, ?)
 //     `;
 
@@ -153,15 +154,13 @@
 
 // module.exports = { ejecutarConsulta, crearObjetoConexion };
 
-
-
 const mysql = require("mysql2/promise");
 
 async function crearObjetoConexion() {
   return await mysql.createConnection({
     host: process.env.DB_HOST || "127.0.0.1",
     user: process.env.DB_USER || "root",
-    password: process.env.MYSQLPASS || "123456",
+    password: process.env.MYSQLPASS || "admin",
     database: process.env.DB_NAME || "dbplanilla",
     port: process.env.MYSQLPORT || 3306,
     multipleStatements: true,
@@ -270,7 +269,12 @@ async function ejecutarConsulta(sql, parametros = []) {
       : null;
 
     // Para UPDATE
-    if (accion === "UPDATE" && parametros.length > 0 && tabla && llavePrimaria) {
+    if (
+      accion === "UPDATE" &&
+      parametros.length > 0 &&
+      tabla &&
+      llavePrimaria
+    ) {
       registroId = parametros[parametros.length - 1];
 
       const [rows] = await conexion.query(
@@ -284,7 +288,12 @@ async function ejecutarConsulta(sql, parametros = []) {
     }
 
     // Para DELETE
-    if (accion === "DELETE" && parametros.length > 0 && tabla && llavePrimaria) {
+    if (
+      accion === "DELETE" &&
+      parametros.length > 0 &&
+      tabla &&
+      llavePrimaria
+    ) {
       registroId = parametros[0];
 
       const [rows] = await conexion.query(
@@ -306,7 +315,12 @@ async function ejecutarConsulta(sql, parametros = []) {
     }
 
     // Obtener datos nuevos para INSERT y UPDATE
-    if ((accion === "INSERT" || accion === "UPDATE") && registroId && tabla && llavePrimaria) {
+    if (
+      (accion === "INSERT" || accion === "UPDATE") &&
+      registroId &&
+      tabla &&
+      llavePrimaria
+    ) {
       const [rows] = await conexion.query(
         `SELECT * FROM \`${tabla}\` WHERE \`${llavePrimaria}\` = ?`,
         [registroId],
