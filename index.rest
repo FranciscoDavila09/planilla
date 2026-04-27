@@ -777,7 +777,8 @@ Origin: {{ BASE_URL }}
   "HoraEntrada": "08:00:00",
   "HoraSalida": "17:00:00",
   "idEmpleados": 201,
-  "idUsuarios": 1
+  "idUsuarios": 1,
+  "Fecha":"2026-04-27"
 }
 
 //put para actualizar un controlAsistencia por id
@@ -792,7 +793,8 @@ Origin: {{ BASE_URL }}
   "HoraEntrada": "08:30:00",
   "HoraSalida": "17:30:00",
   "idEmpleados": 202,
-  "idUsuarios": 1
+  "idUsuarios": 1,
+  "Fecha":"2026-04-27"
 }
 
 //delete para eliminar un controlAsistencia por id

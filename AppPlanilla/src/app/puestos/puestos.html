@@ -27,7 +27,7 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ puestos.length }}</div>
+      <div class="stat-num">{{ Puesto().length }}</div>
       <div class="stat-label">Total puestos</div>
     </div>
   </div>
@@ -149,7 +149,7 @@
           </td>
           <td>
             <span class="status-badge" [class]="'status-badge ' + estadoClass(p.Estado)">
-              {{ p.Estado }}
+              {{ estadoLabel(p.Estado) }}
             </span>
           </td>
           <td>
@@ -296,18 +296,18 @@
         <div class="form-group">
           <label class="form-label">Empleado asignado</label>
           <select class="form-select" [(ngModel)]="form.idEmpleado">
-            <option value="">Sin asignar</option>
-            @for (e of empleados; track e.id) {
-              <option [value]="e.id">{{ e.nombre }}</option>
+            <option [ngValue]="undefined">Sin asignar</option>
+            @for (e of Empleados(); track e.idEmpleado) {
+              <option [ngValue]="e.idEmpleado">{{ e.Nombre }} {{ e.Apellidos }}</option>
             }
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">Usuario responsable</label>
           <select class="form-select" [(ngModel)]="form.idUsuario">
-            <option value="">Seleccionar…</option>
-            @for (u of usuarios; track u.id) {
-              <option [value]="u.id">{{ u.nombre }}</option>
+            <option [ngValue]="undefined">Seleccionar…</option>
+            @for (u of Usuarios(); track u.idUsuario) {
+              <option [ngValue]="u.idUsuario">{{ u.Nombre }} {{ u.Apellidos }}</option>
             }
           </select>
         </div>
@@ -353,7 +353,7 @@
             [class]="'status-badge ' + estadoClass(viewedPuesto.Estado)"
             style="margin-left: auto"
           >
-            {{ viewedPuesto.Estado }}
+            {{ estadoLabel(viewedPuesto.Estado) }}
           </span>
         </div>
         <div class="view-desc" *ngIf="viewedPuesto.Descripcion">
@@ -366,7 +366,7 @@
           </div>
           <div class="view-field">
             <div class="view-label">Estado</div>
-            <div class="view-val">{{ viewedPuesto.Estado }}</div>
+            <div class="view-val">{{ estadoLabel(viewedPuesto.Estado) }}</div>
           </div>
           <div class="view-field">
             <div class="view-label">Empleado asignado</div>
