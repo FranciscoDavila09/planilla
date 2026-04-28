@@ -1,7 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-
-
-
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 
@@ -31,6 +29,9 @@ interface Empleado {
 })
 export class Empleados implements OnInit {
   private readonly http = inject(HttpClient);
+  
+  private readonly router = inject(Router);
+
   private readonly API_URL = 'http://localhost/EmpleadoServicio/';
 
   protected readonly Empleados = signal<Empleado[]>([]);
@@ -123,11 +124,19 @@ export class Empleados implements OnInit {
 
   fmtSalary(n: number) { return '₡' + Number(n).toLocaleString('es-CR'); }
 
-  fmtDate(d: string) {
-    if (!d) return '—';
-    const [y, m, day] = d.split('-');
-    return `${day}/${m}/${y}`;
-  }
+fmtDate(d: string) {
+  if (!d) return '—';
+
+  const fecha = String(d).includes('T')
+    ? String(d).split('T')[0]
+    : String(d);
+
+  const [y, m, day] = fecha.split('-');
+
+  if (!y || !m || !day) return fecha;
+
+  return `${day}/${m}/${y}`;
+}
 
   estadoLabel(e: number) {
     if (e === 1) return 'Activo';
@@ -203,6 +212,33 @@ export class Empleados implements OnInit {
     this.viewedEmployee = this.Empleados().find(x => x.idEmpleado === id)!;
     this.showViewModal = true;
   }
+
+
+viewInAnotherPage(e: Empleado): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del empleado',
+    volver: '/empleados',
+    datos: {
+      ID: `#${e.idEmpleado}`,
+      Nombre: `${e.Nombre} ${e.Apellidos}`,
+      Identificación: e.Identificacion,
+      Correo: e.Correo,
+      Teléfono: e.Telefono,
+      Código: e.CodigoEmpleado,
+      Salario: this.fmtSalary(e.Salario),
+      Estado: this.estadoLabel(e.Estado),
+      Departamento: `#${e.idDepartamento}`,
+      'Fecha de ingreso': this.fmtDate(e.FechaIngreso),
+      'Hora entrada': e.HoraEntrada,
+      'Hora salida': e.HoraSalida,
+      'Cuenta bancaria': e.CuentaBancaria
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
 
   askDelete(id: number) {
     const e = this.Empleados().find(x => x.idEmpleado === id)!;

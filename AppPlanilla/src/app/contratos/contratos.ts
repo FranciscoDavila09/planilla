@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface Contrato {
   IdContrato: number;
@@ -40,6 +41,7 @@ interface Usuario {
 export class Contratos implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
 
   private readonly BASE_URL = 'http://localhost';
   private readonly CONTRATO_URL = `${this.BASE_URL}/ContratoServicio`;
@@ -368,6 +370,29 @@ export class Contratos implements OnInit {
     this.viewedContrato = contrato;
     this.showViewModal = true;
   }
+
+viewInAnotherPage(c: Contrato): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del contrato',
+    volver: '/contratos',
+    datos: {
+      ID: `#${c.IdContrato}`,
+      Empleado: this.getNombreEmpleado(c.IdEmpleado),
+      'ID Empleado': `#${c.IdEmpleado}`,
+      'Tipo de contrato': c.TipoContrato,
+      'Fecha de inicio': this.fmtFecha(c.FechaInicio),
+      'Fecha de fin': c.FechaFin ? this.fmtFecha(c.FechaFin) : 'Indefinido',
+      Duración: this.getDuracion(c.FechaInicio, c.FechaFin),
+      'Salario pactado': this.fmtSalary(c.SalarioPactado),
+      Estado: this.estadoTexto(c.Estado),
+      'Usuario responsable': this.getNombreUsuario(c.usuarioId)
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
 
   editFromView(): void {
     this.showViewModal = false;

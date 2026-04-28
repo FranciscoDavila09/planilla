@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-
+import { Router } from '@angular/router';
 interface Puesto {
   idPuestos: number;
   NombrePuesto: string;
@@ -36,6 +36,8 @@ interface Usuario {
 export class Puestos implements OnInit {
 
   private readonly http = inject(HttpClient);
+private readonly router = inject(Router);
+
   private readonly API_URL      = 'http://localhost';
   private readonly PUESTO_URL   = `${this.API_URL}/PuestosServicio/`;
   private readonly EMPLEADO_URL = `${this.API_URL}/EmpleadoServicio/`;
@@ -215,9 +217,9 @@ eliminarPuesto(id: number): void {
       return;
     }
     if (this.editId) {
-      this.actualizarPuesto(this.editId, this.form); // ✅ llama al backend
+      this.actualizarPuesto(this.editId, this.form); 
     } else {
-      this.crearPuesto(this.form); // ✅ llama al backend
+      this.crearPuesto(this.form); 
     }
     this.showFormModal = false;
   }
@@ -226,6 +228,26 @@ eliminarPuesto(id: number): void {
     this.viewedPuesto = this.Puesto().find(p => p.idPuestos === id)!;
     this.showViewModal = true;
   }
+
+  viewInAnotherPage(p: Puesto): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del puesto',
+    volver: '/puestos',
+    datos: {
+      ID: `#${p.idPuestos}`,
+      Puesto: p.NombrePuesto,
+      Descripción: p.Descripcion || '—',
+      'Salario base': this.fmtSalary(p.SalarioBase),
+      Estado: this.estadoLabel(p.Estado),
+      'Empleado asignado': p.idEmpleado ? this.getNombreEmpleado(p.idEmpleado) : 'Sin asignar',
+      'ID Empleado': p.idEmpleado ? `#${p.idEmpleado}` : 'No aplica',
+      'Usuario responsable': p.idUsuario ? this.getNombreUsuario(p.idUsuario) : '—',
+      'ID Usuario': p.idUsuario ? `#${p.idUsuario}` : 'No aplica'
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
 
   editFromView() {
     this.showViewModal = false;

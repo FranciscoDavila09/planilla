@@ -650,3 +650,9 @@ tbody tr:last-child td {
 .av-teal {
   background: #0a7a8f;
 }
+
+.page-btns {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 260px;
+}

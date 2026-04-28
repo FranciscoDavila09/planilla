@@ -95,10 +95,10 @@
       type="text"
       placeholder="Buscar empleado..."
       [(ngModel)]="searchQuery"
-      (input)="currentPage = 1"
+     (input)="filterTable()"
     />
   </div>
-  <select class="filter-select" [(ngModel)]="estadoFiltro" (change)="currentPage = 1">
+  <select class="filter-select" [(ngModel)]="estadoFiltro" (change)="filterTable()">
     <option value="">Todos los estados</option>
     <option value="Pendiente">Pendiente</option>
     <option value="Aprobado">Aprobado</option>
@@ -167,6 +167,13 @@
           </td>
           <td>
             <div class="actions">
+           <div class="icon-btn view" title="Ver detalle" (click)="viewInAnotherPage(v)">
+              <svg viewBox="0 0 16 16" fill="none">
+               <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M2 8c1.5-3 9-4.5 12 0-1.5 3-9 4.5-12 0z"
+               stroke="currentColor" stroke-width="1.4"/>
+            </svg>
+              </div>
               <div class="icon-btn edit" title="Editar" (click)="openModal('edit', v)">
                 <svg viewBox="0 0 16 16" fill="none">
                   <path
@@ -219,7 +226,7 @@
           />
         </svg>
       </div>
-      @for (p of totalPages; track p) {
+    @for (p of visiblePages; track p) {
         <div class="page-btn" [class.active]="p === currentPage" (click)="goPage(p)">{{ p }}</div>
       }
       <div class="page-btn" (click)="changePage(1)">
@@ -261,7 +268,7 @@
           <select class="form-select" [(ngModel)]="form.IdEmpleado">
             <option [ngValue]="undefined">Seleccionar empleado...</option>
             @for (e of empleados(); track e.IdEmpleado) {
-              <option [value]="e.IdEmpleado">{{ e.Nombre }} {{ e.Apellidos }}</option>
+              <option [ngValue]="e.IdEmpleado">{{ e.Nombre }} {{ e.Apellidos }}</option>
             }
           </select>
         </div>
@@ -316,10 +323,10 @@
         <div class="form-group">
           <label class="form-label">Estado</label>
           <select class="form-select" [(ngModel)]="form.Estado">
-            <option [value]="1">Pendiente</option>
-            <option [value]="2">Aprobado</option>
-            <option [value]="3">Rechazado</option>
-            <option [value]="4">En curso</option>
+            <option [ngValue]="1">Pendiente</option>
+            <option [ngValue]="2">Aprobado</option>
+            <option [ngValue]="3">Rechazado</option>
+            <option [ngValue]="4">En curso</option>
           </select>
         </div>
       </div>
@@ -329,7 +336,7 @@
           <select class="form-select" [(ngModel)]="form.UsuarioAprueba">
             <option [ngValue]="null">Sin asignar</option>
             @for (u of usuarios(); track u.IdUsuario) {
-              <option [value]="u.IdUsuario">{{ u.Nombre }} {{ u.Apellidos }}</option>
+              <option [ngValue]="u.IdUsuario">{{ u.Nombre }} {{ u.Apellidos }}</option>
             }
           </select>
         </div>

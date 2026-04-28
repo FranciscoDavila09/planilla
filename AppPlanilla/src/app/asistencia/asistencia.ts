@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface ControlAsistencia {
   idControlAsistencia: number;
@@ -30,6 +31,9 @@ interface Empleado {
 })
 export class Asistencia implements OnInit, OnDestroy {
   private readonly http = inject(HttpClient);
+
+  private readonly router = inject(Router);
+
   private readonly API_URL = 'http://localhost';
   private readonly ASISTENCIA_URL = `${this.API_URL}/ControlAsistenciaServicio/`;
   private readonly EMPLEADO_URL = `${this.API_URL}/EmpleadoServicio/`;
@@ -310,7 +314,7 @@ export class Asistencia implements OnInit, OnDestroy {
         HoraSalida: '',
         estado: 'Presente',
         idUsuarios: 1,
-        fecha: this.hoyCR() // ✅ fecha CR
+        fecha: this.hoyCR() 
       };
     } else if (registro) {
       this.editId = registro.idControlAsistencia;
@@ -318,6 +322,31 @@ export class Asistencia implements OnInit, OnDestroy {
     }
     this.showFormModal = true;
   }
+
+
+viewInAnotherPage(r: ControlAsistencia): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle de asistencia',
+    volver: '/asistencia',
+    datos: {
+      ID: `#${r.idControlAsistencia}`,
+      Empleado: r.nombreEmpleado,
+      'ID Empleado': `#${r.idEmpleados}`,
+      Fecha: this.fmtFecha(r.fecha),
+      'Hora entrada': r.HoraEntrada || '—',
+      'Hora salida': r.HoraSalida || '—',
+      'Horas trabajadas': this.calcularHoras(r.HoraEntrada, r.HoraSalida),
+      Estado: r.estado,
+      'Registrado por': r.idUsuarios ? 'Administrador' : 'Empleado',
+      Observación: r.observacion || '—'
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
+
 
   saveRegistro() {
     if (!this.form.idEmpleados) {

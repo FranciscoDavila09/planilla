@@ -2,6 +2,8 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
+import { Router } from '@angular/router';
+
 interface ControlHorario {
   IdControl: number;
   IdEmpleado: number;
@@ -41,6 +43,7 @@ interface Usuario {
 export class Horarios implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
 
   private readonly BASE_URL = 'http://localhost';
   private readonly HORARIO_URL = `${this.BASE_URL}/ControlHorarioServicio`;
@@ -297,6 +300,31 @@ export class Horarios implements OnInit {
 
     this.showFormModal = true;
   }
+
+
+
+
+viewInAnotherPage(h: ControlHorario): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del horario',
+    volver: '/horarios',
+    datos: {
+      ID: `#${h.IdControl}`,
+      Empleado: this.getNombreEmpleado(h.IdEmpleado),
+      'ID Empleado': `#${h.IdEmpleado}`,
+      Fecha: this.fmtFecha(h.Fecha),
+      'Hora entrada': h.HoraEntrada || '—',
+      'Hora salida': h.HoraSalida || '—',
+      'Horas normales': this.mostrarHoras(h.HorasNormales),
+      'Horas extra': this.mostrarHoras(h.HorasExtra),
+      Usuario: this.usuarioNombre(h.idUsuarios),
+      Estado: this.estadoTexto(h.Estado)
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
 
   saveHorario(): void {
     if (!this.form.IdEmpleado || Number(this.form.IdEmpleado) <= 0) {
