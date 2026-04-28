@@ -1,4 +1,3 @@
-<!-- ── PAGE HEADER ── -->
 <div class="page-header">
   <div>
     <div class="page-title">Gestión de <span>Vacaciones</span></div>
@@ -6,31 +5,43 @@
   </div>
   <button class="btn btn-primary" (click)="openModal('create')">
     <svg viewBox="0 0 16 16" fill="none">
-      <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
     </svg>
     Nueva solicitud
   </button>
 </div>
 
-<!-- ── STATS ── -->
 <div class="stats">
   <div class="stat-card">
     <div class="stat-icon blue">
       <svg viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <rect
+          x="2"
+          y="3"
+          width="12"
+          height="11"
+          rx="1.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+        />
+        <path
+          d="M5 1v4M11 1v4M2 7h12"
+          stroke="currentColor"
+          stroke-width="1.2"
+          stroke-linecap="round"
+        />
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ vacaciones.length }}</div>
+      <div class="stat-num">{{ vacaciones().length }}</div>
       <div class="stat-label">Total solicitudes</div>
     </div>
   </div>
   <div class="stat-card">
     <div class="stat-icon amber">
       <svg viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M8 5v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
+        <path d="M8 5v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
       </svg>
     </div>
     <div>
@@ -41,7 +52,13 @@
   <div class="stat-card">
     <div class="stat-icon green">
       <svg viewBox="0 0 16 16" fill="none">
-        <path d="M3 8l3.5 3.5L13 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path
+          d="M3 8l3.5 3.5L13 4"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
     </div>
     <div>
@@ -52,7 +69,12 @@
   <div class="stat-card">
     <div class="stat-icon red">
       <svg viewBox="0 0 16 16" fill="none">
-        <path d="M8 2l1.5 4.5H14l-3.8 2.8 1.5 4.5L8 11.1l-3.7 2.7 1.5-4.5L2 6.5h4.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+        <path
+          d="M8 2l1.5 4.5H14l-3.8 2.8 1.5 4.5L8 11.1l-3.7 2.7 1.5-4.5L2 6.5h4.5z"
+          stroke="currentColor"
+          stroke-width="1.3"
+          stroke-linejoin="round"
+        />
       </svg>
     </div>
     <div>
@@ -62,17 +84,21 @@
   </div>
 </div>
 
-<!-- ── TOOLBAR ── -->
 <div class="toolbar">
   <div class="search-wrap">
     <svg viewBox="0 0 16 16" fill="none">
-      <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.5"/>
-      <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.5" />
+      <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
     </svg>
-    <input class="search-input" type="text" placeholder="Buscar empleado..."
-      [(ngModel)]="searchQuery" (input)="filterTable()" />
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar empleado..."
+      [(ngModel)]="searchQuery"
+      (input)="currentPage = 1"
+    />
   </div>
-  <select class="filter-select" [(ngModel)]="estadoFiltro" (change)="filterTable()">
+  <select class="filter-select" [(ngModel)]="estadoFiltro" (change)="currentPage = 1">
     <option value="">Todos los estados</option>
     <option value="Pendiente">Pendiente</option>
     <option value="Aprobado">Aprobado</option>
@@ -81,7 +107,6 @@
   </select>
 </div>
 
-<!-- ── TABLE ── -->
 <div class="table-card">
   <div class="table-card-header">
     <div class="table-card-title">Solicitudes de vacaciones</div>
@@ -108,7 +133,7 @@
           <td class="id-cell">{{ v.IdVacacion }}</td>
           <td>
             <div class="emp-cell">
-              <div class="emp-avatar" [class]="colorFor(v.IdEmpleado)">
+              <div class="emp-avatar" [ngClass]="colorFor(v.IdEmpleado)">
                 {{ inicialesNombre(getNombreEmpleado(v.IdEmpleado)) }}
               </div>
               <div>
@@ -126,8 +151,8 @@
             </div>
           </td>
           <td>
-            <span class="status-badge" [class]="'status-badge ' + estadoClass(v.Estado)">
-              {{ v.Estado }}
+            <span [ngClass]="'status-badge ' + estadoClass(v.Estado)">
+              {{ estadoLabel(v.Estado) }}
             </span>
           </td>
           <td>
@@ -142,26 +167,25 @@
           </td>
           <td>
             <div class="actions">
-              @if (v.Estado === 'Pendiente') {
-                <div class="icon-btn approve" title="Aprobar" (click)="aprobar(v.IdVacacion)">
-                  <svg viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8l3.5 3.5L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </div>
-                <div class="icon-btn reject" title="Rechazar" (click)="rechazar(v.IdVacacion)">
-                  <svg viewBox="0 0 16 16" fill="none">
-                    <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
-                </div>
-              }
-              <div class="icon-btn edit" title="Editar" (click)="openModal('edit', v.IdVacacion)">
+              <div class="icon-btn edit" title="Editar" (click)="openModal('edit', v)">
                 <svg viewBox="0 0 16 16" fill="none">
-                  <path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                  <path
+                    d="M11 2l3 3-8 8H3v-3l8-8z"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </div>
               <div class="icon-btn delete" title="Eliminar" (click)="askDelete(v.IdVacacion)">
                 <svg viewBox="0 0 16 16" fill="none">
-                  <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </div>
             </div>
@@ -169,36 +193,65 @@
         </tr>
       }
       @if (pageSlice.length === 0) {
-        <tr><td colspan="8" class="empty-row">No se encontraron solicitudes</td></tr>
+        <tr>
+          <td colspan="8" class="empty-row">No se encontraron solicitudes</td>
+        </tr>
       }
     </tbody>
   </table>
 
   <div class="pagination">
     <div class="page-info">
-      Mostrando {{ filteredVacaciones.length ? (currentPage - 1) * perPage + 1 : 0 }}-{{ min(currentPage * perPage, filteredVacaciones.length) }} de {{ filteredVacaciones.length }}
+      Mostrando {{ filteredVacaciones.length ? (currentPage - 1) * perPage + 1 : 0 }}-{{
+        min(currentPage * perPage, filteredVacaciones.length)
+      }}
+      de {{ filteredVacaciones.length }}
     </div>
     <div class="page-btns">
       <div class="page-btn" (click)="changePage(-1)">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            d="M10 4l-4 4 4 4"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
       </div>
       @for (p of totalPages; track p) {
         <div class="page-btn" [class.active]="p === currentPage" (click)="goPage(p)">{{ p }}</div>
       }
       <div class="page-btn" (click)="changePage(1)">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            d="M6 4l4 4-4 4"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
       </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL CREAR/EDITAR -->
 <div class="modal-overlay" [class.open]="showFormModal" (click)="onOverlayClick($event, 'form')">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <div class="modal-title">{{ editId ? 'Editar solicitud' : 'Nueva solicitud de vacaciones' }}</div>
+      <div class="modal-title">
+        {{ editId ? 'Editar solicitud' : 'Nueva solicitud de vacaciones' }}
+      </div>
       <button class="modal-close" (click)="showFormModal = false">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            d="M4 4l8 8M12 4l-8 8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
       </button>
     </div>
     <div class="modal-body">
@@ -206,9 +259,9 @@
         <div class="form-group full">
           <label class="form-label">Empleado</label>
           <select class="form-select" [(ngModel)]="form.IdEmpleado">
-            <option value="">Seleccionar empleado...</option>
-            @for (e of empleados; track e.id) {
-              <option [value]="e.id">{{ e.nombre }}</option>
+            <option [ngValue]="undefined">Seleccionar empleado...</option>
+            @for (e of empleados(); track e.IdEmpleado) {
+              <option [value]="e.IdEmpleado">{{ e.Nombre }} {{ e.Apellidos }}</option>
             }
           </select>
         </div>
@@ -216,34 +269,57 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Fecha de inicio</label>
-          <input class="form-input" type="date" [(ngModel)]="form.FechaInicio" (change)="calcularDias()"/>
+          <input
+            class="form-input"
+            type="date"
+            [(ngModel)]="form.FechaInicio"
+            (change)="calcularDias()"
+          />
         </div>
         <div class="form-group">
           <label class="form-label">Fecha de fin</label>
-          <input class="form-input" type="date" [(ngModel)]="form.FechaFin" (change)="calcularDias()"/>
+          <input
+            class="form-input"
+            type="date"
+            [(ngModel)]="form.FechaFin"
+            (change)="calcularDias()"
+          />
         </div>
       </div>
       @if (form.FechaInicio && form.FechaFin) {
         <div class="dias-preview">
           <svg viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <rect
+              x="2"
+              y="3"
+              width="12"
+              height="11"
+              rx="1.5"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <path
+              d="M5 1v4M11 1v4M2 7h12"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+            />
           </svg>
-          <span>{{ form.DiasSolicitados }} dia{{ form.DiasSolicitados !== 1 ? 's' : '' }} calculado{{ form.DiasSolicitados !== 1 ? 's' : '' }}</span>
+          <span>{{ form.DiasSolicitados }} día(s) calculado(s)</span>
         </div>
       }
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Dias solicitados</label>
-          <input class="form-input" type="number" [(ngModel)]="form.DiasSolicitados" min="1"/>
+          <label class="form-label">Días solicitados</label>
+          <input class="form-input" type="number" [(ngModel)]="form.DiasSolicitados" min="1" />
         </div>
         <div class="form-group">
           <label class="form-label">Estado</label>
           <select class="form-select" [(ngModel)]="form.Estado">
-            <option value="Pendiente">Pendiente</option>
-            <option value="Aprobado">Aprobado</option>
-            <option value="Rechazado">Rechazado</option>
-            <option value="En curso">En curso</option>
+            <option [value]="1">Pendiente</option>
+            <option [value]="2">Aprobado</option>
+            <option [value]="3">Rechazado</option>
+            <option [value]="4">En curso</option>
           </select>
         </div>
       </div>
@@ -251,9 +327,9 @@
         <div class="form-group full">
           <label class="form-label">Aprobado por</label>
           <select class="form-select" [(ngModel)]="form.UsuarioAprueba">
-            <option value="">Sin asignar</option>
-            @for (u of usuarios; track u.id) {
-              <option [value]="u.id">{{ u.nombre }}</option>
+            <option [ngValue]="null">Sin asignar</option>
+            @for (u of usuarios(); track u.IdUsuario) {
+              <option [value]="u.IdUsuario">{{ u.Nombre }} {{ u.Apellidos }}</option>
             }
           </select>
         </div>
@@ -266,23 +342,39 @@
   </div>
 </div>
 
-<!-- MODAL ELIMINAR -->
-<div class="modal-overlay" [class.open]="showDeleteModal" (click)="onOverlayClick($event, 'delete')">
+<div
+  class="modal-overlay"
+  [class.open]="showDeleteModal"
+  (click)="onOverlayClick($event, 'delete')"
+>
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <div class="modal-title">Confirmar eliminacion</div>
+      <div class="modal-title">Confirmar eliminación</div>
       <button class="modal-close" (click)="showDeleteModal = false">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            d="M4 4l8 8M12 4l-8 8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
       </button>
     </div>
     <div class="confirm-body">
       <div class="confirm-icon">
         <svg viewBox="0 0 24 24" fill="none">
-          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path
+            d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
       </div>
-      <div class="confirm-title">Eliminar solicitud?</div>
-      <div class="confirm-desc">Esta accion no se puede deshacer. La solicitud de vacaciones sera eliminada permanentemente.</div>
+      <div class="confirm-title">¿Eliminar solicitud?</div>
+      <div class="confirm-desc">Esta acción no se puede deshacer.</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancelar</button>

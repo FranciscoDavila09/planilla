@@ -12,7 +12,7 @@ interface ControlAsistencia {
   estado: string;
   observacion?: string;
   idUsuarios?: number;
-  fecha: string | null; // Cambiado para permitir null explícito
+  fecha: string | null;
 }
 
 interface Empleado {
@@ -33,6 +33,7 @@ export class Asistencia implements OnInit, OnDestroy {
   private readonly API_URL = 'http://localhost';
   private readonly ASISTENCIA_URL = `${this.API_URL}/ControlAsistenciaServicio/`;
   private readonly EMPLEADO_URL = `${this.API_URL}/EmpleadoServicio/`;
+  private readonly TZ = 'America/Costa_Rica';
 
   protected readonly Registros = signal<ControlAsistencia[]>([]);
   protected readonly Empleados = signal<Empleado[]>([]);
@@ -66,15 +67,27 @@ export class Asistencia implements OnInit, OnDestroy {
   // ── Eliminar ──
   deleteTargetId: number | null = null;
 
+  // ── Helpers zona horaria CR ──
+  private hoyCR(): string {
+    // en-CA devuelve YYYY-MM-DD, ideal para comparaciones con la BD
+    return new Date().toLocaleDateString('en-CA', { timeZone: this.TZ });
+  }
+
+  private ahoraCR(): string {
+    return new Date().toLocaleTimeString('es-CR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: this.TZ
+    });
+  }
+
   ngOnInit() {
     this.actualizarReloj();
     this.clockInterval = setInterval(() => this.actualizarReloj(), 1000);
-    
-    // Inicializamos con la fecha de hoy para el filtro por defecto
-    const hoy = new Date().toISOString().split('T')[0];
     this.fechaFiltro = '';
-    
-    this.getEmpleados(); // Primero empleados para poder mapear nombres
+    this.getEmpleados();
     this.getRegistros();
   }
 
@@ -84,36 +97,46 @@ export class Asistencia implements OnInit, OnDestroy {
 
   private actualizarReloj() {
     const now = new Date();
-    this.horaActual = now.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    this.fechaActual = now.toLocaleDateString('es-CR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    this.horaActual = now.toLocaleTimeString('es-CR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: this.TZ   // ✅ forzado a CR
+    });
+    this.fechaActual = now.toLocaleDateString('es-CR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: this.TZ   // ✅ forzado a CR
+    });
   }
 
   // ── HTTP GET ──
- getRegistros(): void {
-  this.http.get<any[]>(`${this.ASISTENCIA_URL}listarControlAsistencia`).subscribe({
-    next: (data) => {
-      const empleados = this.Empleados();
-      const mapped: ControlAsistencia[] = data.map(r => {
-        const emp = empleados.find(e => e.idEmpleado === r.idEmpleados);
-        
-        // El TIMESTAMP viene como "2026-04-26 19:13:08" o con "T"
-        // Extraemos solo la parte de la fecha para el filtro
-        let fechaLimpia = r.Fecha || r.fecha;
-        if (fechaLimpia && typeof fechaLimpia === 'string') {
-          fechaLimpia = fechaLimpia.split(' ')[0].split('T')[0];
-        }
+  getRegistros(): void {
+    this.http.get<any[]>(`${this.ASISTENCIA_URL}listarControlAsistencia`).subscribe({
+      next: (data) => {
+        const empleados = this.Empleados();
+        const mapped: ControlAsistencia[] = data.map(r => {
+          const emp = empleados.find(e => e.idEmpleado === r.idEmpleados);
 
-        return {
-          ...r, // Copiamos las propiedades originales
-          nombreEmpleado: emp ? `${emp.Nombre} ${emp.Apellidos}` : '—',
-          fecha: fechaLimpia || null, // Esto es lo que usará el filtro y fmtFecha
-          estado: r.estado || 'Presente'
-        };
-      });
-      this.Registros.set(mapped);
-    }
-  });
-}
+          let fechaLimpia = r.Fecha || r.fecha;
+          if (fechaLimpia && typeof fechaLimpia === 'string') {
+            fechaLimpia = fechaLimpia.split(' ')[0].split('T')[0];
+          }
+
+          return {
+            ...r,
+            nombreEmpleado: emp ? `${emp.Nombre} ${emp.Apellidos}` : '—',
+            fecha: fechaLimpia || null,
+            estado: r.estado || 'Presente'
+          };
+        });
+        this.Registros.set(mapped);
+      },
+      error: (err) => console.error('Error al obtener registros:', err)
+    });
+  }
 
   getEmpleados(): void {
     this.http.get<Empleado[]>(`${this.EMPLEADO_URL}listarEmpleados`).subscribe({
@@ -126,10 +149,10 @@ export class Asistencia implements OnInit, OnDestroy {
   crearRegistro(registro: Partial<ControlAsistencia>): void {
     const body = {
       HoraEntrada: registro.HoraEntrada,
-      HoraSalida: registro.HoraSalida|| null,
+      HoraSalida: registro.HoraSalida || null,  // ✅ vacío/undefined → null
       idEmpleados: registro.idEmpleados,
       idUsuarios: registro.idUsuarios ?? 1,
-      Fecha: registro.fecha // Enviamos con F mayúscula para el backend
+      Fecha: registro.fecha                     // ✅ F mayúscula para el backend
     };
 
     this.http.post(`${this.ASISTENCIA_URL}insertar`, body).subscribe({
@@ -143,10 +166,10 @@ export class Asistencia implements OnInit, OnDestroy {
     const body = {
       idControlAsistencia: registro.idControlAsistencia,
       HoraEntrada: registro.HoraEntrada,
-      HoraSalida: registro.HoraSalida,
+      HoraSalida: registro.HoraSalida || null,  // ✅ vacío/undefined → null
       idEmpleados: registro.idEmpleados,
-      idUsuarios: registro.idUsuarios ?? 1,
-      Fecha: registro.fecha // Aseguramos enviar la fecha editada
+      idUsuarios: registro.idUsuarios ?? 1,     // ✅ nunca undefined
+      Fecha: registro.fecha                     // ✅ F mayúscula para el backend
     };
 
     this.http.put(`${this.ASISTENCIA_URL}actualizar`, body).subscribe({
@@ -171,11 +194,7 @@ export class Asistencia implements OnInit, OnDestroy {
     return this.Registros().filter(r => {
       const coincideNombre = !q || r.nombreEmpleado?.toLowerCase().includes(q);
       const coincideEstado = !this.estadoFiltro || r.estado === this.estadoFiltro;
-      
-      // Si no hay filtro de fecha, muestra todo (incluyendo null)
-      // Si hay filtro, solo muestra coincidencias exactas (null desaparece)
       const coincideFecha = !f || r.fecha === f;
-
       return coincideNombre && coincideEstado && coincideFecha;
     });
   }
@@ -202,7 +221,7 @@ export class Asistencia implements OnInit, OnDestroy {
   colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
 
   fmtFecha(f: string | null) {
-    if (!f) return 'null'; // Texto explícito para registros viejos
+    if (!f) return 'Sin fecha';
     const [y, m, d] = f.split('-');
     return `${d}/${m}/${y}`;
   }
@@ -226,12 +245,12 @@ export class Asistencia implements OnInit, OnDestroy {
   }
 
   countByEstado(estado: string) {
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = this.hoyCR(); // ✅ fecha CR
     return this.Registros().filter(r => r.fecha === hoy && r.estado === estado).length;
   }
 
   getPorcentaje() {
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = this.hoyCR(); // ✅ fecha CR
     const hoyRegistros = this.Registros().filter(r => r.fecha === hoy);
     if (!hoyRegistros.length) return 0;
     const presentes = hoyRegistros.filter(r => r.estado === 'Presente' || r.estado === 'Tardanza').length;
@@ -240,14 +259,43 @@ export class Asistencia implements OnInit, OnDestroy {
 
   // ── Filtro / paginación ──
   filterTable() { this.currentPage = 1; }
-  
+
   changePage(d: number) {
     const max = this.totalPages.length;
     this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
   }
-  
+
   goPage(n: number) { this.currentPage = n; }
 
+  get visiblePages(): (number | '...')[] {
+  const total = this.totalPages.length;
+  const current = this.currentPage;
+  const pages: (number | '...')[] = [];
+
+  if (total <= 5) {
+    // Si hay pocas páginas, muéstralas todas
+    return this.totalPages;
+  }
+
+  // Siempre muestra la primera
+  pages.push(1);
+
+  // Puntos suspensivos izquierda
+  if (current > 3) pages.push('...');
+
+  // Páginas alrededor de la actual
+  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+    pages.push(i);
+  }
+
+  // Puntos suspensivos derecha
+  if (current < total - 2) pages.push('...');
+
+  // Siempre muestra la última
+  pages.push(total);
+
+  return pages;
+}
   onEmpleadoChange() {
     const emp = this.Empleados().find(e => e.idEmpleado === Number(this.form.idEmpleados));
     if (emp) this.form.nombreEmpleado = `${emp.Nombre} ${emp.Apellidos}`;
@@ -257,12 +305,12 @@ export class Asistencia implements OnInit, OnDestroy {
   openModal(mode: 'manual' | 'edit', registro?: ControlAsistencia) {
     if (mode === 'manual') {
       this.editId = null;
-      this.form = { 
-        HoraEntrada: '', 
-        HoraSalida: '', 
-        estado: 'Presente', 
+      this.form = {
+        HoraEntrada: '',
+        HoraSalida: '',
+        estado: 'Presente',
         idUsuarios: 1,
-        fecha: new Date().toISOString().split('T')[0] // Sugerir fecha hoy
+        fecha: this.hoyCR() // ✅ fecha CR
       };
     } else if (registro) {
       this.editId = registro.idControlAsistencia;
@@ -289,69 +337,59 @@ export class Asistencia implements OnInit, OnDestroy {
     this.showMarcaModal = true;
   }
 
- registrarMarca(tipo: 'entrada' | 'salida') {
-  if (!this.marcaEmpleadoId) {
-    alert('Selecciona un empleado.');
-    return;
-  }
-
-  const ahora = new Date().toLocaleTimeString('es-CR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  });
-
-  const hoy = new Date().toISOString().split('T')[0];
-
-  const registroHoy = this.Registros().find(r =>
-    r.idEmpleados === Number(this.marcaEmpleadoId) &&
-    r.fecha === hoy
-  );
-
-  // ───── ENTRADA ─────
- // ───── ENTRADA ─────
-  if (tipo === 'entrada') {
-
-    if (registroHoy) {
-      alert('Este empleado ya marcó entrada hoy');
+  registrarMarca(tipo: 'entrada' | 'salida') {
+    if (!this.marcaEmpleadoId) {
+      alert('Selecciona un empleado.');
       return;
     }
 
-    this.crearRegistro({
-      idEmpleados: Number(this.marcaEmpleadoId),
-      HoraEntrada: ahora,
-      HoraSalida: '', // 👈 Cambia null por un string vacío
-      fecha: hoy,
-      estado: 'Presente'
-    });
+    const ahora = this.ahoraCR(); // ✅ hora CR
+    const hoy   = this.hoyCR();   // ✅ fecha CR
 
-  }
+    const registroHoy = this.Registros().find(r =>
+      r.idEmpleados === Number(this.marcaEmpleadoId) &&
+      r.fecha === hoy
+    );
 
-  // ───── SALIDA ─────
-  if (tipo === 'salida') {
+    // ───── ENTRADA ─────
+    if (tipo === 'entrada') {
+      if (registroHoy) {
+        alert('Este empleado ya marcó entrada hoy');
+        return;
+      }
 
-    if (!registroHoy) {
-      alert('Primero debe marcar entrada');
-      return;
+      this.crearRegistro({
+        idEmpleados: Number(this.marcaEmpleadoId),
+        HoraEntrada: ahora,
+        HoraSalida: undefined,  // ✅ → null en crearRegistro
+        fecha: hoy,
+        estado: 'Presente',
+        idUsuarios: 1           // ✅ siempre enviado
+      });
     }
 
-    if (registroHoy.HoraSalida) {
-      alert('La salida ya fue registrada');
-      return;
+    // ───── SALIDA ─────
+    if (tipo === 'salida') {
+      if (!registroHoy) {
+        alert('Primero debe marcar entrada');
+        return;
+      }
+
+      if (registroHoy.HoraSalida) {
+        alert('La salida ya fue registrada');
+        return;
+      }
+
+      this.actualizarRegistro({
+        ...registroHoy,                           // ✅ spread completo, no se pierde ningún campo
+        HoraSalida: ahora,
+        idUsuarios: registroHoy.idUsuarios ?? 1,  // ✅ nunca undefined
+        fecha: hoy
+      });
     }
 
-    this.actualizarRegistro({
-      idControlAsistencia: registroHoy.idControlAsistencia,
-      HoraEntrada: registroHoy.HoraEntrada,
-      HoraSalida: ahora,
-      idEmpleados: registroHoy.idEmpleados,
-      fecha: hoy
-    });
+    this.showMarcaModal = false;
   }
-
-  this.showMarcaModal = false;
-}
 
   askDelete(id: number) {
     this.deleteTargetId = id;

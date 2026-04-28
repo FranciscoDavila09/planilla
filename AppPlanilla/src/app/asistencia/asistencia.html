@@ -216,6 +216,7 @@
       de {{ filteredRegistros.length }}
     </div>
     <div class="page-btns">
+      <!-- Botón anterior -->
       <div class="page-btn" (click)="changePage(-1)">
         <svg viewBox="0 0 16 16" fill="none">
           <path
@@ -227,9 +228,17 @@
           />
         </svg>
       </div>
-      @for (p of totalPages; track p) {
-        <div class="page-btn" [class.active]="p === currentPage" (click)="goPage(p)">{{ p }}</div>
+
+      <!-- ✅ track $index evita el error de duplicados cuando '...' aparece dos veces -->
+      @for (p of visiblePages; track $index) {
+        @if (p === '...') {
+          <div class="page-btn disabled">…</div>
+        } @else {
+          <div class="page-btn" [class.active]="p === currentPage" (click)="goPage(p)">{{ p }}</div>
+        }
       }
+
+      <!-- Botón siguiente -->
       <div class="page-btn" (click)="changePage(1)">
         <svg viewBox="0 0 16 16" fill="none">
           <path
@@ -245,6 +254,7 @@
   </div>
 </div>
 
+<!-- ── Modal registro manual / editar ── -->
 <div class="modal-overlay" [class.open]="showFormModal" (click)="onOverlayClick($event, 'form')">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -267,7 +277,9 @@
           <select class="form-select" [(ngModel)]="form.idEmpleados" (change)="onEmpleadoChange()">
             <option value="">Seleccionar empleado…</option>
             @for (e of Empleados(); track e.idEmpleado) {
-              <option [value]="e.idEmpleado">{{ e.Nombre }} {{ e.Apellidos }}</option>
+              <option [value]="e.idEmpleado">
+                {{ e.Nombre }} {{ e.Apellidos }} — ID {{ e.idEmpleado }}
+              </option>
             }
           </select>
         </div>
@@ -311,6 +323,7 @@
   </div>
 </div>
 
+<!-- ── Modal marcar entrada/salida ── -->
 <div class="modal-overlay" [class.open]="showMarcaModal" (click)="onOverlayClick($event, 'marca')">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -337,7 +350,9 @@
           <select class="form-select" [(ngModel)]="marcaEmpleadoId">
             <option value="">Seleccionar empleado…</option>
             @for (e of Empleados(); track e.idEmpleado) {
-              <option [value]="e.idEmpleado">{{ e.Nombre }} {{ e.Apellidos }}</option>
+              <option [value]="e.idEmpleado">
+                {{ e.Nombre }} {{ e.Apellidos }} — ID {{ e.idEmpleado }}
+              </option>
             }
           </select>
         </div>
@@ -371,6 +386,7 @@
   </div>
 </div>
 
+<!-- ── Modal confirmar eliminación ── -->
 <div
   class="modal-overlay"
   [class.open]="showDeleteModal"
