@@ -123,11 +123,16 @@ export class Asistencia implements OnInit, OnDestroy {
         const empleados = this.Empleados();
         const mapped: ControlAsistencia[] = data.map(r => {
           const emp = empleados.find(e => e.idEmpleado === r.idEmpleados);
+          
 
-          let fechaLimpia = r.Fecha || r.fecha;
-          if (fechaLimpia && typeof fechaLimpia === 'string') {
-            fechaLimpia = fechaLimpia.split(' ')[0].split('T')[0];
-          }
+//       let fechaLimpia = r.Fecha || r.fecha;
+
+// if (fechaLimpia) {
+//   fechaLimpia = String(fechaLimpia).split('T')[0].split(' ')[0];
+// }
+
+const fechaLimpia = this.limpiarFechaBD(r.Fecha || r.fecha);
+
 
           return {
             ...r,
@@ -141,6 +146,18 @@ export class Asistencia implements OnInit, OnDestroy {
       error: (err) => console.error('Error al obtener registros:', err)
     });
   }
+
+private limpiarFechaBD(fecha: any): string | null {
+  if (!fecha) return null;
+
+  const texto = String(fecha);
+
+  return texto.split('T')[0].split(' ')[0];
+}
+
+
+
+
 
 calcularEstado(entrada: string, salida: string): string {
   if (entrada && salida) return 'Presente';
@@ -166,8 +183,9 @@ calcularEstado(entrada: string, salida: string): string {
       HoraSalida: registro.HoraSalida || null,  // ✅ vacío/undefined → null
       idEmpleados: registro.idEmpleados,
       idUsuarios: registro.idUsuarios ?? 1,
-      Fecha: registro.fecha                     // ✅ F mayúscula para el backend
+      Fecha: registro.fecha || this.hoyCR()                   // ✅ F mayúscula para el backend
     };
+  console.log('BODY QUE SE ENVÍA:', body);
 
     this.http.post(`${this.ASISTENCIA_URL}insertar`, body).subscribe({
       next: () => this.getRegistros(),

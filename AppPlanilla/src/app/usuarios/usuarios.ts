@@ -1,18 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface Usuario {
   idUsuario: number;
   Nombre: string;
   Apellidos: string;
-  Estado: number;           // tinyint(1): 1 = Activo, 0 = Inactivo
-  FechaCreacion: string;    // date
-  Clave: string;            // varchar(200) — nunca mostrar en claro
+  Estado: number;
+  FechaCreacion: string;
+  Clave?: string;
   telefono: string;
   correo: string;
   idRol: number;
   IdDepartamento: number;
-  Token: string;            // varchar(500) — gestionado por el backend
+  Token?: string;
 }
 
 interface RolSummary {
@@ -46,58 +48,100 @@ const DEPARTAMENTOS: Record<number, string> = {
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css',
 })
-export class Usuarios {
+export class Usuarios implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+
+  private readonly BASE_URL = 'http://localhost';
+  private readonly USUARIO_URL = `${this.BASE_URL}/UsuarioServicio`;
+
   readonly perPage = 8;
-  readonly COLORS  = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
+  readonly COLORS = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
 
-  showFormModal   = false;
-  showViewModal   = false;
+  usuarios: Usuario[] = [];
+
+  showFormModal = false;
   showDeleteModal = false;
-  showPass        = false;
+  showPass = false;
 
-  searchQuery  = '';
+  searchQuery = '';
   estadoFilter = '';
-  rolFilter    = '';
-  deptFilter   = '';
-  rolActivo    = 0;
+  rolFilter = '';
+  deptFilter = '';
+  rolActivo = 0;
 
   currentPage = 1;
 
   editId: number | null = null;
   form: Partial<Usuario> = {};
 
-  viewedUsuario!: Usuario;
-
   deleteTargetId: number | null = null;
   deleteDesc = '';
 
-  usuarios: Usuario[] = [
-    { idUsuario: 1,  Nombre: 'María',     Apellidos: 'Rodríguez López',   Estado: 1, FechaCreacion: '2021-03-15', Clave: '', telefono: '8811-2233', correo: 'maria@empresa.com',   idRol: 1, IdDepartamento: 1, Token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MX0.SflKxwRJSMeKKF2QT4fwpMeJf36POk' },
-    { idUsuario: 2,  Nombre: 'Carlos',    Apellidos: 'Mendoza Torres',    Estado: 1, FechaCreacion: '2019-07-01', Clave: '', telefono: '8822-3344', correo: 'carlos@empresa.com',  idRol: 2, IdDepartamento: 4, Token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mn0.Abc123Token' },
-    { idUsuario: 3,  Nombre: 'Sofía',     Apellidos: 'Vargas Chaves',     Estado: 1, FechaCreacion: '2018-01-10', Clave: '', telefono: '8833-4455', correo: 'sofia@empresa.com',   idRol: 3, IdDepartamento: 3, Token: '' },
-    { idUsuario: 4,  Nombre: 'Andrés',    Apellidos: 'Jiménez Mora',      Estado: 1, FechaCreacion: '2022-06-20', Clave: '', telefono: '8844-5566', correo: 'andres@empresa.com',  idRol: 4, IdDepartamento: 4, Token: '' },
-    { idUsuario: 5,  Nombre: 'Lucía',     Apellidos: 'Pérez Solís',       Estado: 1, FechaCreacion: '2017-09-05', Clave: '', telefono: '8855-6677', correo: 'lucia@empresa.com',   idRol: 3, IdDepartamento: 5, Token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NX0.XyzToken456' },
-    { idUsuario: 6,  Nombre: 'Diego',     Apellidos: 'Castillo Brenes',   Estado: 1, FechaCreacion: '2020-11-12', Clave: '', telefono: '8866-7788', correo: 'diego@empresa.com',   idRol: 4, IdDepartamento: 1, Token: '' },
-    { idUsuario: 7,  Nombre: 'Valeria',   Apellidos: 'Núñez Ulate',       Estado: 0, FechaCreacion: '2021-01-25', Clave: '', telefono: '8877-8899', correo: 'valeria@empresa.com', idRol: 4, IdDepartamento: 2, Token: '' },
-    { idUsuario: 8,  Nombre: 'Felipe',    Apellidos: 'Aguilar Rojas',     Estado: 1, FechaCreacion: '2023-03-01', Clave: '', telefono: '8888-9900', correo: 'felipe@empresa.com',  idRol: 4, IdDepartamento: 3, Token: '' },
-    { idUsuario: 9,  Nombre: 'Daniela',   Apellidos: 'Herrera Campos',    Estado: 1, FechaCreacion: '2022-08-14', Clave: '', telefono: '8800-1122', correo: 'daniela@empresa.com', idRol: 4, IdDepartamento: 1, Token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OX0.DhToken789' },
-    { idUsuario: 10, Nombre: 'Ricardo',   Apellidos: 'Soto Fallas',       Estado: 0, FechaCreacion: '2023-07-10', Clave: '', telefono: '8811-3344', correo: 'ricardo@empresa.com', idRol: 4, IdDepartamento: 2, Token: '' },
-    { idUsuario: 11, Nombre: 'Camila',    Apellidos: 'Quesada León',      Estado: 1, FechaCreacion: '2021-10-03', Clave: '', telefono: '8822-4455', correo: 'camila@empresa.com',  idRol: 2, IdDepartamento: 4, Token: '' },
-    { idUsuario: 12, Nombre: 'Pablo',     Apellidos: 'Araya Badilla',     Estado: 1, FechaCreacion: '2022-02-17', Clave: '', telefono: '8833-5566', correo: 'pablo@empresa.com',   idRol: 4, IdDepartamento: 1, Token: '' },
-    { idUsuario: 13, Nombre: 'Natalia',   Apellidos: 'Mora Esquivel',     Estado: 1, FechaCreacion: '2020-05-22', Clave: '', telefono: '8844-6677', correo: 'natalia@empresa.com', idRol: 3, IdDepartamento: 5, Token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTN9.Nat13Token' },
-    { idUsuario: 14, Nombre: 'Sebastián', Apellidos: 'Ugalde Sancho',     Estado: 1, FechaCreacion: '2024-01-08', Clave: '', telefono: '8855-7788', correo: 'sebas@empresa.com',   idRol: 4, IdDepartamento: 1, Token: '' },
-    { idUsuario: 15, Nombre: 'Adriana',   Apellidos: 'Blanco Villalobos', Estado: 1, FechaCreacion: '2023-09-20', Clave: '', telefono: '8866-8899', correo: 'adriana@empresa.com', idRol: 4, IdDepartamento: 3, Token: '' },
-  ];
+  private get headers(): HttpHeaders {
+    const token = localStorage.getItem('token') ?? '';
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+  }
 
-  // ── Computed ──
+  ngOnInit(): void {
+    this.getUsuarios();
+  }
+
+  getUsuarios(): void {
+    this.http.get<Usuario[]>(`${this.USUARIO_URL}/listarUsuarios`, { headers: this.headers }).subscribe({
+      next: (data) => {
+        this.usuarios = (data || []).map((u: any) => ({
+          ...u,
+          idUsuario: Number(u.idUsuario ?? u.IdUsuario),
+          Nombre: u.Nombre ?? '',
+          Apellidos: u.Apellidos ?? '',
+          Estado: Number(u.Estado ?? 1),
+          FechaCreacion: this.limpiarFecha(u.FechaCreacion),
+          telefono: u.telefono ?? u.Telefono ?? '',
+          correo: u.correo ?? u.Correo ?? '',
+          idRol: Number(u.idRol ?? u.IdRol ?? 4),
+          IdDepartamento: Number(u.IdDepartamento ?? u.idDepartamento ?? 1),
+          Token: u.Token ?? '',
+        }));
+
+        this.currentPage = 1;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al obtener usuarios:', err);
+        this.usuarios = [];
+      },
+    });
+  }
+
+  private limpiarFecha(fecha: any): string {
+    if (!fecha) return '';
+    return String(fecha).split('T')[0].split(' ')[0];
+  }
+
   get filteredUsuarios(): Usuario[] {
-    const q = this.searchQuery.toLowerCase();
-    return this.usuarios.filter(u => {
-      const txt = `${u.Nombre} ${u.Apellidos} ${u.correo} ${DEPARTAMENTOS[u.IdDepartamento] ?? ''}`.toLowerCase();
-      const estadoOk = this.estadoFilter === '' || u.Estado === +this.estadoFilter;
-      const rolOk    = !this.rolFilter    || u.idRol === +this.rolFilter;
-      const deptOk   = !this.deptFilter   || u.IdDepartamento === +this.deptFilter;
-      return (!q || txt.includes(q)) && estadoOk && rolOk && deptOk;
+    const q = this.searchQuery.toLowerCase().trim();
+
+    return this.usuarios.filter((u) => {
+      const texto = `
+        ${u.idUsuario}
+        ${u.Nombre}
+        ${u.Apellidos}
+        ${u.correo}
+        ${u.telefono}
+        ${this.rolNombre(u.idRol)}
+        ${this.deptNombre(u.IdDepartamento)}
+      `.toLowerCase();
+
+      const estadoOk = this.estadoFilter === '' || Number(u.Estado) === Number(this.estadoFilter);
+      const rolOk = this.rolFilter === '' || Number(u.idRol) === Number(this.rolFilter);
+      const deptOk = this.deptFilter === '' || Number(u.IdDepartamento) === Number(this.deptFilter);
+
+      return (!q || texto.includes(q)) && estadoOk && rolOk && deptOk;
     });
   }
 
@@ -111,36 +155,86 @@ export class Usuarios {
     return Array.from({ length: count }, (_, i) => i + 1);
   }
 
-  // ── Helpers ──
-  min(a: number, b: number) { return Math.min(a, b); }
+  get visiblePages(): number[] {
+    const total = this.totalPages.length;
 
-  initials(u: Usuario) {
+    if (total <= 5) return this.totalPages;
+
+    let start = Math.max(1, this.currentPage - 2);
+    let end = Math.min(total, this.currentPage + 2);
+
+    if (this.currentPage <= 3) {
+      start = 1;
+      end = 5;
+    }
+
+    if (this.currentPage >= total - 2) {
+      start = total - 4;
+      end = total;
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  initials(u: Usuario): string {
     return ((u.Nombre?.[0] ?? '') + (u.Apellidos?.[0] ?? '')).toUpperCase();
   }
 
-  colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
+  colorFor(id: number): string {
+    const safeId = Number(id || 1);
+    return this.COLORS[(safeId - 1) % this.COLORS.length];
+  }
 
-  fmtDate(d: string) {
+  fmtDate(d: string): string {
     if (!d) return '—';
-    const [y, m, day] = d.split('-');
+
+    const fecha = this.limpiarFecha(d);
+    const [y, m, day] = fecha.split('-');
+
+    if (!y || !m || !day) return fecha;
+
     return `${day}/${m}/${y}`;
   }
 
-  rolNombre(id: number)  { return ROLES[id] ?? `Rol #${id}`; }
-  deptNombre(id: number) { return DEPARTAMENTOS[id] ?? `Depto. #${id}`; }
-
-  rolClass(id: number) {
-    const map: Record<number, string> = { 1: 'rol-admin', 2: 'rol-rrhh', 3: 'rol-sup', 4: 'rol-emp' };
-    return map[id] ?? '';
+  rolNombre(id: number): string {
+    return ROLES[Number(id)] ?? `Rol #${id}`;
   }
 
-  estadoClass(e: number) { return e === 1 ? 'status-activo' : 'status-inactivo'; }
+  deptNombre(id: number): string {
+    return DEPARTAMENTOS[Number(id)] ?? `Depto. #${id}`;
+  }
 
-  countByEstado(e: number) { return this.usuarios.filter(u => u.Estado === e).length; }
+  rolClass(id: number): string {
+    const map: Record<number, string> = {
+      1: 'rol-admin',
+      2: 'rol-rrhh',
+      3: 'rol-sup',
+      4: 'rol-emp',
+    };
 
-  countAdmins() { return this.usuarios.filter(u => u.idRol === 1).length; }
+    return map[Number(id)] ?? 'rol-emp';
+  }
 
-  /** Resumen de usuarios por rol para las cards superiores */
+  estadoClass(e: number): string {
+    return Number(e) === 1 ? 'status-activo' : 'status-inactivo';
+  }
+
+  estadoTexto(e: number): string {
+    return Number(e) === 1 ? 'Activo' : 'Inactivo';
+  }
+
+  countByEstado(e: number): number {
+    return this.usuarios.filter((u) => Number(u.Estado) === Number(e)).length;
+  }
+
+  countAdmins(): number {
+    return this.usuarios.filter((u) => Number(u.idRol) === 1).length;
+  }
+
   rolesSummary(): RolSummary[] {
     const iconMap: Record<number, { cls: string; svg: string }> = {
       1: {
@@ -160,21 +254,22 @@ export class Usuarios {
         svg: '<circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 13c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
       },
     };
-    return [1, 2, 3, 4].map(idRol => {
-      const users = this.usuarios.filter(u => u.idRol === idRol);
+
+    return [1, 2, 3, 4].map((idRol) => {
+      const users = this.usuarios.filter((u) => Number(u.idRol) === idRol);
+
       return {
         idRol,
         nombre: ROLES[idRol],
-        total:   users.length,
-        activos: users.filter(u => u.Estado === 1).length,
+        total: users.length,
+        activos: users.filter((u) => Number(u.Estado) === 1).length,
         iconClass: iconMap[idRol].cls,
-        iconSvg:   iconMap[idRol].svg,
+        iconSvg: iconMap[idRol].svg,
       };
     });
   }
 
-  setRol(idRol: number) {
-    // Toggle: si ya estaba activo, limpia el filtro
+  setRol(idRol: number): void {
     if (this.rolActivo === idRol) {
       this.rolActivo = 0;
       this.rolFilter = '';
@@ -182,87 +277,169 @@ export class Usuarios {
       this.rolActivo = idRol;
       this.rolFilter = String(idRol);
     }
+
     this.filterTable();
   }
 
-  // ── Filtro / paginación ──
-  filterTable()   { this.currentPage = 1; }
-  changePage(d: number) {
+  filterTable(): void {
+    this.currentPage = 1;
+  }
+
+  changePage(d: number): void {
     const max = this.totalPages.length;
     this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
   }
-  goPage(n: number) { this.currentPage = n; }
 
-  // ── CRUD ──
-  openModal(mode: 'create' | 'edit', id?: number) {
+  goPage(n: number): void {
+    this.currentPage = n;
+  }
+
+  openModal(mode: 'create' | 'edit', id?: number): void {
     this.showPass = false;
+
     if (mode === 'create') {
       this.editId = null;
       this.form = {
+        Nombre: '',
+        Apellidos: '',
+        correo: '',
+        telefono: '',
+        Clave: '',
         Estado: 1,
         FechaCreacion: new Date().toISOString().slice(0, 10),
         idRol: 4,
         IdDepartamento: 1,
-        Clave: '',
         Token: '',
       };
     } else {
-      const u = this.usuarios.find(x => x.idUsuario === id)!;
-      this.editId = u.idUsuario;
-      // No pre-cargar la clave — el admin la deja vacía si no quiere cambiarla
-      this.form = { ...u, Clave: '' };
+      const usuario = this.usuarios.find((x) => Number(x.idUsuario) === Number(id));
+      if (!usuario) return;
+
+      this.editId = usuario.idUsuario;
+      this.form = {
+        ...usuario,
+        Clave: '',
+        FechaCreacion: this.limpiarFecha(usuario.FechaCreacion),
+        idRol: Number(usuario.idRol),
+        IdDepartamento: Number(usuario.IdDepartamento),
+      };
     }
+
     this.showFormModal = true;
   }
 
-  saveUsuario() {
-    if (!this.form.Nombre?.trim() || !this.form.Apellidos?.trim()) {
-      alert('Nombre y apellidos son requeridos.');
+  saveUsuario(): void {
+    if (!this.form.Nombre?.trim()) {
+      alert('El nombre es requerido.');
       return;
     }
+
+    if (!this.form.Apellidos?.trim()) {
+      alert('Los apellidos son requeridos.');
+      return;
+    }
+
     if (!this.form.correo?.trim()) {
       alert('El correo es requerido.');
       return;
     }
-    if (this.editId) {
-      const idx = this.usuarios.findIndex(x => x.idUsuario === this.editId);
-      const updated = { ...this.usuarios[idx], ...this.form };
-      // Si la clave quedó vacía en edición, conservar la anterior
-      if (!this.form.Clave?.trim()) updated.Clave = this.usuarios[idx].Clave;
-      this.usuarios[idx] = updated as Usuario;
-    } else {
-      const newId = Math.max(0, ...this.usuarios.map(x => x.idUsuario)) + 1;
-      this.usuarios = [...this.usuarios, {
-        idUsuario: newId,
-        Token: '',
-        ...this.form,
-      } as Usuario];
+
+    if (!this.editId && !this.form.Clave?.trim()) {
+      alert('La contraseña es requerida para crear el usuario.');
+      return;
     }
-    this.showFormModal = false;
+
+    if (this.editId && !this.form.Clave?.trim()) {
+      alert('Para actualizar este usuario, ingresa una contraseña. El backend actual requiere Clave.');
+      return;
+    }
+
+    const payload = {
+      idUsuario: this.editId ?? undefined,
+      Nombre: this.form.Nombre,
+      Apellidos: this.form.Apellidos,
+      Estado: Number(this.form.Estado ?? 1),
+      FechaCreacion: this.form.FechaCreacion || new Date().toISOString().slice(0, 10),
+      Clave: this.form.Clave,
+      telefono: this.form.telefono || '',
+      correo: this.form.correo,
+      idRol: Number(this.form.idRol ?? 4),
+      idDepartamento: Number(this.form.IdDepartamento ?? 1),
+    };
+
+    if (this.editId) {
+      this.http.put(`${this.USUARIO_URL}/actualizar`, payload, { headers: this.headers }).subscribe({
+        next: () => {
+          this.getUsuarios();
+          this.showFormModal = false;
+        },
+        error: (err) => {
+          console.error('Error al actualizar usuario:', err);
+          alert('No se pudo actualizar el usuario.');
+        },
+      });
+    } else {
+      this.http.post(`${this.USUARIO_URL}/insertar`, payload, { headers: this.headers }).subscribe({
+        next: () => {
+          this.getUsuarios();
+          this.showFormModal = false;
+        },
+        error: (err) => {
+          console.error('Error al crear usuario:', err);
+          alert('No se pudo crear el usuario.');
+        },
+      });
+    }
   }
 
-  viewUsuario(id: number) {
-    this.viewedUsuario = this.usuarios.find(x => x.idUsuario === id)!;
-    this.showViewModal = true;
+  viewInAnotherPage(u: Usuario): void {
+    localStorage.setItem('displayData', JSON.stringify({
+      titulo: 'Detalle del usuario',
+      volver: '/usuarios',
+      datos: {
+        ID: `#${u.idUsuario}`,
+        Usuario: `${u.Nombre} ${u.Apellidos}`,
+        Correo: u.correo || '—',
+        Teléfono: u.telefono || '—',
+        Rol: this.rolNombre(u.idRol),
+        Departamento: this.deptNombre(u.IdDepartamento),
+        'Fecha de alta': this.fmtDate(u.FechaCreacion),
+        Estado: this.estadoTexto(u.Estado),
+        Token: u.Token ? 'Activo' : 'Sin sesión'
+      }
+    }));
+
+    this.router.navigate(['/ver-datos']);
   }
 
-  askDelete(id: number) {
-    const u = this.usuarios.find(x => x.idUsuario === id)!;
+  askDelete(id: number): void {
+    const usuario = this.usuarios.find((x) => Number(x.idUsuario) === Number(id));
+    if (!usuario) return;
+
     this.deleteTargetId = id;
-    this.deleteDesc = `Estás a punto de eliminar al usuario ${u.Nombre} ${u.Apellidos} (${u.correo}). Esta acción no se puede deshacer.`;
+    this.deleteDesc = `Estás a punto de eliminar al usuario ${usuario.Nombre} ${usuario.Apellidos} (${usuario.correo}). Esta acción no se puede deshacer.`;
     this.showDeleteModal = true;
   }
 
-  confirmDelete() {
-    this.usuarios = this.usuarios.filter(x => x.idUsuario !== this.deleteTargetId);
-    this.deleteTargetId = null;
-    this.showDeleteModal = false;
+  confirmDelete(): void {
+    if (!this.deleteTargetId) return;
+
+    this.http.delete(`${this.USUARIO_URL}/eliminar?id=${this.deleteTargetId}`, { headers: this.headers }).subscribe({
+      next: () => {
+        this.getUsuarios();
+        this.deleteTargetId = null;
+        this.showDeleteModal = false;
+      },
+      error: (err) => {
+        console.error('Error al eliminar usuario:', err);
+        alert('No se pudo eliminar el usuario. Puede tener datos relacionados.');
+      },
+    });
   }
 
-  onOverlayClick(event: MouseEvent, modal: 'form' | 'view' | 'delete') {
+  onOverlayClick(event: MouseEvent, modal: 'form' | 'delete'): void {
     if (event.target === event.currentTarget) {
-      if (modal === 'form')   this.showFormModal   = false;
-      if (modal === 'view')   this.showViewModal   = false;
+      if (modal === 'form') this.showFormModal = false;
       if (modal === 'delete') this.showDeleteModal = false;
     }
   }
