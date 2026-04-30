@@ -138,18 +138,16 @@ fmtDate(d: string) {
   return `${day}/${m}/${y}`;
 }
 
-  estadoLabel(e: number) {
-    if (e === 1) return 'Activo';
-    if (e === 2) return 'Vacaciones';
-    return 'Inactivo';
-  }
+estadoLabel(e: number) {
+  if (Number(e) === 1) return 'Activo';
+  return 'Inactivo';
+}
 
-  statusClass(e: number) {
-    if (e === 1) return 'status-active';
-    if (e === 2) return 'status-vacation';
-    return 'status-inactive';
-  }
 
+statusClass(e: number) {
+  if (Number(e) === 1) return 'status-active';
+  return 'status-inactive';
+}
   countByStatus(s: number) { return this.Empleados().filter(e => e.Estado === s).length; }
 
   // ── Filtro / paginación ──
@@ -189,24 +187,57 @@ fmtDate(d: string) {
     this.showFormModal = true;
   }
 
-  saveEmployee() {
-    if (!this.form.Nombre?.trim() || !this.form.Apellidos?.trim()) {
-      alert('Por favor completa al menos nombre y apellidos.');
-      return;
-    }
-    if (this.editId) {
-      this.http.put<Empleado>(`${this.API_URL}actualizar`, this.form).subscribe({
-        next: () => this.getEmpleados(),
-        error: (err) => console.error('Error al editar:', err)
-      });
-    } else {
-      this.http.post<Empleado>(`${this.API_URL}insertar`, this.form).subscribe({
-        next: () => this.getEmpleados(),
-        error: (err) => console.error('Error al crear:', err)
-      });
-    }
-    this.showFormModal = false;
+saveEmployee() {
+  if (!this.form.Nombre?.trim() || !this.form.Apellidos?.trim()) {
+    alert('Por favor completa al menos nombre y apellidos.');
+    return;
   }
+
+  const payload = {
+    idEmpleado: this.editId,
+    CodigoEmpleado: this.form.CodigoEmpleado,
+    Nombre: this.form.Nombre,
+    Apellidos: this.form.Apellidos,
+    Identificacion: this.form.Identificacion,
+    Correo: this.form.Correo,
+    Telefono: this.form.Telefono,
+    FechaIngreso: this.fechaGuardarBase(this.form.FechaIngreso),
+    Estado: Number(this.form.Estado),
+    HoraEntrada: this.form.HoraEntrada,
+    CuentaBancaria: Number(this.form.CuentaBancaria),
+    Salario: Number(this.form.Salario),
+    idDepartamento: Number(this.form.idDepartamento),
+    HoraSalida: this.form.HoraSalida
+  };
+
+  
+
+  if (this.editId) {
+    this.http.put<Empleado>(`${this.API_URL}actualizar`, payload).subscribe({
+      next: () => {
+        this.getEmpleados();
+        this.showFormModal = false;
+      },
+      error: (err) => console.error('Error al editar:', err)
+    });
+  } else {
+    this.http.post<Empleado>(`${this.API_URL}insertar`, payload).subscribe({
+      next: () => {
+        this.getEmpleados();
+        this.showFormModal = false;
+      },
+      error: (err) => console.error('Error al crear:', err)
+    });
+  }
+}
+
+private fechaGuardarBase(fecha: any): string {
+  if (!fecha) return '';
+
+  return String(fecha).includes('T')
+    ? String(fecha).split('T')[0]
+    : String(fecha);
+}
 
   viewEmployee(id: number) {
     this.viewedEmployee = this.Empleados().find(x => x.idEmpleado === id)!;

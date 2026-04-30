@@ -29,7 +29,7 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ countByStatus('Pagada') }}</div>
+      <div class="stat-num">{{ countByStatus('Procesada') }}</div>
       <div class="stat-label">Pagadas</div>
     </div>
   </div>
@@ -42,7 +42,7 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ countByStatus('Abierta') }}</div>
+      <div class="stat-num">{{ countByStatus('Activa') }}</div>
       <div class="stat-label">Abiertas</div>
     </div>
   </div>
@@ -55,7 +55,7 @@
       </svg>
     </div>
     <div>
-      <div class="stat-num">{{ countByStatus('En revisión') }}</div>
+      <div class="stat-num">{{ countByStatus('Pendiente') }}</div>
       <div class="stat-label">En revisión</div>
     </div>
   </div>
@@ -78,11 +78,10 @@
 
   <select class="filter-select" [(ngModel)]="statusFilter" (change)="filterTable()">
     <option value="">Todos los estados</option>
-    <option value="Abierta">Abierta</option>
-    <option value="En revisión">En revisión</option>
+    <option value="Activa">Activa</option>
+    <option value="Pendiente">Pendiente</option>
     <option value="Cerrada">Cerrada</option>
-    <option value="Pagada">Pagada</option>
-    <option value="Anulada">Anulada</option>
+    <option value="Procesada">Procesada</option>
   </select>
 
   <select class="filter-select" [(ngModel)]="yearFilter" (change)="filterTable()">

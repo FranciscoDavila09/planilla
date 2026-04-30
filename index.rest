@@ -56,7 +56,7 @@ Origin: {{ BASE_URL }}
 
 {
 
- "IdEmpleado": 402,
+ "idEmpleado": 402,
   
  "CodigoEmpleado": "E202",
   "Nombre": "Randy",

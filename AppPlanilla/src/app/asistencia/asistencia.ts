@@ -133,7 +133,7 @@ export class Asistencia implements OnInit, OnDestroy {
             ...r,
             nombreEmpleado: emp ? `${emp.Nombre} ${emp.Apellidos}` : '—',
             fecha: fechaLimpia || null,
-            estado: r.estado || 'Presente'
+           estado: this.calcularEstado(r.HoraEntrada, r.HoraSalida)
           };
         });
         this.Registros.set(mapped);
@@ -141,6 +141,16 @@ export class Asistencia implements OnInit, OnDestroy {
       error: (err) => console.error('Error al obtener registros:', err)
     });
   }
+
+calcularEstado(entrada: string, salida: string): string {
+  if (entrada && salida) return 'Presente';
+  if (entrada && !salida) return 'Pendiente salida';
+  return 'Ausente';
+}
+
+
+
+
 
   getEmpleados(): void {
     this.http.get<Empleado[]>(`${this.EMPLEADO_URL}listarEmpleados`).subscribe({
@@ -312,7 +322,7 @@ export class Asistencia implements OnInit, OnDestroy {
       this.form = {
         HoraEntrada: '',
         HoraSalida: '',
-        estado: 'Presente',
+        
         idUsuarios: 1,
         fecha: this.hoyCR() 
       };
@@ -372,8 +382,8 @@ viewInAnotherPage(r: ControlAsistencia): void {
       return;
     }
 
-    const ahora = this.ahoraCR(); // ✅ hora CR
-    const hoy   = this.hoyCR();   // ✅ fecha CR
+    const ahora = this.ahoraCR(); 
+    const hoy   = this.hoyCR();   
 
     const registroHoy = this.Registros().find(r =>
       r.idEmpleados === Number(this.marcaEmpleadoId) &&
@@ -390,10 +400,10 @@ viewInAnotherPage(r: ControlAsistencia): void {
       this.crearRegistro({
         idEmpleados: Number(this.marcaEmpleadoId),
         HoraEntrada: ahora,
-        HoraSalida: undefined,  // ✅ → null en crearRegistro
+        HoraSalida: undefined,  
         fecha: hoy,
-        estado: 'Presente',
-        idUsuarios: 1           // ✅ siempre enviado
+       
+        idUsuarios: 1           
       });
     }
 

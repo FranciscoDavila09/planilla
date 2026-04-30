@@ -45,7 +45,7 @@
       <div class="stat-label">Activos</div>
     </div>
   </div>
-  <div class="stat-card">
+  <!-- <div class="stat-card">
     <div class="stat-icon blue">
       <svg viewBox="0 0 16 16" fill="none">
         <rect
@@ -69,7 +69,7 @@
       <div class="stat-num">{{ countByStatus(2) }}</div>
       <div class="stat-label">De vacaciones</div>
     </div>
-  </div>
+  </div> -->
   <div class="stat-card">
     <div class="stat-icon amber">
       <svg viewBox="0 0 16 16" fill="none">
@@ -102,7 +102,7 @@
   <select class="filter-select" [(ngModel)]="statusFilter" (change)="filterTable()">
     <option value="">Todos los estados</option>
     <option value="1">Activo</option>
-    <option value="2">Vacaciones</option>
+    <!-- <option value="2">Vacaciones</option> -->
     <option value="0">Inactivo</option>
   </select>
   <select class="filter-select" [(ngModel)]="deptFilter" (change)="filterTable()">
@@ -342,7 +342,7 @@
           <label class="form-label">Estado</label>
           <select class="form-select" [(ngModel)]="form.Estado">
             <option [ngValue]="1">Activo</option>
-            <option [ngValue]="2">Vacaciones</option>
+            <!-- <option [ngValue]="2">Vacaciones</option> -->
             <option [ngValue]="0">Inactivo</option>
           </select>
         </div>
