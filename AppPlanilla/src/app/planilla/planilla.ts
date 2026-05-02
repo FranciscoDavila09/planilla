@@ -11,6 +11,12 @@ interface PlanillaData {
   idControlHorarios: number;
   idPeriodoPlanilla: number;
   descPeriodo?: string;
+  NombreUsuario?: string;
+}
+
+interface UsuarioData {
+  idUsuario: number;
+  NombreCompleto: string;
 }
 
 interface DetalleEmpleado {
@@ -46,13 +52,16 @@ export class Planilla implements OnInit {
   private readonly router = inject(Router);
 
   private readonly BASE_URL = 'http://localhost';
+
   private readonly PLANILLA_URL = `${this.BASE_URL}/PlanillaServicio`;
   private readonly DETALLE_URL = `${this.BASE_URL}/DetalleplanillaServicio`;
   private readonly PERIODO_URL = `${this.BASE_URL}/PeriodoPlanillaServicio`;
+  private readonly USUARIO_URL = `${this.BASE_URL}/UsuarioServicio`;
 
   protected readonly planillas = signal<PlanillaData[]>([]);
   protected readonly detalle = signal<DetalleEmpleado[]>([]);
   protected readonly periodos = signal<PeriodoPlanilla[]>([]);
+  protected readonly usuarios = signal<UsuarioData[]>([]);
 
   readonly COLORS = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
   readonly perPage = 8;
@@ -80,8 +89,22 @@ export class Planilla implements OnInit {
   }
 
   cargarTodo(): void {
+    this.getUsuarios();
+
     this.getPeriodos(() => {
       this.getPlanillas();
+    });
+  }
+
+  getUsuarios(): void {
+    this.http.get<UsuarioData[]>(`${this.USUARIO_URL}/listarUsuarios`).subscribe({
+      next: (data) => {
+        this.usuarios.set(data || []);
+      },
+      error: (err) => {
+        console.error('Error al obtener usuarios:', err);
+        this.usuarios.set([]);
+      },
     });
   }
 
@@ -91,7 +114,9 @@ export class Planilla implements OnInit {
         const planillasConPeriodo = (data || []).map((p) => ({
           ...p,
           descPeriodo: this.obtenerNombrePeriodo(p.idPeriodoPlanilla),
+          NombreUsuario: p.NombreUsuario || this.obtenerNombreUsuario(p.IdUsuario),
         }));
+
         this.planillas.set(planillasConPeriodo);
       },
       error: (err) => console.error('Error al obtener planillas:', err),
@@ -129,11 +154,24 @@ export class Planilla implements OnInit {
     return periodo ? periodo.NombrePeriodo : '';
   }
 
+  obtenerNombreUsuario(idUsuario: number): string {
+    const usuario = this.usuarios().find((u) => Number(u.idUsuario) === Number(idUsuario));
+    return usuario ? usuario.NombreCompleto : '';
+  }
+
   get filteredPlanillas(): PlanillaData[] {
     const q = this.searchQuery.toLowerCase().trim();
 
     return this.planillas().filter((p) => {
-      const texto = `${p.idPlanillas} ${p.EstadoPlanilla} ${p.descPeriodo ?? ''} ${p.idControlHorarios} ${p.idPeriodoPlanilla}`.toLowerCase();
+      const texto = `
+        ${p.idPlanillas}
+        ${p.EstadoPlanilla}
+        ${p.descPeriodo ?? ''}
+        ${p.NombreUsuario ?? ''}
+        ${this.obtenerNombreUsuario(p.IdUsuario)}
+        ${p.idControlHorarios}
+        ${p.idPeriodoPlanilla}
+      `.toLowerCase();
 
       return (
         (!q || texto.includes(q)) &&
@@ -201,9 +239,12 @@ export class Planilla implements OnInit {
 
   fmtDate(d: string): string {
     if (!d) return '—';
+
     const soloFecha = d.includes('T') ? d.split('T')[0] : d;
     const partes = soloFecha.split('-');
+
     if (partes.length !== 3) return soloFecha;
+
     return `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
 
@@ -222,13 +263,13 @@ export class Planilla implements OnInit {
     return (n + a).toUpperCase();
   }
 
-statusClass(estado: string): string {
-  if (estado === 'Activa') return 'status-abierta';
-  if (estado === 'Pendiente') return 'status-revision';
-  if (estado === 'Cerrada') return 'status-cerrada';
-  if (estado === 'Procesada') return 'status-pagada';
-  return 'status-anulada';
-}
+  statusClass(estado: string): string {
+    if (estado === 'Activa') return 'status-abierta';
+    if (estado === 'Pendiente') return 'status-revision';
+    if (estado === 'Cerrada') return 'status-cerrada';
+    if (estado === 'Procesada') return 'status-pagada';
+    return 'status-anulada';
+  }
 
   countByStatus(status: string): number {
     return this.planillas().filter((p) => p.EstadoPlanilla === status).length;
@@ -237,27 +278,29 @@ statusClass(estado: string): string {
   openModal(mode: 'create' | 'edit', id?: number): void {
     if (mode === 'create') {
       this.editId = null;
-  this.form = {
-  EstadoPlanilla: 'Activa',
-  IdUsuario: 1,
-  FechaCreacion: new Date().toISOString().slice(0, 10),
-  idControlHorarios: 0,
-  idPeriodoPlanilla: 0,
-};
+
+      this.form = {
+        EstadoPlanilla: 'Activa',
+        IdUsuario: 0,
+        FechaCreacion: new Date().toISOString().slice(0, 10),
+        idControlHorarios: 0,
+        idPeriodoPlanilla: 0,
+      };
     } else {
       const planilla = this.planillas().find((p) => p.idPlanillas === id);
       if (!planilla) return;
 
       this.editId = planilla.idPlanillas;
+
       this.form = {
         idPlanillas: planilla.idPlanillas,
         EstadoPlanilla: planilla.EstadoPlanilla,
-        IdUsuario: planilla.IdUsuario,
+        IdUsuario: Number(planilla.IdUsuario),
         FechaCreacion: planilla.FechaCreacion?.includes('T')
           ? planilla.FechaCreacion.split('T')[0]
           : planilla.FechaCreacion,
-        idControlHorarios: planilla.idControlHorarios,
-        idPeriodoPlanilla: planilla.idPeriodoPlanilla,
+        idControlHorarios: Number(planilla.idControlHorarios),
+        idPeriodoPlanilla: Number(planilla.idPeriodoPlanilla),
       };
     }
 
@@ -276,7 +319,7 @@ statusClass(estado: string): string {
     }
 
     if (!this.form.IdUsuario || Number(this.form.IdUsuario) <= 0) {
-      alert('Debes ingresar un ID de usuario válido.');
+      alert('Debes seleccionar un usuario.');
       return;
     }
 
@@ -286,7 +329,7 @@ statusClass(estado: string): string {
     }
 
     if (!this.form.idPeriodoPlanilla || Number(this.form.idPeriodoPlanilla) <= 0) {
-      alert('Debes ingresar un ID de período válido.');
+      alert('Debes seleccionar un período de planilla.');
       return;
     }
 
@@ -332,27 +375,25 @@ statusClass(estado: string): string {
     this.showViewModal = true;
   }
 
+  viewInAnotherPage(p: PlanillaData): void {
+    localStorage.setItem(
+      'displayData',
+      JSON.stringify({
+        titulo: 'Detalle de la planilla',
+        volver: '/planilla',
+        datos: {
+          ID: `#${p.idPlanillas}`,
+          Período: p.descPeriodo || `Período #${p.idPeriodoPlanilla}`,
+          'Fecha de creación': this.fmtDate(p.FechaCreacion),
+          Usuario: p.NombreUsuario || this.obtenerNombreUsuario(p.IdUsuario) || `#${p.IdUsuario}`,
+          'Control de horarios': `#${p.idControlHorarios}`,
+          Estado: p.EstadoPlanilla,
+        },
+      })
+    );
 
-viewInAnotherPage(p: PlanillaData): void {
-  localStorage.setItem('displayData', JSON.stringify({
-    titulo: 'Detalle de la planilla',
-    volver: '/planilla',
-    datos: {
-      ID: `#${p.idPlanillas}`,
-      Período: p.descPeriodo || `Período #${p.idPeriodoPlanilla}`,
-      'Fecha de creación': this.fmtDate(p.FechaCreacion),
-      Usuario: `#${p.IdUsuario}`,
-      'Control de horarios': `#${p.idControlHorarios}`,
-      'Período planilla': `#${p.idPeriodoPlanilla}`,
-      Estado: p.EstadoPlanilla
-    }
-  }));
-
-  this.router.navigate(['/ver-datos']);
-}
-
-
-
+    this.router.navigate(['/ver-datos']);
+  }
 
   askDelete(id: number): void {
     const planilla = this.planillas().find((p) => p.idPlanillas === id);

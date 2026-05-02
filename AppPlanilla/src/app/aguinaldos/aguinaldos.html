@@ -241,10 +241,18 @@
     </div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">ID Empleado</label>
-          <input class="form-input" type="number" [(ngModel)]="form.IdEmpleado" placeholder="Ej. 3"/>
-        </div>
+   <div class="form-group">
+  <label class="form-label">Empleado</label>
+  <select class="form-select" [(ngModel)]="form.IdEmpleado">
+    <option [ngValue]="0">Seleccione empleado</option>
+    @for (e of empleados(); track e.idEmpleado) {
+      <option [ngValue]="e.idEmpleado">
+        {{ e.Nombre }} {{ e.Apellidos }}
+        {{ e.CodigoEmpleado ? ' - ' + e.CodigoEmpleado : '' }}
+      </option>
+    }
+  </select>
+</div>
         <div class="form-group">
           <label class="form-label">Período (año)</label>
           <input class="form-input" type="number" [(ngModel)]="form.Periodo" placeholder="Ej. 2025" min="2000" max="2100"/>
@@ -261,10 +269,17 @@
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">ID Usuario</label>
-          <input class="form-input" type="number" [(ngModel)]="form.idUsuario" placeholder="Ej. 1"/>
-        </div>
+     <div class="form-group">
+  <label class="form-label">Usuario</label>
+  <select class="form-select" [(ngModel)]="form.idUsuario">
+    <option [ngValue]="0">Seleccione usuario</option>
+    @for (u of usuarios(); track u.idUsuario) {
+     <option [ngValue]="u.idUsuario">
+  {{ nombreCompletoUsuario(u) }}
+</option>
+    }
+  </select>
+</div>
         <div class="form-group">
           <label class="form-label">Estado</label>
           <select class="form-select" [(ngModel)]="form.Estado">
