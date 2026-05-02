@@ -133,8 +133,8 @@
         <th>Teléfono</th>
         <th>Rol</th>
         <th>Departamento</th>
-        <th>Alta</th>
-        <th>Token</th>
+        <th>Fecha</th>
+        <!-- <th>Token</th> -->
         <th>Estado</th>
         <th></th>
       </tr>
@@ -162,7 +162,7 @@
             <span class="dept-chip">{{ deptNombre(u.IdDepartamento) }}</span>
           </td>
           <td class="col-muted">{{ fmtDate(u.FechaCreacion) }}</td>
-          <td>
+          <!-- <td>
             @if (u.Token) {
               <span class="token-chip token-activo" title="Token activo">
                 <svg viewBox="0 0 10 10" fill="none" width="9" height="9">
@@ -174,7 +174,7 @@
             } @else {
               <span class="token-chip token-sin">Sin token</span>
             }
-          </td>
+          </td> -->
           <td>
             <span class="status-badge" [class]="estadoClass(u.Estado)">
               {{ u.Estado === 1 ? 'Activo' : 'Inactivo' }}
@@ -205,7 +205,7 @@
       }
       @if (pageSlice.length === 0) {
         <tr>
-          <td colspan="9" class="empty-row">No se encontraron usuarios</td>
+          <td colspan="8" class="empty-row">No se encontraron usuarios</td>
         </tr>
       }
     </tbody>
@@ -331,13 +331,13 @@
         </div>
       </div>
       <!-- Nota sobre el token -->
-      <div class="info-box">
+      <!-- <div class="info-box">
         <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
           <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>
           <path d="M8 7v5M8 5.5v-.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
         El token de sesión se genera automáticamente al iniciar sesión y no se gestiona desde aquí.
-      </div>
+      </div> -->
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="showFormModal = false">Cancelar</button>

@@ -245,11 +245,11 @@
           <select class="form-select" [(ngModel)]="form.IdUsuario">
             <option [ngValue]="0">Seleccione usuario</option>
 
-            @for (u of usuarios(); track u.idUsuario) {
-              <option [ngValue]="u.idUsuario">
-                {{ u.NombreCompleto }}
-              </option>
-            }
+        @for (u of usuarios(); track u.idUsuario) {
+  <option [ngValue]="u.idUsuario">
+    {{ nombreUsuario(u) }}
+  </option>
+}
           </select>
         </div>
 

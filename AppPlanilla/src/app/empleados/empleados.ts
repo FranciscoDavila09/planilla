@@ -19,7 +19,12 @@ interface Empleado {
   idDepartamento: number;
   HoraSalida: string;
 }
-
+interface Departamento {
+  IdDepartamento: number;
+  Nombre: string;
+  Descripcion: string;
+  Estado: number;
+}
 @Component({
   selector: 'app-empleados',
   standalone: true,
@@ -34,7 +39,10 @@ export class Empleados implements OnInit {
 
   private readonly API_URL = 'http://localhost/EmpleadoServicio/';
 
+  private readonly DEPARTAMENTO_URL = 'http://localhost/DepartamentoServicio/';
+
   protected readonly Empleados = signal<Empleado[]>([]);
+ protected readonly departamentos = signal<Departamento[]>([]);
 
   readonly COLORS = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
   readonly perPage = 8;
@@ -60,6 +68,7 @@ export class Empleados implements OnInit {
   // ── Lifecycle ──
   ngOnInit(): void {
     this.getEmpleados();
+    this.getDepartamentos();
   }
 
   // ── HTTP ──
@@ -69,6 +78,19 @@ export class Empleados implements OnInit {
       error: (err) => console.error('Error al obtener empleados:', err)
     });
   }
+
+  getDepartamentos(): void {
+  this.http.get<Departamento[]>(`${this.DEPARTAMENTO_URL}listarDepartamentos`).subscribe({
+    next: (data) => this.departamentos.set(data || []),
+    error: (err) => console.error('Error al obtener departamentos:', err)
+  });
+}
+
+nombreDepartamento(id: number): string {
+  const d = this.departamentos().find(x => Number(x.IdDepartamento) === Number(id));
+  return d ? d.Nombre : `#${id}`;
+}
+
 
   // ── Computed ──
   get filteredEmployees(): Empleado[] {
@@ -186,10 +208,49 @@ statusClass(e: number) {
     }
     this.showFormModal = true;
   }
-
 saveEmployee() {
   if (!this.form.Nombre?.trim() || !this.form.Apellidos?.trim()) {
-    alert('Por favor completa al menos nombre y apellidos.');
+    alert('Por favor completa nombre y apellidos.');
+    return;
+  }
+
+  if (!this.form.Identificacion?.trim()) {
+    alert('Debes ingresar la identificación.');
+    return;
+  }
+
+  if (!this.form.Correo?.trim()) {
+    alert('Debes ingresar el correo.');
+    return;
+  }
+
+  if (!this.form.CodigoEmpleado?.trim()) {
+    alert('Debes ingresar el código del empleado.');
+    return;
+  }
+
+  if (!this.form.FechaIngreso) {
+    alert('Debes ingresar la fecha de ingreso.');
+    return;
+  }
+
+  if (!this.form.HoraEntrada) {
+    alert('Debes ingresar la hora de entrada.');
+    return;
+  }
+
+  if (!this.form.HoraSalida) {
+    alert('Debes ingresar la hora de salida.');
+    return;
+  }
+
+  if (!this.form.idDepartamento || Number(this.form.idDepartamento) <= 0) {
+    alert('Debes seleccionar un departamento.');
+    return;
+  }
+
+  if (!this.form.Salario || Number(this.form.Salario) <= 0) {
+    alert('Debes ingresar un salario válido.');
     return;
   }
 
@@ -200,17 +261,17 @@ saveEmployee() {
     Apellidos: this.form.Apellidos,
     Identificacion: this.form.Identificacion,
     Correo: this.form.Correo,
-    Telefono: this.form.Telefono,
+    Telefono: this.form.Telefono || '',
     FechaIngreso: this.fechaGuardarBase(this.form.FechaIngreso),
-    Estado: Number(this.form.Estado),
+    Estado: Number(this.form.Estado ?? 1),
     HoraEntrada: this.form.HoraEntrada,
-    CuentaBancaria: Number(this.form.CuentaBancaria),
+    CuentaBancaria: Number(this.form.CuentaBancaria || 0),
     Salario: Number(this.form.Salario),
     idDepartamento: Number(this.form.idDepartamento),
     HoraSalida: this.form.HoraSalida
   };
 
-  
+  console.log('Payload empleado:', payload);
 
   if (this.editId) {
     this.http.put<Empleado>(`${this.API_URL}actualizar`, payload).subscribe({
@@ -258,7 +319,7 @@ viewInAnotherPage(e: Empleado): void {
       Código: e.CodigoEmpleado,
       Salario: this.fmtSalary(e.Salario),
       Estado: this.estadoLabel(e.Estado),
-      Departamento: `#${e.idDepartamento}`,
+     Departamento: this.nombreDepartamento(e.idDepartamento),
       'Fecha de ingreso': this.fmtDate(e.FechaIngreso),
       'Hora entrada': e.HoraEntrada,
       'Hora salida': e.HoraSalida,
