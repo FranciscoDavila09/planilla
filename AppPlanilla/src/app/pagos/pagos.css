@@ -289,3 +289,65 @@ tbody tr:last-child td { border-bottom: none; }
     align-items: flex-start;
   }
 }
+/* ARREGLO MODAL PAGOS */
+.modal-overlay {
+  align-items: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal {
+  width: 680px;
+  max-width: 95vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body {
+  max-height: calc(92vh - 145px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.modal-footer {
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.form-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.form-group {
+  min-width: 0;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Evita que textos largos deformen los selects */
+.form-select {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Para pantallas pequeñas */
+@media (max-width: 700px) {
+  .modal {
+    width: 96vw;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+.form-row-safe {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+}

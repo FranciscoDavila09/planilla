@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 
-
 interface PagoVista {
   IdPago: number;
   IdPlanilla: number;
@@ -59,14 +58,15 @@ interface Planilla {
 
 interface Usuario {
   idUsuario: number;
-  Nombre: string;
-  Apellidos: string;
-  Estado: number;
-  FechaCreacion: string;
-  telefono: string;
-  correo: string;
-  idRol: number;
-  idDepartamento: number;
+  Nombre?: string;
+  Apellidos?: string;
+  NombreCompleto?: string;
+  Estado?: number;
+  FechaCreacion?: string;
+  telefono?: string;
+  correo?: string;
+  idRol?: number;
+  idDepartamento?: number;
 }
 
 interface Feriado {
@@ -125,7 +125,6 @@ export class Pagos implements OnInit {
   metodoFilter = '';
 
   currentPage = 1;
-
   editId: number | null = null;
 
   form: Partial<PagoVista> = {
@@ -169,7 +168,7 @@ export class Pagos implements OnInit {
       error: (err) => {
         console.error('Error al obtener pagos vista:', err);
         this.pagosSignal.set([]);
-      }
+      },
     });
   }
 
@@ -179,7 +178,7 @@ export class Pagos implements OnInit {
       error: (err) => {
         console.error('Error al obtener empleados:', err);
         this.empleadosSignal.set([]);
-      }
+      },
     });
   }
 
@@ -189,7 +188,7 @@ export class Pagos implements OnInit {
       error: (err) => {
         console.error('Error al obtener planillas:', err);
         this.planillasSignal.set([]);
-      }
+      },
     });
   }
 
@@ -199,7 +198,7 @@ export class Pagos implements OnInit {
       error: (err) => {
         console.error('Error al obtener usuarios:', err);
         this.usuariosSignal.set([]);
-      }
+      },
     });
   }
 
@@ -209,7 +208,7 @@ export class Pagos implements OnInit {
       error: (err) => {
         console.error('Error al obtener feriados:', err);
         this.feriadosSignal.set([]);
-      }
+      },
     });
   }
 
@@ -219,7 +218,7 @@ export class Pagos implements OnInit {
       error: (err) => {
         console.error('Error al obtener deducciones:', err);
         this.deduccionesSignal.set([]);
-      }
+      },
     });
   }
 
@@ -233,6 +232,10 @@ export class Pagos implements OnInit {
         ${p.IdPlanilla}
         ${p.ReferenciaPago || ''}
         ${this.empName(p.IdEmpleado)}
+        ${this.usuarioNombre(p.IdUsuarioProcesa)}
+        ${this.planillaNombre(p.IdPlanilla)}
+        ${this.deduccionDetalle(p.idDeduccion).nombre}
+        ${this.feriadoDetalle(p.idFeriados).nombre}
         ${p.MetodoPago || ''}
       `.toLowerCase();
 
@@ -284,7 +287,9 @@ export class Pagos implements OnInit {
   fmtDate(d: string): string {
     if (!d) return '—';
 
-    const dt = new Date(d);
+    const normalizada = d.includes('T') ? d : d.replace(' ', 'T');
+    const dt = new Date(normalizada);
+
     if (isNaN(dt.getTime())) return d;
 
     return (
@@ -317,6 +322,7 @@ export class Pagos implements OnInit {
       Cheque: 'metodo-cheque',
       Efectivo: 'metodo-efectivo',
     };
+
     return map[m] ?? '';
   }
 
@@ -359,7 +365,7 @@ export class Pagos implements OnInit {
     }
 
     const emp = this.empleadosSignal().find((e) => Number(e.idEmpleado) === Number(id));
-    return emp ? `${emp.Nombre} ${emp.Apellidos}` : `Empleado #${id}`;
+    return emp ? `${emp.Nombre} ${emp.Apellidos}`.trim() : `Empleado #${id}`;
   }
 
   empInitial(id: number): string {
@@ -368,10 +374,11 @@ export class Pagos implements OnInit {
     return ((parts[0]?.[0] || 'E') + (parts[1]?.[0] || '')).toUpperCase();
   }
 
-  empDetalle(id: number): { puesto: string; departamento: string } {
+  empDetalle(id: number): { puesto: string; departamento: string; codigo: string } {
     const emp = this.empleadosSignal().find((e) => Number(e.idEmpleado) === Number(id));
 
     let departamento = '—';
+
     if (emp) {
       const depMap: Record<number, string> = {
         1: 'TI',
@@ -380,40 +387,44 @@ export class Pagos implements OnInit {
         4: 'RRHH',
         5: 'Operaciones',
       };
+
       departamento = depMap[emp.idDepartamento] ?? `Departamento #${emp.idDepartamento}`;
     }
 
     return {
       puesto: emp?.CodigoEmpleado ?? 'Empleado',
+      codigo: emp?.CodigoEmpleado ?? `Empleado #${id}`,
       departamento,
     };
   }
 
+  planillaNombre(id: number): string {
+    const planilla = this.planillasSignal().find((p) => Number(p.idPlanillas) === Number(id));
+    const desdeVista = this.pagos.find((p) => Number(p.IdPlanilla) === Number(id) && p.EstadoPlanilla);
+
+    const estado = planilla?.EstadoPlanilla || desdeVista?.EstadoPlanilla || '';
+
+    return estado ? `Planilla #${id} - ${estado}` : `Planilla #${id}`;
+  }
+
   planillaDetalle(id: number): { periodo: string; estado: string; montoTotal: number } {
     const planilla = this.planillasSignal().find((p) => Number(p.idPlanillas) === Number(id));
-
-    if (!planilla) {
-      return {
-        periodo: `Planilla #${id}`,
-        estado: '—',
-        montoTotal: 0,
-      };
-    }
+    const desdeVista = this.pagos.find((p) => Number(p.IdPlanilla) === Number(id) && p.EstadoPlanilla);
 
     const montoTotal = this.pagos
       .filter((p) => Number(p.IdPlanilla) === Number(id))
       .reduce((acc, p) => acc + Number(p.MontoPagado || 0), 0);
 
     return {
-      periodo: planilla.descPeriodo || `Período #${planilla.idPeriodoPlanilla}`,
-      estado: planilla.EstadoPlanilla || '—',
+      periodo: planilla?.descPeriodo || (planilla ? `Período #${planilla.idPeriodoPlanilla}` : `Planilla #${id}`),
+      estado: planilla?.EstadoPlanilla || desdeVista?.EstadoPlanilla || '—',
       montoTotal,
     };
   }
 
   deduccionDetalle(id: number | null): { nombre: string; tipo: string; monto: number } {
     if (!id || Number(id) <= 0) {
-      return { nombre: '—', tipo: '—', monto: 0 };
+      return { nombre: 'No aplica', tipo: '—', monto: 0 };
     }
 
     const desdeVista = this.pagos.find((p) => Number(p.idDeduccion) === Number(id) && p.NombreDeduccion);
@@ -426,18 +437,29 @@ export class Pagos implements OnInit {
     };
   }
 
+  nombreCompletoUsuario(u: Usuario): string {
+    if (u.NombreCompleto) return u.NombreCompleto;
+
+    const nombre = `${u.Nombre || ''} ${u.Apellidos || ''}`.trim();
+
+    return nombre || `Usuario #${u.idUsuario}`;
+  }
+
   usuarioNombre(id: number): string {
     const desdeVista = this.pagos.find((p) => Number(p.IdUsuarioProcesa) === Number(id) && p.NombreUsuarioProcesa);
+
     if (desdeVista?.NombreUsuarioProcesa) {
       return `${desdeVista.NombreUsuarioProcesa} ${desdeVista.ApellidosUsuarioProcesa || ''}`.trim();
     }
 
     const user = this.usuariosSignal().find((u) => Number(u.idUsuario) === Number(id));
-    return user ? `${user.Nombre} ${user.Apellidos}` : `Usuario #${id}`;
+
+    return user ? this.nombreCompletoUsuario(user) : `Usuario #${id}`;
   }
 
   usuarioRol(id: number): string {
     const user = this.usuariosSignal().find((u) => Number(u.idUsuario) === Number(id));
+
     if (!user) return '—';
 
     const rolMap: Record<number, string> = {
@@ -448,18 +470,19 @@ export class Pagos implements OnInit {
       5: 'Cliente',
     };
 
-    return rolMap[user.idRol] ?? `Rol #${user.idRol}`;
+    return rolMap[Number(user.idRol)] ?? `Rol #${user.idRol}`;
   }
 
   usuarioInitial(id: number): string {
     const name = this.usuarioNombre(id);
     const parts = name.split(' ').filter(Boolean);
+
     return ((parts[0]?.[0] || 'U') + (parts[1]?.[0] || '')).toUpperCase();
   }
 
   feriadoDetalle(id: number | null): { nombre: string; fecha: string } {
     if (!id || Number(id) <= 0) {
-      return { nombre: '—', fecha: '—' };
+      return { nombre: 'No aplica', fecha: '—' };
     }
 
     const desdeVista = this.pagos.find((p) => Number(p.idFeriados) === Number(id) && p.NombreFeriado);
@@ -474,35 +497,37 @@ export class Pagos implements OnInit {
   openModal(mode: 'create' | 'edit', id?: number): void {
     if (mode === 'create') {
       this.editId = null;
+
       this.form = {
         IdPlanilla: 0,
         IdEmpleado: 0,
         MontoPagado: 0,
         MetodoPago: '',
         ReferenciaPago: '',
-        IdUsuarioProcesa: 1,
+        IdUsuarioProcesa: 0,
         FechaPago: new Date().toISOString().slice(0, 16),
         Estado: 1,
         idFeriados: 0,
         idDeduccion: 0,
       };
     } else {
-      const p = this.pagos.find((x) => x.IdPago === id);
+      const p = this.pagos.find((x) => Number(x.IdPago) === Number(id));
       if (!p) return;
 
       this.editId = p.IdPago;
+
       this.form = {
         IdPago: p.IdPago,
-        IdPlanilla: p.IdPlanilla,
-        IdEmpleado: p.IdEmpleado,
-        MontoPagado: p.MontoPagado,
+        IdPlanilla: Number(p.IdPlanilla),
+        IdEmpleado: Number(p.IdEmpleado),
+        MontoPagado: Number(p.MontoPagado),
         MetodoPago: p.MetodoPago,
         ReferenciaPago: p.ReferenciaPago,
-        IdUsuarioProcesa: p.IdUsuarioProcesa,
+        IdUsuarioProcesa: Number(p.IdUsuarioProcesa),
         FechaPago: this.toDateTimeLocal(p.FechaPago),
-        Estado: p.Estado,
-        idFeriados: p.idFeriados || 0,
-        idDeduccion: p.idDeduccion || 0,
+        Estado: Number(p.Estado),
+        idFeriados: p.idFeriados ? Number(p.idFeriados) : 0,
+        idDeduccion: p.idDeduccion ? Number(p.idDeduccion) : 0,
       };
     }
 
@@ -511,12 +536,12 @@ export class Pagos implements OnInit {
 
   savePago(): void {
     if (!this.form.IdPlanilla || Number(this.form.IdPlanilla) <= 0) {
-      alert('Debes ingresar un ID de planilla válido.');
+      alert('Debes seleccionar una planilla.');
       return;
     }
 
     if (!this.form.IdEmpleado || Number(this.form.IdEmpleado) <= 0) {
-      alert('Debes ingresar un ID de empleado válido.');
+      alert('Debes seleccionar un empleado.');
       return;
     }
 
@@ -531,7 +556,7 @@ export class Pagos implements OnInit {
     }
 
     if (!this.form.IdUsuarioProcesa || Number(this.form.IdUsuarioProcesa) <= 0) {
-      alert('Debes ingresar un ID de usuario válido.');
+      alert('Debes seleccionar el usuario que procesa.');
       return;
     }
 
@@ -574,41 +599,40 @@ export class Pagos implements OnInit {
   }
 
   viewPago(id: number): void {
-    const pago = this.pagos.find((x) => x.IdPago === id);
+    const pago = this.pagos.find((x) => Number(x.IdPago) === Number(id));
     if (!pago) return;
 
     this.viewedPago = pago;
     this.showViewModal = true;
   }
 
+  viewInAnotherPage(p: PagoVista): void {
+    localStorage.setItem(
+      'displayData',
+      JSON.stringify({
+        titulo: 'Detalle del pago',
+        volver: '/pagos',
+        datos: {
+          ID: `#${p.IdPago}`,
+          Empleado: this.empName(p.IdEmpleado),
+          Planilla: this.planillaNombre(p.IdPlanilla),
+          'Monto pagado': `₡${this.fmtNum(p.MontoPagado)}`,
+          'Método de pago': p.MetodoPago,
+          Referencia: p.ReferenciaPago || '—',
+          'Fecha de pago': this.fmtDate(p.FechaPago),
+          'Procesado por': this.usuarioNombre(p.IdUsuarioProcesa),
+          Deducción: p.idDeduccion && p.idDeduccion > 0 ? this.deduccionDetalle(p.idDeduccion).nombre : 'No aplica',
+          Feriado: p.idFeriados && p.idFeriados > 0 ? this.feriadoDetalle(p.idFeriados).nombre : 'No aplica',
+          Estado: Number(p.Estado) === 1 ? 'Completado' : 'Pendiente',
+        },
+      })
+    );
 
-viewInAnotherPage(p: PagoVista): void {
-  localStorage.setItem('displayData', JSON.stringify({
-    titulo: 'Detalle del pago',
-    volver: '/pagos',
-    datos: {
-      ID: `#${p.IdPago}`,
-      Empleado: this.empName(p.IdEmpleado),
-      'ID Empleado': `#${p.IdEmpleado}`,
-      Planilla: `#${p.IdPlanilla}`,
-      'Monto pagado': `₡${this.fmtNum(p.MontoPagado)}`,
-      'Método de pago': p.MetodoPago,
-      Referencia: p.ReferenciaPago || '—',
-      'Fecha de pago': this.fmtDate(p.FechaPago),
-      'Procesado por': this.usuarioNombre(p.IdUsuarioProcesa),
-      Deducción: p.idDeduccion && p.idDeduccion > 0 ? `#${p.idDeduccion}` : 'No aplica',
-      Feriado: p.idFeriados && p.idFeriados > 0 ? `#${p.idFeriados}` : 'No aplica',
-      Estado: Number(p.Estado) === 1 ? 'Completado' : 'Pendiente'
-    }
-  }));
-
-  this.router.navigate(['/ver-datos']);
-}
-
-
+    this.router.navigate(['/ver-datos']);
+  }
 
   askDelete(id: number): void {
-    const pago = this.pagos.find((x) => x.IdPago === id);
+    const pago = this.pagos.find((x) => Number(x.IdPago) === Number(id));
     if (!pago) return;
 
     this.deleteTargetId = id;
@@ -639,13 +663,18 @@ viewInAnotherPage(p: PagoVista): void {
 
   private toDateTimeLocal(value: string): string {
     if (!value) return '';
-    const dt = new Date(value);
+
+    const normalizada = value.includes('T') ? value : value.replace(' ', 'T');
+    const dt = new Date(normalizada);
+
     if (isNaN(dt.getTime())) return value.slice(0, 16);
+
     return new Date(dt.getTime() - dt.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   }
 
   private toApiDateTime(value: string): string {
     if (!value) return '';
-    return value.replace('T', ' ') + ':00';
+
+    return value.includes('T') ? value.replace('T', ' ') + ':00' : value;
   }
 }

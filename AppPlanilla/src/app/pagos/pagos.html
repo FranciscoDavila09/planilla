@@ -32,6 +32,7 @@
       <div class="stat-label">Total pagos</div>
     </div>
   </div>
+
   <div class="stat-card">
     <div class="stat-icon green">
       <svg viewBox="0 0 16 16" fill="none">
@@ -49,6 +50,7 @@
       <div class="stat-label">Completados</div>
     </div>
   </div>
+
   <div class="stat-card">
     <div class="stat-icon blue">
       <svg viewBox="0 0 16 16" fill="none">
@@ -61,6 +63,7 @@
       <div class="stat-label">Pendientes</div>
     </div>
   </div>
+
   <div class="stat-card">
     <div class="stat-icon amber">
       <svg viewBox="0 0 16 16" fill="none">
@@ -90,16 +93,18 @@
     <input
       class="search-input"
       type="text"
-      placeholder="Buscar por ID, empleado, referencia…"
+      placeholder="Buscar por ID, empleado, usuario, referencia…"
       [(ngModel)]="searchQuery"
       (input)="filterTable()"
     />
   </div>
+
   <select class="filter-select" [(ngModel)]="estadoFilter" (change)="filterTable()">
     <option value="">Todos los estados</option>
     <option value="1">Completado</option>
     <option value="0">Pendiente</option>
   </select>
+
   <select class="filter-select" [(ngModel)]="metodoFilter" (change)="filterTable()">
     <option value="">Todos los métodos</option>
     <option value="Transferencia">Transferencia</option>
@@ -117,6 +122,7 @@
       {{ filteredPagos.length }} pago{{ filteredPagos.length !== 1 ? 's' : '' }}
     </span>
   </div>
+
   <table>
     <thead>
       <tr>
@@ -126,11 +132,13 @@
         <th>Monto pagado</th>
         <th>Método</th>
         <th>Referencia</th>
+        <th>Procesado por</th>
         <th>Fecha pago</th>
         <th>Estado</th>
         <th></th>
       </tr>
     </thead>
+
     <tbody>
       @for (p of pageSlice; track p.IdPago) {
         <tr>
@@ -144,7 +152,7 @@
               </div>
               <div>
                 <div class="emp-name">{{ empName(p.IdEmpleado) }}</div>
-                <div class="emp-id">ID #{{ p.IdEmpleado }}</div>
+                <div class="emp-id">{{ p.CodigoEmpleado || ('Empleado #' + p.IdEmpleado) }}</div>
               </div>
             </div>
           </td>
@@ -155,15 +163,23 @@
             <span class="monto-chip">₡{{ fmtNum(p.MontoPagado) }}</span>
           </td>
           <td>
-            <span class="metodo-badge" [class]="metodoClass(p.MetodoPago)">{{ p.MetodoPago }}</span>
+            <span class="metodo-badge" [class]="metodoClass(p.MetodoPago)">
+              {{ p.MetodoPago }}
+            </span>
           </td>
+
           <td class="col-ref">{{ p.ReferenciaPago || '—' }}</td>
+
+          <td class="col-muted">{{ usuarioNombre(p.IdUsuarioProcesa) }}</td>
+
           <td>{{ fmtDate(p.FechaPago) }}</td>
+
           <td>
             <span class="status-badge" [class]="estadoClass(p.Estado)">
               {{ p.Estado === 1 ? 'Completado' : 'Pendiente' }}
             </span>
           </td>
+
           <td>
             <div class="actions">
               <div class="icon-btn view" title="Ver" (click)="viewInAnotherPage(p)">
@@ -176,6 +192,7 @@
                   />
                 </svg>
               </div>
+
               <div class="icon-btn edit" title="Editar" (click)="openModal('edit', p.IdPago)">
                 <svg viewBox="0 0 16 16" fill="none">
                   <path
@@ -186,6 +203,7 @@
                   />
                 </svg>
               </div>
+
               <div class="icon-btn delete" title="Eliminar" (click)="askDelete(p.IdPago)">
                 <svg viewBox="0 0 16 16" fill="none">
                   <path
@@ -201,9 +219,10 @@
           </td>
         </tr>
       }
+
       @if (pageSlice.length === 0) {
         <tr>
-          <td colspan="9" class="empty-row">No se encontraron pagos</td>
+          <td colspan="10" class="empty-row">No se encontraron pagos</td>
         </tr>
       }
     </tbody>
@@ -216,6 +235,7 @@
       }}
       de {{ filteredPagos.length }}
     </div>
+
     <div class="page-btns">
       <div class="page-btn" (click)="changePage(-1)">
         <svg viewBox="0 0 16 16" fill="none">
@@ -228,11 +248,13 @@
           />
         </svg>
       </div>
+
       @for (pg of totalPages; track pg) {
         <div class="page-btn" [class.active]="pg === currentPage" (click)="goPage(pg)">
           {{ pg }}
         </div>
       }
+
       <div class="page-btn" (click)="changePage(1)">
         <svg viewBox="0 0 16 16" fill="none">
           <path
@@ -253,6 +275,7 @@
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title">{{ editId ? 'Editar pago' : 'Registrar pago' }}</div>
+
       <button class="modal-close" (click)="showFormModal = false">
         <svg viewBox="0 0 16 16" fill="none">
           <path
@@ -264,6 +287,7 @@
         </svg>
       </button>
     </div>
+
     <div class="modal-body">
       <div class="form-row">
         <!-- ✅ Empleado por nombre en lugar de ID numérico -->
@@ -303,6 +327,7 @@
             placeholder="950000"
           />
         </div>
+
         <div class="form-group">
           <label class="form-label">Método de pago</label>
           <select class="form-select" [(ngModel)]="form.MetodoPago">
@@ -339,6 +364,7 @@
             }
           </select>
         </div>
+
         <div class="form-group">
           <label class="form-label">Fecha de pago</label>
           <input class="form-input" type="datetime-local" [(ngModel)]="form.FechaPago" />
@@ -378,6 +404,7 @@
         </div>
       </div>
     </div>
+
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="showFormModal = false">Cancelar</button>
       <button class="btn btn-primary" (click)="savePago()">Guardar pago</button>
@@ -390,6 +417,7 @@
   <div class="modal modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title">Detalle del pago</div>
+
       <button class="modal-close" (click)="showViewModal = false">
         <svg viewBox="0 0 16 16" fill="none">
           <path
@@ -420,9 +448,10 @@
               <circle cx="6" cy="16" r="1.5" fill="currentColor" />
             </svg>
           </div>
+
           <div>
             <div class="view-name">Pago #{{ viewedPago.IdPago }}</div>
-            <div class="view-sub">{{ fmtDate(viewedPago.FechaPago) }}</div>
+            <div class="view-sub">{{ empName(viewedPago.IdEmpleado) }}</div>
           </div>
           <span
             class="status-badge"
@@ -452,6 +481,7 @@
                 }}</span>
               </div>
             </div>
+
             <div class="view-field">
               <div class="view-label">Fecha y hora</div>
               <div class="view-val">{{ fmtDate(viewedPago.FechaPago) }}</div>
@@ -469,6 +499,7 @@
             <div class="hijo-avatar" [class]="colorFor(viewedPago.IdEmpleado)">
               {{ empInitial(viewedPago.IdEmpleado) }}
             </div>
+
             <div class="hijo-info">
               <div class="hijo-titulo">{{ empName(viewedPago.IdEmpleado) }}</div>
               <div class="hijo-sub">
@@ -476,9 +507,10 @@
                 {{ empDetalle(viewedPago.IdEmpleado).departamento }}
               </div>
             </div>
+
             <div class="hijo-meta">
-              <div class="view-label">ID Empleado</div>
-              <div class="hijo-id-chip">#{{ viewedPago.IdEmpleado }}</div>
+              <div class="view-label">Código</div>
+              <div class="hijo-id-chip">{{ empDetalle(viewedPago.IdEmpleado).codigo }}</div>
             </div>
           </div>
         </div>
@@ -505,10 +537,12 @@
                 />
               </svg>
             </div>
+
             <div class="hijo-info">
-              <div class="hijo-titulo">Planilla #{{ viewedPago.IdPlanilla }}</div>
+              <div class="hijo-titulo">{{ planillaNombre(viewedPago.IdPlanilla) }}</div>
               <div class="hijo-sub">{{ planillaDetalle(viewedPago.IdPlanilla).periodo }}</div>
             </div>
+
             <div class="hijo-meta">
               <div class="view-label">Estado planilla</div>
               <span
@@ -518,6 +552,7 @@
                 {{ planillaDetalle(viewedPago.IdPlanilla).estado }}
               </span>
             </div>
+
             <div class="hijo-meta">
               <div class="view-label">Monto planilla</div>
               <div class="hijo-monto-verde">
@@ -542,19 +577,17 @@
                   />
                 </svg>
               </div>
+
               <div class="hijo-info">
                 <div class="hijo-titulo">{{ deduccionDetalle(viewedPago.idDeduccion).nombre }}</div>
                 <div class="hijo-sub">{{ deduccionDetalle(viewedPago.idDeduccion).tipo }}</div>
               </div>
+
               <div class="hijo-meta">
                 <div class="view-label">Monto deducción</div>
                 <div class="hijo-monto-amber">
                   -₡{{ fmtNum(deduccionDetalle(viewedPago.idDeduccion).monto) }}
                 </div>
-              </div>
-              <div class="hijo-meta">
-                <div class="view-label">ID Deducción</div>
-                <div class="hijo-id-chip">#{{ viewedPago.idDeduccion }}</div>
               </div>
             </div>
           } @else {
@@ -568,25 +601,24 @@
             <div class="hijo-avatar" [class]="colorFor(viewedPago.IdUsuarioProcesa)">
               {{ usuarioInitial(viewedPago.IdUsuarioProcesa) }}
             </div>
+
             <div class="hijo-info">
               <div class="hijo-titulo">{{ usuarioNombre(viewedPago.IdUsuarioProcesa) }}</div>
               <div class="hijo-sub">{{ usuarioRol(viewedPago.IdUsuarioProcesa) }}</div>
             </div>
+
             <div class="hijo-meta">
               <div class="view-label">Fecha procesado</div>
               <div class="view-val" style="font-size: 12px">
                 {{ fmtDate(viewedPago.FechaPago) }}
               </div>
             </div>
-            <div class="hijo-meta">
-              <div class="view-label">ID Usuario</div>
-              <div class="hijo-id-chip">#{{ viewedPago.IdUsuarioProcesa }}</div>
-            </div>
           </div>
         </div>
 
         <div class="det-section det-section-last">
           <div class="det-section-title">Observaciones extra</div>
+
           @if ((viewedPago.idFeriados ?? 0) > 0) {
             <div class="hijo-card hijo-card-violet">
               <div class="hijo-icon-box hijo-icon-violet">
@@ -608,19 +640,17 @@
                   />
                 </svg>
               </div>
+
               <div class="hijo-info">
                 <div class="hijo-titulo">Feriado asociado</div>
                 <div class="hijo-sub">{{ feriadoDetalle(viewedPago.idFeriados).nombre }}</div>
               </div>
+
               <div class="hijo-meta">
                 <div class="view-label">Fecha feriado</div>
                 <div class="view-val" style="font-size: 12px">
                   {{ feriadoDetalle(viewedPago.idFeriados).fecha }}
                 </div>
-              </div>
-              <div class="hijo-meta">
-                <div class="view-label">ID Feriado</div>
-                <div class="hijo-id-chip">#{{ viewedPago.idFeriados }}</div>
               </div>
             </div>
           } @else {
@@ -651,6 +681,7 @@
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title">Confirmar eliminación</div>
+
       <button class="modal-close" (click)="showDeleteModal = false">
         <svg viewBox="0 0 16 16" fill="none">
           <path
@@ -662,6 +693,7 @@
         </svg>
       </button>
     </div>
+
     <div class="confirm-body">
       <div class="confirm-icon">
         <svg viewBox="0 0 24 24" fill="none">
@@ -677,6 +709,7 @@
       <div class="confirm-title">¿Eliminar pago?</div>
       <div class="confirm-desc">{{ deleteDesc }}</div>
     </div>
+
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancelar</button>
       <button class="btn btn-danger" (click)="confirmDelete()">Eliminar</button>

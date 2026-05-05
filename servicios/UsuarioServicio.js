@@ -119,6 +119,17 @@ class UsuarioServicio {
     return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`usuarios`");
   }
 
+  async listarUsuariosCombo() {
+  return await ejecutarConsulta(`
+    SELECT 
+      idUsuario,
+      CONCAT(Nombre, ' ', Apellidos) AS NombreCompleto
+    FROM dbplanilla.usuarios
+    WHERE Estado = 1
+  `);
+}
+
+
   //Get para obtener empleados por el id
 
   async obtenerPorId(id) {

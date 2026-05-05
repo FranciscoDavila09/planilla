@@ -45,31 +45,6 @@
       <div class="stat-label">Activos</div>
     </div>
   </div>
-  <!-- <div class="stat-card">
-    <div class="stat-icon blue">
-      <svg viewBox="0 0 16 16" fill="none">
-        <rect
-          x="2"
-          y="3"
-          width="12"
-          height="11"
-          rx="1.5"
-          stroke="currentColor"
-          stroke-width="1.5"
-        />
-        <path
-          d="M5 1v4M11 1v4M2 7h12"
-          stroke="currentColor"
-          stroke-width="1.2"
-          stroke-linecap="round"
-        />
-      </svg>
-    </div>
-    <div>
-      <div class="stat-num">{{ countByStatus(2) }}</div>
-      <div class="stat-label">De vacaciones</div>
-    </div>
-  </div> -->
   <div class="stat-card">
     <div class="stat-icon amber">
       <svg viewBox="0 0 16 16" fill="none">
@@ -102,16 +77,14 @@
   <select class="filter-select" [(ngModel)]="statusFilter" (change)="filterTable()">
     <option value="">Todos los estados</option>
     <option value="1">Activo</option>
-    <!-- <option value="2">Vacaciones</option> -->
     <option value="0">Inactivo</option>
   </select>
+  <!-- ✅ Departamentos desde el endpoint -->
   <select class="filter-select" [(ngModel)]="deptFilter" (change)="filterTable()">
     <option value="">Todos los departamentos</option>
-    <option value="1">TI</option>
-    <option value="2">Finanzas</option>
-    <option value="3">Ventas</option>
-    <option value="4">RRHH</option>
-    <option value="5">Operaciones</option>
+    @for (d of departamentos(); track d.idDepartamento) {
+      <option [value]="d.idDepartamento">{{ d.Nombre }}</option>
+    }
   </select>
 </div>
 
@@ -129,6 +102,7 @@
         <th>Empleado</th>
         <th>Identificación</th>
         <th>Código</th>
+        <th>Departamento</th>
         <th>Salario</th>
         <th>Estado</th>
         <th>Ingreso</th>
@@ -149,6 +123,8 @@
           </td>
           <td>{{ e.Identificacion }}</td>
           <td>{{ e.CodigoEmpleado }}</td>
+          <!-- ✅ Nombre del departamento -->
+          <td>{{ deptName(e.idDepartamento) }}</td>
           <td>{{ fmtSalary(e.Salario) }}</td>
           <td>
             <span class="status-badge" [class]="'status-badge ' + statusClass(e.Estado)">
@@ -195,13 +171,12 @@
       }
       @if (pageSlice.length === 0) {
         <tr>
-          <td colspan="7" class="empty-row">No se encontraron empleados</td>
+          <td colspan="8" class="empty-row">No se encontraron empleados</td>
         </tr>
       }
     </tbody>
   </table>
 
-  <!-- PAGINACIÓN -->
   <div class="pagination">
     <div class="page-info">
       Mostrando {{ filteredEmployees.length ? (currentPage - 1) * perPage + 1 : 0 }}–{{
@@ -329,20 +304,20 @@
         </div>
       </div>
       <div class="form-row">
+        <!-- ✅ Select de departamento por nombre -->
         <div class="form-group">
           <label class="form-label">Departamento</label>
-          <input
-            class="form-input"
-            type="number"
-            [(ngModel)]="form.idDepartamento"
-            placeholder="ID departamento"
-          />
+          <select class="form-select" [(ngModel)]="form.idDepartamento">
+            <option [ngValue]="0">Seleccionar departamento…</option>
+            @for (d of departamentos(); track d.idDepartamento) {
+              <option [ngValue]="d.idDepartamento">{{ d.Nombre }}</option>
+            }
+          </select>
         </div>
         <div class="form-group">
           <label class="form-label">Estado</label>
           <select class="form-select" [(ngModel)]="form.Estado">
             <option [ngValue]="1">Activo</option>
-            <!-- <option [ngValue]="2">Vacaciones</option> -->
             <option [ngValue]="0">Inactivo</option>
           </select>
         </div>
@@ -381,8 +356,9 @@
           </div>
           <div>
             <div class="view-name">{{ viewedEmployee.Nombre }} {{ viewedEmployee.Apellidos }}</div>
+            <!-- ✅ Nombre del departamento en el subtítulo -->
             <div class="view-sub">
-              {{ viewedEmployee.CodigoEmpleado }} · Depto. {{ viewedEmployee.idDepartamento }}
+              {{ viewedEmployee.CodigoEmpleado }} · {{ deptName(viewedEmployee.idDepartamento) }}
             </div>
           </div>
           <span
@@ -405,6 +381,11 @@
           <div class="view-field">
             <div class="view-label">Correo</div>
             <div class="view-val">{{ viewedEmployee.Correo }}</div>
+          </div>
+          <!-- ✅ Campo departamento con nombre -->
+          <div class="view-field">
+            <div class="view-label">Departamento</div>
+            <div class="view-val">{{ deptName(viewedEmployee.idDepartamento) }}</div>
           </div>
           <div class="view-field">
             <div class="view-label">Salario</div>

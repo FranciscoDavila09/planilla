@@ -35,8 +35,9 @@ interface EmpleadoRef {
 
 interface UsuarioRef {
   idUsuario: number;
-  Nombre: string;
-  Apellidos: string;
+  Nombre?: string;
+  Apellidos?: string;
+  NombreCompleto?: string;
   idRol?: number;
   correo?: string;
 }
@@ -147,23 +148,31 @@ export class Aguinaldos implements OnInit {
       });
   }
 
-  getUsuarios(): void {
-    this.http
-      .get<UsuarioRef[]>(`${this.USUARIO_URL}/listarUsuarios`, { headers: this.headers })
-      .subscribe({
-        next: (data) => {
-          const lista = (data || []).map((u: any) => ({
-            ...u,
-            idUsuario: Number(u.idUsuario ?? u.IdUsuario),
-          }));
-          this.usuarios.set(lista);
-        },
-        error: (err) => {
-          console.error('Error al obtener usuarios:', err);
-          this.usuarios.set([]);
-        },
-      });
-  }
+getUsuarios(): void {
+  this.http
+    .get<any[]>(`${this.USUARIO_URL}/listarUsuariosCombo`, { headers: this.headers })
+    .subscribe({
+      next: (data) => {
+        const lista = (data || []).map((u: any) => ({
+          idUsuario: Number(u.idUsuario ?? u.IdUsuario),
+          Nombre: u.Nombre ?? '',
+          Apellidos: u.Apellidos ?? '',
+          NombreCompleto:
+            u.NombreCompleto ??
+            u.nombreCompleto ??
+            `${u.Nombre ?? ''} ${u.Apellidos ?? ''}`.trim(),
+          idRol: Number(u.idRol ?? u.IdRol ?? 0),
+          correo: u.correo ?? u.Correo ?? '',
+        }));
+
+        this.usuarios.set(lista);
+      },
+      error: (err) => {
+        console.error('Error al obtener usuarios:', err);
+        this.usuarios.set([]);
+      },
+    });
+}
 
 readonly filteredAguinaldos = computed(() => {
   const q = this.searchQuery().toLowerCase().trim();
@@ -292,19 +301,30 @@ readonly pageSlice = computed(() => {
     };
   }
 
-  usuarioNombre(id: number): string {
-    const aguinaldo = this.aguinaldos().find((a) => Number(a.idUsuario) === Number(id) && a.NombreUsuario);
-    if (aguinaldo?.NombreUsuario) {
-      return `${aguinaldo.NombreUsuario}${aguinaldo.ApellidosUsuario ? ' ' + aguinaldo.ApellidosUsuario : ''}`;
-    }
+usuarioNombre(id: number): string {
+  const aguinaldo = this.aguinaldos().find(
+    (a) => Number(a.idUsuario) === Number(id) && a.NombreUsuario
+  );
 
-    const usuario = this.usuarios().find((u) => Number(u.idUsuario) === Number(id));
-    if (usuario) {
-      return `${usuario.Nombre}${usuario.Apellidos ? ' ' + usuario.Apellidos : ''}`;
-    }
-
-    return `Usuario #${id}`;
+  if (aguinaldo?.NombreUsuario) {
+    return `${aguinaldo.NombreUsuario}${aguinaldo.ApellidosUsuario ? ' ' + aguinaldo.ApellidosUsuario : ''}`;
   }
+
+  const usuario = this.usuarios().find((u) => Number(u.idUsuario) === Number(id));
+
+  if (usuario) {
+    return this.nombreCompletoUsuario(usuario);
+  }
+
+  return `Usuario #${id}`;
+}
+  nombreCompletoUsuario(u: UsuarioRef): string {
+  if (u.NombreCompleto) return u.NombreCompleto;
+
+  const nombre = `${u.Nombre ?? ''} ${u.Apellidos ?? ''}`.trim();
+
+  return nombre || `Usuario #${u.idUsuario}`;
+}
 
   usuarioRol(id: number): string {
     const usuario = this.usuarios().find((u) => Number(u.idUsuario) === Number(id));
@@ -390,7 +410,7 @@ goPage(n: number): void {
         Estado: 0,
         Periodo: new Date().getFullYear(),
         FechaPago: '',
-        idUsuario: 1,
+        idUsuario: 0,
       };
     } else {
       const a = this.aguinaldos().find((x) => Number(x.IdAguinaldo) === Number(id));

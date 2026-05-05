@@ -3,17 +3,42 @@ const { ejecutarConsulta } = require("../db.js");
 class PlanillaServicio {
   constructor() {}
   //Get para listar las planillas
-  async listarPlanillas() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`planillas`");
-  }
+async listarPlanillas() {
+  const sql = `
+    SELECT 
+      p.idPlanillas,
+      p.EstadoPlanilla,
+      p.IdUsuario,
+      CONCAT(u.Nombre, ' ', u.Apellidos) AS NombreUsuario,
+      p.FechaCreacion,
+      p.idControlHorarios,
+      p.idPeriodoPlanilla
+    FROM dbplanilla.planillas p
+    INNER JOIN dbplanilla.usuarios u 
+      ON p.IdUsuario = u.idUsuario
+  `;
 
+  return await ejecutarConsulta(sql);
+}
   //Get para obtener planillas por el id
 
- async obtenerPorId(id) {
-  return await ejecutarConsulta(
-    "SELECT * FROM `dbplanilla`.`planillas` WHERE `idPlanillas` = ?",
-    [id],
-  );
+async obtenerPorId(id) {
+  const sql = `
+    SELECT 
+      p.idPlanillas,
+      p.EstadoPlanilla,
+      p.IdUsuario,
+      CONCAT(u.Nombre, ' ', u.Apellidos) AS NombreUsuario,
+      p.FechaCreacion,
+      p.idControlHorarios,
+      p.idPeriodoPlanilla
+    FROM dbplanilla.planillas p
+    INNER JOIN dbplanilla.usuarios u 
+      ON p.IdUsuario = u.idUsuario
+    WHERE p.idPlanillas = ?
+  `;
+
+  return await ejecutarConsulta(sql, [id]);
 }
   //Insertar datos
 
