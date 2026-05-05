@@ -4,6 +4,7 @@ const Router = express.Router();
 
 const PuestosServicio = require("../servicios/PuestosServicio.js");
 const { route } = require("./Servicio1.js");
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get("/listarPuestos", async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {

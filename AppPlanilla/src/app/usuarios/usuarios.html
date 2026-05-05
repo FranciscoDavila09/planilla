@@ -133,8 +133,8 @@
         <th>Teléfono</th>
         <th>Rol</th>
         <th>Departamento</th>
-        <th>Alta</th>
-        <th>Token</th>
+        <th>Fecha</th>
+        <!-- <th>Token</th> -->
         <th>Estado</th>
         <th></th>
       </tr>
@@ -162,7 +162,7 @@
             <span class="dept-chip">{{ deptNombre(u.IdDepartamento) }}</span>
           </td>
           <td class="col-muted">{{ fmtDate(u.FechaCreacion) }}</td>
-          <td>
+          <!-- <td>
             @if (u.Token) {
               <span class="token-chip token-activo" title="Token activo">
                 <svg viewBox="0 0 10 10" fill="none" width="9" height="9">
@@ -174,7 +174,7 @@
             } @else {
               <span class="token-chip token-sin">Sin token</span>
             }
-          </td>
+          </td> -->
           <td>
             <span class="status-badge" [class]="estadoClass(u.Estado)">
               {{ u.Estado === 1 ? 'Activo' : 'Inactivo' }}
@@ -182,12 +182,12 @@
           </td>
           <td>
             <div class="actions">
-              <div class="icon-btn view" title="Ver perfil" (click)="viewUsuario(u.idUsuario)">
-                <svg viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
-                  <path d="M2 8c1.5-3 9-4.5 12 0-1.5 3-9 4.5-12 0z" stroke="currentColor" stroke-width="1.4"/>
-                </svg>
-              </div>
+        <div class="icon-btn view" title="Ver detalle" (click)="viewInAnotherPage(u)">
+    <svg viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M2 8c1.5-3 9-4.5 12 0-1.5 3-9 4.5-12 0z" stroke="currentColor" stroke-width="1.4"/>
+    </svg>
+  </div>
               <div class="icon-btn edit" title="Editar" (click)="openModal('edit', u.idUsuario)">
                 <svg viewBox="0 0 16 16" fill="none">
                   <path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
@@ -205,7 +205,7 @@
       }
       @if (pageSlice.length === 0) {
         <tr>
-          <td colspan="9" class="empty-row">No se encontraron usuarios</td>
+          <td colspan="8" class="empty-row">No se encontraron usuarios</td>
         </tr>
       }
     </tbody>
@@ -331,13 +331,13 @@
         </div>
       </div>
       <!-- Nota sobre el token -->
-      <div class="info-box">
+      <!-- <div class="info-box">
         <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
           <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>
           <path d="M8 7v5M8 5.5v-.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
         El token de sesión se genera automáticamente al iniciar sesión y no se gestiona desde aquí.
-      </div>
+      </div> -->
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="showFormModal = false">Cancelar</button>
@@ -349,91 +349,7 @@
 <!-- ══════════════════════════════════
      MODAL VER PERFIL
 ══════════════════════════════════ -->
-<div class="modal-overlay" [class.open]="showViewModal" (click)="onOverlayClick($event, 'view')">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <div class="modal-title">Perfil de usuario</div>
-      <button class="modal-close" (click)="showViewModal = false">
-        <svg viewBox="0 0 16 16" fill="none">
-          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
-    @if (showViewModal) {
-      <div class="modal-body">
-        <!-- Avatar + info principal -->
-        <div class="view-perfil-header">
-          <div class="view-avatar-lg" [class]="colorFor(viewedUsuario.idUsuario)">
-            {{ initials(viewedUsuario) }}
-          </div>
-          <div class="view-perfil-info">
-            <div class="view-name">{{ viewedUsuario.Nombre }} {{ viewedUsuario.Apellidos }}</div>
-            <div class="view-correo">{{ viewedUsuario.correo }}</div>
-            <div class="view-badges-row">
-              <span class="rol-badge" [class]="rolClass(viewedUsuario.idRol)">{{ rolNombre(viewedUsuario.idRol) }}</span>
-              <span class="dept-chip">{{ deptNombre(viewedUsuario.IdDepartamento) }}</span>
-              <span class="status-badge" [class]="estadoClass(viewedUsuario.Estado)">
-                {{ viewedUsuario.Estado === 1 ? 'Activo' : 'Inactivo' }}
-              </span>
-            </div>
-          </div>
-        </div>
 
-        <!-- Grid datos -->
-        <div class="view-grid">
-          <div class="view-field">
-            <div class="view-label">Teléfono</div>
-            <div class="view-val">{{ viewedUsuario.telefono || '—' }}</div>
-          </div>
-          <div class="view-field">
-            <div class="view-label">Fecha de alta</div>
-            <div class="view-val">{{ fmtDate(viewedUsuario.FechaCreacion) }}</div>
-          </div>
-          <div class="view-field">
-            <div class="view-label">ID Usuario</div>
-            <div class="view-val">#{{ viewedUsuario.idUsuario }}</div>
-          </div>
-          <div class="view-field">
-            <div class="view-label">ID Departamento</div>
-            <div class="view-val">#{{ viewedUsuario.IdDepartamento }}</div>
-          </div>
-        </div>
-
-        <!-- Token section -->
-        <div class="token-section">
-          <div class="token-section-header">
-            <div class="token-section-title">Token de sesión</div>
-            @if (viewedUsuario.Token) {
-              <span class="token-chip token-activo">
-                <svg viewBox="0 0 10 10" fill="none" width="9" height="9">
-                  <circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.2"/>
-                  <path d="M3 5l1.5 1.5L7 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Activo
-              </span>
-            } @else {
-              <span class="token-chip token-sin">Sin sesión</span>
-            }
-          </div>
-          <div class="token-value">
-            @if (viewedUsuario.Token) {
-              <span class="token-text">{{ viewedUsuario.Token.slice(0, 40) }}…</span>
-              <span class="token-note">El token completo no se muestra por seguridad</span>
-            } @else {
-              <span class="token-note">No hay sesión activa para este usuario</span>
-            }
-          </div>
-        </div>
-      </div>
-    }
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="showViewModal = false">Cerrar</button>
-      <button class="btn btn-primary" (click)="openModal('edit', viewedUsuario.idUsuario); showViewModal = false">
-        Editar usuario
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- ══════════════════════════════════
      MODAL CONFIRMAR ELIMINAR

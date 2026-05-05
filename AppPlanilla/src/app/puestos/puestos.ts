@@ -1,19 +1,30 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 interface Puesto {
   idPuestos: number;
   NombrePuesto: string;
   Descripcion: string;
   SalarioBase: number;
-  Estado: string;
+  Estado: string | number;
   idEmpleado?: number;
   idUsuario?: number;
 }
 
-interface Empleado { id: number; nombre: string; }
-interface Usuario  { id: number; nombre: string; }
+interface Empleado {
+  idEmpleado: number;
+  Nombre: string;
+  Apellidos: string;
+}
+
+interface Usuario {
+  idUsuario: number;
+  Nombre: string;
+  Apellidos: string;
+  Estado: number;
+}
 
 @Component({
   selector: 'app-puestos',
@@ -22,7 +33,20 @@ interface Usuario  { id: number; nombre: string; }
   templateUrl: './puestos.html',
   styleUrl: './puestos.css',
 })
-export class Puestos {
+export class Puestos implements OnInit {
+
+  private readonly http = inject(HttpClient);
+private readonly router = inject(Router);
+
+  private readonly API_URL      = 'http://localhost';
+  private readonly PUESTO_URL   = `${this.API_URL}/PuestosServicio/`;
+  private readonly EMPLEADO_URL = `${this.API_URL}/EmpleadoServicio/`;
+  private readonly USUARIO_URL  = `${this.API_URL}/UsuarioServicio/`;
+
+  protected readonly Empleados = signal<Empleado[]>([]);
+  protected readonly Puesto    = signal<Puesto[]>([]);
+  protected readonly Usuarios  = signal<Usuario[]>([]);
+
   readonly COLORS = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
   readonly perPage = 8;
 
@@ -39,49 +63,119 @@ export class Puestos {
   viewedPuesto!: Puesto;
   deleteTargetId: number | null = null;
 
-  empleados: Empleado[] = [
-    { id: 1,  nombre: 'María Rodríguez López'    },
-    { id: 2,  nombre: 'Carlos Mendoza Torres'    },
-    { id: 3,  nombre: 'Sofía Vargas Chaves'      },
-    { id: 4,  nombre: 'Andrés Jiménez Mora'      },
-    { id: 5,  nombre: 'Lucía Pérez Solís'        },
-    { id: 6,  nombre: 'Diego Castillo Brenes'    },
-    { id: 7,  nombre: 'Valeria Núñez Ulate'      },
-    { id: 8,  nombre: 'Felipe Aguilar Rojas'     },
-    { id: 9,  nombre: 'Daniela Herrera Campos'   },
-    { id: 10, nombre: 'Ricardo Soto Fallas'      },
-  ];
+  ngOnInit(): void {
+    this.getEmpleados();
+    this.getUsuarios();
+    this.getPuesto();
+  }
 
-  usuarios: Usuario[] = [
-    { id: 1, nombre: 'Admin RH'       },
-    { id: 2, nombre: 'Supervisor TI'  },
-    { id: 3, nombre: 'Gerente RRHH'   },
-  ];
+  // ── HTTP GET ──
+  getEmpleados(): void {
+    this.http.get<Empleado[]>(`${this.EMPLEADO_URL}listarEmpleados`).subscribe({
+      next: (data) => this.Empleados.set(data),
+      error: (err) => console.error('Error al obtener empleados:', err)
+    });
+  }
 
-  puestos: Puesto[] = [
-    { idPuestos: 1,  NombrePuesto: 'Desarrollador Senior',      Descripcion: 'Desarrollo de software, revisión de código y mentoría del equipo técnico.',          SalarioBase: 950000,  Estado: 'Activo',   idEmpleado: 1,  idUsuario: 1 },
-    { idPuestos: 2,  NombrePuesto: 'Analista Financiero',       Descripcion: 'Análisis de estados financieros, proyecciones y reportes de gestión.',               SalarioBase: 820000,  Estado: 'Activo',   idEmpleado: 2,  idUsuario: 1 },
-    { idPuestos: 3,  NombrePuesto: 'Gerente de Ventas',         Descripcion: 'Liderazgo del equipo comercial, gestión de clientes y cumplimiento de metas.',       SalarioBase: 1100000, Estado: 'Activo',   idEmpleado: 3,  idUsuario: 1 },
-    { idPuestos: 4,  NombrePuesto: 'Reclutador',                Descripcion: 'Proceso de selección de personal, entrevistas y onboarding de nuevos empleados.',    SalarioBase: 700000,  Estado: 'Activo',   idEmpleado: 4,  idUsuario: 3 },
-    { idPuestos: 5,  NombrePuesto: 'Jefe de Operaciones',       Descripcion: 'Supervisión de procesos operativos, logística y control de calidad.',                SalarioBase: 1050000, Estado: 'Activo',   idEmpleado: 5,  idUsuario: 1 },
-    { idPuestos: 6,  NombrePuesto: 'DevOps Engineer',           Descripcion: 'Gestión de infraestructura, CI/CD, contenedores y monitoreo de sistemas.',           SalarioBase: 980000,  Estado: 'Activo',   idEmpleado: 6,  idUsuario: 2 },
-    { idPuestos: 7,  NombrePuesto: 'Contadora',                 Descripcion: 'Contabilidad general, declaraciones fiscales y conciliaciones bancarias.',           SalarioBase: 860000,  Estado: 'Activo',   idEmpleado: 7,  idUsuario: 1 },
-    { idPuestos: 8,  NombrePuesto: 'Asesor Comercial',          Descripcion: 'Atención al cliente, prospección y cierre de ventas.',                               SalarioBase: 750000,  Estado: 'Activo',   idEmpleado: 8,  idUsuario: 1 },
-    { idPuestos: 9,  NombrePuesto: 'Diseñador UX',              Descripcion: 'Diseño de interfaces, investigación de usuarios y prototipado.',                     SalarioBase: 870000,  Estado: 'Activo',   idEmpleado: 9,  idUsuario: 2 },
-    { idPuestos: 10, NombrePuesto: 'Auxiliar Contable',         Descripcion: 'Apoyo en registros contables, facturación y archivo de documentos.',                 SalarioBase: 620000,  Estado: 'Inactivo', idEmpleado: 10, idUsuario: 1 },
-    { idPuestos: 11, NombrePuesto: 'Gerente Financiero',        Descripcion: 'Dirección del área financiera, presupuestos y estrategia de inversión.',             SalarioBase: 1300000, Estado: 'Activo',   idUsuario: 1 },
-    { idPuestos: 12, NombrePuesto: 'Backend Developer',         Descripcion: 'Desarrollo de APIs, microservicios y bases de datos.',                               SalarioBase: 1020000, Estado: 'Activo',   idUsuario: 2 },
-    { idPuestos: 13, NombrePuesto: 'QA Engineer',               Descripcion: 'Pruebas de software, automatización y aseguramiento de calidad.',                   SalarioBase: 860000,  Estado: 'Activo',   idUsuario: 2 },
-    { idPuestos: 14, NombrePuesto: 'Asistente Administrativa',  Descripcion: 'Soporte administrativo, agenda ejecutiva y gestión documental.',                     SalarioBase: 610000,  Estado: 'Activo',   idUsuario: 3 },
-    { idPuestos: 15, NombrePuesto: 'Técnico de Soporte',        Descripcion: 'Soporte técnico a usuarios, mantenimiento de equipos y helpdesk.',                  SalarioBase: 680000,  Estado: 'Activo',   idUsuario: 2 },
-  ];
+  getUsuarios(): void {
+    this.http.get<Usuario[]>(`${this.USUARIO_URL}listarUsuarios`).subscribe({
+      next: (data) => this.Usuarios.set(data),
+      error: (err) => console.error('Error al obtener usuarios:', err)
+    });
+  }
+
+  getPuesto(): void {
+    this.http.get<Puesto[]>(`${this.PUESTO_URL}listarPuestos`).subscribe({
+      next: (data) => this.Puesto.set(data),
+      error: (err) => console.error('Error al obtener puestos:', err)
+    });
+  }
+
+  // ── HTTP POST ──
+ crearPuesto(puesto: Partial<Puesto>): void {
+  const body = {
+    ...puesto,
+    Estado: puesto.Estado === 'Activo' || puesto.Estado == 1 ? 1 : 0
+  };
+  this.http.post(`${this.PUESTO_URL}insertar`, body).subscribe({
+    next: () => this.getPuesto(),
+    error: (err) => console.error('Error al crear puesto:', err)
+  });
+}
+
+
+  
+ // ── HTTP PUT ──
+actualizarPuesto(id: number, puesto: Partial<Puesto>): void {
+  const body = {
+    ...puesto,
+    IdPuestos: id,  // ✅ el backend espera IdPuestos en el body (con I mayúscula)
+    Estado: puesto.Estado === 'Activo' || puesto.Estado == 1 ? 1 : 0
+  };
+  this.http.put(`${this.PUESTO_URL}actualizar`, body).subscribe({ // ✅ sin /:id
+    next: () => this.getPuesto(),
+    error: (err) => console.error('Error al actualizar puesto:', err)
+  });
+}
+
+// ── HTTP DELETE ──
+eliminarPuesto(id: number): void {
+  this.http.delete(`${this.PUESTO_URL}eliminar`, { params: { id } }).subscribe({ // ✅ ?id= como query param
+    next: () => this.getPuesto(),
+    error: (err) => console.error('Error al eliminar puesto:', err)
+  });
+}
+
+  // ── Helpers ──
+  min(a: number, b: number) { return Math.min(a, b); }
+
+  colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
+
+  fmtSalary(n: number) { return '₡' + Number(n).toLocaleString('es-CR'); }
+
+  estadoLabel(s: string | number): string {
+    if (s == 1) return 'Activo';
+    if (s == 0) return 'Inactivo';
+    return String(s);
+  }
+
+  estadoClass(s: string | number): string {
+    return this.estadoLabel(s) === 'Activo' ? 'status-active' : 'status-inactive';
+  }
+
+  countByEstado(e: string) {
+    return this.Puesto().filter(p => this.estadoLabel(p.Estado) === e).length;
+  }
+
+  getSalarioPromedio() {
+    const list = this.Puesto();
+    if (!list.length) return '₡0';
+    const avg = list.reduce((s, p) => s + p.SalarioBase, 0) / list.length;
+    return this.fmtSalary(Math.round(avg));
+  }
+
+  getSalarioMaximo() {
+    const list = this.Puesto();
+    if (!list.length) return '₡0';
+    return this.fmtSalary(Math.max(...list.map(p => p.SalarioBase)));
+  }
+
+  getNombreEmpleado(id: number) {
+    const e = this.Empleados().find(e => e.idEmpleado === id);
+    return e ? `${e.Nombre} ${e.Apellidos}` : '—';
+  }
+
+  getNombreUsuario(id: number) {
+    const u = this.Usuarios().find(u => u.idUsuario === id);
+    return u ? `${u.Nombre} ${u.Apellidos}` : '—';
+  }
 
   // ── Computed ──
   get filteredPuestos(): Puesto[] {
     const q = this.searchQuery.toLowerCase();
-    return this.puestos.filter(p =>
+    return this.Puesto().filter(p =>
       (!q || p.NombrePuesto.toLowerCase().includes(q) || p.Descripcion?.toLowerCase().includes(q)) &&
-      (!this.estadoFiltro || p.Estado === this.estadoFiltro)
+      (!this.estadoFiltro || this.estadoLabel(p.Estado) === this.estadoFiltro)
     );
   }
 
@@ -93,38 +187,6 @@ export class Puestos {
   get totalPages(): number[] {
     const count = Math.ceil(this.filteredPuestos.length / this.perPage) || 1;
     return Array.from({ length: count }, (_, i) => i + 1);
-  }
-
-  // ── Helpers ──
-  min(a: number, b: number) { return Math.min(a, b); }
-
-  colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
-
-  fmtSalary(n: number) { return '₡' + Number(n).toLocaleString('es-CR'); }
-
-  estadoClass(s: string) {
-    return s === 'Activo' ? 'status-active' : 'status-inactive';
-  }
-
-  countByEstado(e: string) { return this.puestos.filter(p => p.Estado === e).length; }
-
-  getSalarioPromedio() {
-    if (!this.puestos.length) return '₡0';
-    const avg = this.puestos.reduce((s, p) => s + p.SalarioBase, 0) / this.puestos.length;
-    return this.fmtSalary(Math.round(avg));
-  }
-
-  getSalarioMaximo() {
-    if (!this.puestos.length) return '₡0';
-    return this.fmtSalary(Math.max(...this.puestos.map(p => p.SalarioBase)));
-  }
-
-  getNombreEmpleado(id: number) {
-    return this.empleados.find(e => e.id === id)?.nombre ?? '—';
-  }
-
-  getNombreUsuario(id: number) {
-    return this.usuarios.find(u => u.id === id)?.nombre ?? '—';
   }
 
   // ── Filtro / paginación ──
@@ -139,9 +201,9 @@ export class Puestos {
   openModal(mode: 'create' | 'edit', id?: number) {
     if (mode === 'create') {
       this.editId = null;
-      this.form = { Estado: 'Activo' };
+      this.form = { Estado: 'Activo', idEmpleado: undefined, idUsuario: undefined };
     } else {
-      const p = this.puestos.find(x => x.idPuestos === id)!;
+      const p = this.Puesto().find(x => x.idPuestos === id)!;
       this.editId = p.idPuestos;
       this.form = { ...p };
     }
@@ -155,19 +217,37 @@ export class Puestos {
       return;
     }
     if (this.editId) {
-      const idx = this.puestos.findIndex(p => p.idPuestos === this.editId);
-      this.puestos[idx] = { ...this.puestos[idx], ...this.form } as Puesto;
+      this.actualizarPuesto(this.editId, this.form); 
     } else {
-      const newId = Math.max(0, ...this.puestos.map(p => p.idPuestos)) + 1;
-      this.puestos = [...this.puestos, { idPuestos: newId, ...this.form } as Puesto];
+      this.crearPuesto(this.form); 
     }
     this.showFormModal = false;
   }
 
   viewPuesto(id: number) {
-    this.viewedPuesto = this.puestos.find(p => p.idPuestos === id)!;
+    this.viewedPuesto = this.Puesto().find(p => p.idPuestos === id)!;
     this.showViewModal = true;
   }
+
+  viewInAnotherPage(p: Puesto): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del puesto',
+    volver: '/puestos',
+    datos: {
+      ID: `#${p.idPuestos}`,
+      Puesto: p.NombrePuesto,
+      Descripción: p.Descripcion || '—',
+      'Salario base': this.fmtSalary(p.SalarioBase),
+      Estado: this.estadoLabel(p.Estado),
+      'Empleado asignado': p.idEmpleado ? this.getNombreEmpleado(p.idEmpleado) : 'Sin asignar',
+      'ID Empleado': p.idEmpleado ? `#${p.idEmpleado}` : 'No aplica',
+      'Usuario responsable': p.idUsuario ? this.getNombreUsuario(p.idUsuario) : '—',
+      'ID Usuario': p.idUsuario ? `#${p.idUsuario}` : 'No aplica'
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
 
   editFromView() {
     this.showViewModal = false;
@@ -180,7 +260,9 @@ export class Puestos {
   }
 
   confirmDelete() {
-    this.puestos = this.puestos.filter(p => p.idPuestos !== this.deleteTargetId);
+    if (this.deleteTargetId !== null) {
+      this.eliminarPuesto(this.deleteTargetId); // ✅ llama al backend
+    }
     this.deleteTargetId = null;
     this.showDeleteModal = false;
   }

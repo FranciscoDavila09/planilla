@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface Rol {
   IdRol: number;
   Nombre: string;
   Descripcion: string;
-  Estado: number; // tinyint(1): 1 = Activo, 0 = Inactivo
+  Estado: number;
 }
 
 @Component({
@@ -15,14 +17,20 @@ interface Rol {
   templateUrl: './roles.html',
   styleUrl: './roles.css',
 })
-export class Roles {
+export class Roles implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+
+  private readonly BASE_URL = 'http://localhost';
+  private readonly ROLES_URL = `${this.BASE_URL}/RolesServicio`;
+
   readonly perPage = 8;
 
-  showFormModal   = false;
+  showFormModal = false;
   showDeleteModal = false;
-  showPass        = false;
 
-  searchQuery  = '';
+  searchQuery = '';
   estadoFilter = '';
 
   currentPage = 1;
@@ -33,14 +41,16 @@ export class Roles {
   deleteTargetId: number | null = null;
   deleteDesc = '';
 
-  roles: Rol[] = [
-    { IdRol: 1, Nombre: 'Administrador', Descripcion: 'Acceso total al sistema. Gestiona usuarios, roles, configuración y reportes.', Estado: 1 },
-    { IdRol: 2, Nombre: 'RRHH',          Descripcion: 'Gestión de personal, nómina, expedientes y procesos de recursos humanos.', Estado: 1 },
-    { IdRol: 3, Nombre: 'Supervisor',    Descripcion: 'Supervisión de equipos de trabajo, aprobación de solicitudes y reportes de área.', Estado: 1 },
-    { IdRol: 4, Nombre: 'Empleado',      Descripcion: 'Acceso básico: consulta de información personal y solicitudes propias.', Estado: 1 },
-  ];
+  roles: Rol[] = [];
 
-  // ── Íconos SVG por rol ──
+  private get headers(): HttpHeaders {
+    const token = localStorage.getItem('token') ?? '';
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+  }
+
   readonly ICON_MAP: Record<number, { cls: string; svg: string }> = {
     1: {
       cls: 'icon-admin',
@@ -62,16 +72,41 @@ export class Roles {
 
   defaultIconSvg = '<circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.4"/>';
 
-  iconFor(id: number): { cls: string; svg: string } {
-    return this.ICON_MAP[id] ?? { cls: 'icon-emp', svg: this.defaultIconSvg };
+  ngOnInit(): void {
+    this.getRoles();
   }
 
-  // ── Computed ──
+  getRoles(): void {
+    this.http.get<Rol[]>(`${this.ROLES_URL}/listarRoles`, { headers: this.headers }).subscribe({
+      next: (data) => {
+        this.roles = (data || []).map((r: any) => ({
+          IdRol: Number(r.IdRol ?? r.idRol),
+          Nombre: r.Nombre ?? '',
+          Descripcion: r.Descripcion ?? '',
+          Estado: Number(r.Estado ?? 1),
+        }));
+
+        this.currentPage = 1;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al obtener roles:', err);
+        this.roles = [];
+      },
+    });
+  }
+
+  iconFor(id: number): { cls: string; svg: string } {
+    return this.ICON_MAP[Number(id)] ?? { cls: 'icon-emp', svg: this.defaultIconSvg };
+  }
+
   get filteredRoles(): Rol[] {
-    const q = this.searchQuery.toLowerCase();
-    return this.roles.filter(r => {
-      const txt = `${r.Nombre} ${r.Descripcion}`.toLowerCase();
-      const estadoOk = this.estadoFilter === '' || r.Estado === +this.estadoFilter;
+    const q = this.searchQuery.toLowerCase().trim();
+
+    return this.roles.filter((r) => {
+      const txt = `${r.IdRol} ${r.Nombre} ${r.Descripcion}`.toLowerCase();
+      const estadoOk = this.estadoFilter === '' || Number(r.Estado) === Number(this.estadoFilter);
+
       return (!q || txt.includes(q)) && estadoOk;
     });
   }
@@ -86,69 +121,174 @@ export class Roles {
     return Array.from({ length: count }, (_, i) => i + 1);
   }
 
-  min(a: number, b: number) { return Math.min(a, b); }
+  get visiblePages(): number[] {
+    const total = this.totalPages.length;
 
-  estadoClass(e: number) { return e === 1 ? 'status-activo' : 'status-inactivo'; }
+    if (total <= 5) return this.totalPages;
 
-  countByEstado(e: number) { return this.roles.filter(r => r.Estado === e).length; }
+    let start = Math.max(1, this.currentPage - 2);
+    let end = Math.min(total, this.currentPage + 2);
 
-  // ── Filtro / paginación ──
-  filterTable()  { this.currentPage = 1; }
-  changePage(d: number) {
+    if (this.currentPage <= 3) {
+      start = 1;
+      end = 5;
+    }
+
+    if (this.currentPage >= total - 2) {
+      start = total - 4;
+      end = total;
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  estadoClass(e: number): string {
+    return Number(e) === 1 ? 'status-activo' : 'status-inactivo';
+  }
+
+  estadoTexto(e: number): string {
+    return Number(e) === 1 ? 'Activo' : 'Inactivo';
+  }
+
+  countByEstado(e: number): number {
+    return this.roles.filter((r) => Number(r.Estado) === Number(e)).length;
+  }
+
+  filterTable(): void {
+    this.currentPage = 1;
+  }
+
+  changePage(d: number): void {
     const max = this.totalPages.length;
     this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
   }
-  goPage(n: number) { this.currentPage = n; }
 
-  // ── CRUD ──
-  openModal(mode: 'create' | 'edit', id?: number) {
+  goPage(n: number): void {
+    this.currentPage = n;
+  }
+
+  openModal(mode: 'create' | 'edit', id?: number): void {
     if (mode === 'create') {
       this.editId = null;
-      this.form = { Estado: 1, Nombre: '', Descripcion: '' };
+      this.form = {
+        Nombre: '',
+        Descripcion: '',
+        Estado: 1,
+      };
     } else {
-      const r = this.roles.find(x => x.IdRol === id)!;
-      this.editId = r.IdRol;
-      this.form = { ...r };
+      const rol = this.roles.find((x) => Number(x.IdRol) === Number(id));
+      if (!rol) return;
+
+      this.editId = rol.IdRol;
+      this.form = { ...rol };
     }
+
     this.showFormModal = true;
   }
 
-  saveRol() {
+  saveRol(): void {
     if (!this.form.Nombre?.trim()) {
       alert('El nombre del rol es requerido.');
       return;
     }
+
+    const payload = {
+      IdRol: this.editId ?? undefined,
+      Nombre: this.form.Nombre,
+      Descripcion: this.form.Descripcion || '',
+      Estado: Number(this.form.Estado ?? 1),
+    };
+
     if (this.editId) {
-      const idx = this.roles.findIndex(x => x.IdRol === this.editId);
-      this.roles[idx] = { ...this.roles[idx], ...this.form } as Rol;
+      this.http.put(`${this.ROLES_URL}/actualizar`, payload, { headers: this.headers }).subscribe({
+        next: () => {
+          this.getRoles();
+          this.showFormModal = false;
+        },
+        error: (err) => {
+          console.error('Error al actualizar rol:', err);
+          alert('No se pudo actualizar el rol.');
+        },
+      });
     } else {
-      const newId = Math.max(0, ...this.roles.map(x => x.IdRol)) + 1;
-      this.roles = [...this.roles, { IdRol: newId, ...this.form } as Rol];
+      this.http.post(`${this.ROLES_URL}/insertar`, payload, { headers: this.headers }).subscribe({
+        next: () => {
+          this.getRoles();
+          this.showFormModal = false;
+        },
+        error: (err) => {
+          console.error('Error al crear rol:', err);
+          alert('No se pudo crear el rol.');
+        },
+      });
     }
-    this.showFormModal = false;
   }
 
-  askDelete(id: number) {
-    const r = this.roles.find(x => x.IdRol === id)!;
+  toggleEstado(id: number): void {
+    const rol = this.roles.find((x) => Number(x.IdRol) === Number(id));
+    if (!rol) return;
+
+    const payload = {
+      ...rol,
+      Estado: Number(rol.Estado) === 1 ? 0 : 1,
+    };
+
+    this.http.put(`${this.ROLES_URL}/actualizar`, payload, { headers: this.headers }).subscribe({
+      next: () => this.getRoles(),
+      error: (err) => {
+        console.error('Error al cambiar estado del rol:', err);
+        alert('No se pudo cambiar el estado del rol.');
+      },
+    });
+  }
+
+  viewInAnotherPage(r: Rol): void {
+    localStorage.setItem('displayData', JSON.stringify({
+      titulo: 'Detalle del rol',
+      volver: '/roles',
+      datos: {
+        ID: `#${r.IdRol}`,
+        Rol: r.Nombre,
+        Descripción: r.Descripcion || '—',
+        Estado: this.estadoTexto(r.Estado),
+      }
+    }));
+
+    this.router.navigate(['/ver-datos']);
+  }
+
+  askDelete(id: number): void {
+    const rol = this.roles.find((x) => Number(x.IdRol) === Number(id));
+    if (!rol) return;
+
     this.deleteTargetId = id;
-    this.deleteDesc = `Estás a punto de eliminar el rol "${r.Nombre}". Esta acción no se puede deshacer.`;
+    this.deleteDesc = `Estás a punto de eliminar el rol "${rol.Nombre}". Esta acción no se puede deshacer.`;
     this.showDeleteModal = true;
   }
 
-  confirmDelete() {
-    this.roles = this.roles.filter(x => x.IdRol !== this.deleteTargetId);
-    this.deleteTargetId = null;
-    this.showDeleteModal = false;
+  confirmDelete(): void {
+    if (!this.deleteTargetId) return;
+
+    this.http.delete(`${this.ROLES_URL}/eliminar?id=${this.deleteTargetId}`, { headers: this.headers }).subscribe({
+      next: () => {
+        this.getRoles();
+        this.deleteTargetId = null;
+        this.showDeleteModal = false;
+      },
+      error: (err) => {
+        console.error('Error al eliminar rol:', err);
+        alert('No se pudo eliminar el rol. Puede estar relacionado con usuarios.');
+      },
+    });
   }
 
-  toggleEstado(id: number) {
-    const idx = this.roles.findIndex(x => x.IdRol === id);
-    this.roles[idx] = { ...this.roles[idx], Estado: this.roles[idx].Estado === 1 ? 0 : 1 };
-  }
-
-  onOverlayClick(event: MouseEvent, modal: 'form' | 'delete') {
+  onOverlayClick(event: MouseEvent, modal: 'form' | 'delete'): void {
     if (event.target === event.currentTarget) {
-      if (modal === 'form')   this.showFormModal   = false;
+      if (modal === 'form') this.showFormModal = false;
       if (modal === 'delete') this.showDeleteModal = false;
     }
   }

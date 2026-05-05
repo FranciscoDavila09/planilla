@@ -2,6 +2,7 @@ const express = require('express');
 const Router = express.Router();
 
 const AguinaldosServicio = require('../servicios/AguinaldosServicio.js');
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get('/listarAguinaldos', async (solicitud, respuesta, next) => {
   // return respuesta.json(await AguinaldosServicio.listarAguinaldos());
@@ -16,6 +17,26 @@ Router.get('/listarAguinaldos', async (solicitud, respuesta, next) => {
     return respuesta.status(401).json();
 
 });
+
+
+Router.get('/listarAguinaldosVista', async (solicitud, respuesta, next) => {
+  // return respuesta.json(await AguinaldosServicio.listarAguinaldos());
+  if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
+      try {   
+  return respuesta.json(await AguinaldosServicio.listarAguinaldosVista());
+      } catch (error) {
+        console.error(error);
+        return respuesta.status(500).json(error);
+      }
+    }
+    return respuesta.status(401).json();
+
+});
+
+
+
+
+
 
 Router.get('/obtenerPorId', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {

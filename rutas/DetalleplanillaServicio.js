@@ -5,6 +5,8 @@ const Router = express.Router();
 const DetalleplanillaServicio = require('../servicios/DetalleplanillaServicio.js');
 const { route } = require('./Servicio1.js');
 
+const UsuarioServicio = require('../servicios/UsuarioServicio.js');
+
 
 Router.get('/listarDetalleplanilla', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {

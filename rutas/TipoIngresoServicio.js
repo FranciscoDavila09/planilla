@@ -2,6 +2,7 @@ const express = require('express');
 const Router = express.Router();
 
 const TipoIngresoServicio = require('../servicios/TipoIngresoServicio.js');
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get('/listarTipoIngreso', async (solicitud, respuesta, next) => {
   // return respuesta.json(await TipoIngresoServicio.listarTipoIngreso());

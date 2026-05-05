@@ -3,6 +3,7 @@ const express = require('express');
 const Router = express.Router();
 
 const PlanillaServicio = require('../servicios/PlanillaServicio.js');
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 
 Router.get('/listarPlanillas', async (solicitud, respuesta, next) => {

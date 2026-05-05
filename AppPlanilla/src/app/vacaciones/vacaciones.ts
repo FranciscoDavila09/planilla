@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface Vacacion {
   IdVacacion: number;
@@ -7,78 +10,202 @@ interface Vacacion {
   FechaInicio: string;
   FechaFin: string;
   DiasSolicitados: number;
-  Estado: string;
-  UsuarioAprueba?: number;
+  Estado: number;
+  UsuarioAprueba?: number | null;
 }
 
-interface Empleado { id: number; nombre: string; }
-interface Usuario  { id: number; nombre: string; }
+interface Empleado {
+  IdEmpleado: number;
+  Nombre: string;
+  Apellidos: string;
+}
+
+interface Usuario {
+  IdUsuario: number;
+  Nombre: string;
+  Apellidos: string;
+}
 
 @Component({
   selector: 'app-vacaciones',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './vacaciones.html',
   styleUrl: './vacaciones.css',
 })
-export class Vacaciones {
-  readonly COLORS = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
-  readonly perPage = 8;
+export class Vacaciones implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
 
-  showFormModal   = false;
+  private readonly API_URL = 'http://localhost';
+  private readonly VACACIONES_URL = `${this.API_URL}/VacacionesServicio`;
+  private readonly EMPLEADO_URL = `${this.API_URL}/EmpleadoServicio`;
+  private readonly USUARIO_URL = `${this.API_URL}/UsuarioServicio`;
+
+  protected readonly vacaciones = signal<Vacacion[]>([]);
+  protected readonly empleados = signal<Empleado[]>([]);
+  protected readonly usuarios = signal<Usuario[]>([]);
+
+  readonly perPage = 8;
+  showFormModal = false;
   showDeleteModal = false;
 
-  searchQuery  = '';
+  searchQuery = '';
   estadoFiltro = '';
-  currentPage  = 1;
+  currentPage = 1;
 
   editId: number | null = null;
   form: Partial<Vacacion> = {};
   deleteTargetId: number | null = null;
 
-  empleados: Empleado[] = [
-    { id: 1,  nombre: 'María Rodríguez López'   },
-    { id: 2,  nombre: 'Carlos Mendoza Torres'   },
-    { id: 3,  nombre: 'Sofía Vargas Chaves'     },
-    { id: 4,  nombre: 'Andrés Jiménez Mora'     },
-    { id: 5,  nombre: 'Lucía Pérez Solís'       },
-    { id: 6,  nombre: 'Diego Castillo Brenes'   },
-    { id: 7,  nombre: 'Valeria Núñez Ulate'     },
-    { id: 8,  nombre: 'Felipe Aguilar Rojas'    },
-    { id: 9,  nombre: 'Daniela Herrera Campos'  },
-    { id: 10, nombre: 'Ricardo Soto Fallas'     },
-    { id: 11, nombre: 'Camila Quesada León'     },
-    { id: 12, nombre: 'Pablo Araya Badilla'     },
-  ];
+  private get headers(): HttpHeaders {
+    const token = localStorage.getItem('token') ?? '';
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+  }
 
-  usuarios: Usuario[] = [
-    { id: 1, nombre: 'Admin RH'      },
-    { id: 2, nombre: 'Supervisor TI' },
-    { id: 3, nombre: 'Gerente RRHH'  },
-  ];
+  ngOnInit(): void {
+    this.cargarTodo();
+  }
 
-  vacaciones: Vacacion[] = [
-    { IdVacacion: 1,  IdEmpleado: 1,  FechaInicio: '2026-04-07', FechaFin: '2026-04-18', DiasSolicitados: 10, Estado: 'Aprobado',  UsuarioAprueba: 1 },
-    { IdVacacion: 2,  IdEmpleado: 2,  FechaInicio: '2026-05-04', FechaFin: '2026-05-08', DiasSolicitados: 5,  Estado: 'Pendiente', UsuarioAprueba: undefined },
-    { IdVacacion: 3,  IdEmpleado: 3,  FechaInicio: '2026-03-16', FechaFin: '2026-03-28', DiasSolicitados: 10, Estado: 'En curso',  UsuarioAprueba: 3 },
-    { IdVacacion: 4,  IdEmpleado: 4,  FechaInicio: '2026-06-01', FechaFin: '2026-06-12', DiasSolicitados: 10, Estado: 'Pendiente', UsuarioAprueba: undefined },
-    { IdVacacion: 5,  IdEmpleado: 5,  FechaInicio: '2026-07-13', FechaFin: '2026-07-24', DiasSolicitados: 10, Estado: 'Aprobado',  UsuarioAprueba: 1 },
-    { IdVacacion: 6,  IdEmpleado: 6,  FechaInicio: '2025-12-22', FechaFin: '2026-01-02', DiasSolicitados: 10, Estado: 'Aprobado',  UsuarioAprueba: 2 },
-    { IdVacacion: 7,  IdEmpleado: 7,  FechaInicio: '2026-03-09', FechaFin: '2026-03-20', DiasSolicitados: 10, Estado: 'En curso',  UsuarioAprueba: 1 },
-    { IdVacacion: 8,  IdEmpleado: 8,  FechaInicio: '2026-08-03', FechaFin: '2026-08-07', DiasSolicitados: 5,  Estado: 'Pendiente', UsuarioAprueba: undefined },
-    { IdVacacion: 9,  IdEmpleado: 9,  FechaInicio: '2026-04-20', FechaFin: '2026-05-01', DiasSolicitados: 10, Estado: 'Aprobado',  UsuarioAprueba: 2 },
-    { IdVacacion: 10, IdEmpleado: 10, FechaInicio: '2026-02-16', FechaFin: '2026-02-20', DiasSolicitados: 5,  Estado: 'Rechazado', UsuarioAprueba: 1 },
-    { IdVacacion: 11, IdEmpleado: 11, FechaInicio: '2026-09-07', FechaFin: '2026-09-18', DiasSolicitados: 10, Estado: 'Pendiente', UsuarioAprueba: undefined },
-    { IdVacacion: 12, IdEmpleado: 12, FechaInicio: '2025-11-03', FechaFin: '2025-11-14', DiasSolicitados: 10, Estado: 'Aprobado',  UsuarioAprueba: 3 },
-  ];
+  cargarTodo(): void {
+    this.getVacaciones();
+    this.getEmpleados();
+    this.getUsuarios();
+  }
 
-  // ── Computed ──
+  getVacaciones(): void {
+    this.http.get<Vacacion[]>(`${this.VACACIONES_URL}/listarVacaciones`, { headers: this.headers }).subscribe({
+      next: (data) => {
+        const lista = (data || []).map((v: any) => ({
+          IdVacacion: Number(v.IdVacacion),
+          IdEmpleado: Number(v.IdEmpleado),
+          FechaInicio: v.FechaInicio ? String(v.FechaInicio).split('T')[0] : '',
+          FechaFin: v.FechaFin ? String(v.FechaFin).split('T')[0] : '',
+          DiasSolicitados: Number(v.DiasSolicitados || 0),
+          Estado: Number(v.Estado ?? 1),
+          UsuarioAprueba: v.UsuarioAprueba ? Number(v.UsuarioAprueba) : null,
+        }));
+
+        this.vacaciones.set(lista);
+        this.currentPage = 1;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al cargar vacaciones:', err);
+        this.vacaciones.set([]);
+      },
+    });
+  }
+
+  getEmpleados(): void {
+    this.http.get<Empleado[]>(`${this.EMPLEADO_URL}/listarEmpleados`, { headers: this.headers }).subscribe({
+      next: (data) => {
+        this.empleados.set((data || []).map((e: any) => ({
+          IdEmpleado: Number(e.IdEmpleado ?? e.idEmpleado),
+          Nombre: e.Nombre,
+          Apellidos: e.Apellidos,
+        })));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al cargar empleados:', err),
+    });
+  }
+
+  getUsuarios(): void {
+    this.http.get<Usuario[]>(`${this.USUARIO_URL}/listarUsuarios`, { headers: this.headers }).subscribe({
+      next: (data) => {
+        this.usuarios.set((data || []).map((u: any) => ({
+          IdUsuario: Number(u.IdUsuario ?? u.idUsuario),
+          Nombre: u.Nombre,
+          Apellidos: u.Apellidos,
+        })));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al cargar usuarios:', err),
+    });
+  }
+
+  saveVacacion(): void {
+    if (!this.form.IdEmpleado || !this.form.FechaInicio || !this.form.FechaFin) {
+      alert('Por favor rellena los campos obligatorios.');
+      return;
+    }
+
+    const body = {
+      IdVacacion: this.editId ?? undefined,
+      IdEmpleado: Number(this.form.IdEmpleado),
+      FechaInicio: this.form.FechaInicio,
+      FechaFin: this.form.FechaFin,
+      DiasSolicitados: Number(this.form.DiasSolicitados || 1),
+      Estado: Number(this.form.Estado ?? 1),
+      UsuarioAprueba: this.form.UsuarioAprueba ? Number(this.form.UsuarioAprueba) : null,
+    };
+
+    if (this.editId) {
+      this.http.put(`${this.VACACIONES_URL}/actualizar`, body, { headers: this.headers }).subscribe({
+        next: () => {
+          this.getVacaciones();
+          this.showFormModal = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Error al actualizar:', err),
+      });
+    } else {
+      this.http.post(`${this.VACACIONES_URL}/insertar`, body, { headers: this.headers }).subscribe({
+        next: () => {
+          this.getVacaciones();
+          this.showFormModal = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Error al insertar:', err),
+      });
+    }
+  }
+
+  confirmDelete(): void {
+    if (!this.deleteTargetId) return;
+
+    this.http.delete(`${this.VACACIONES_URL}/eliminar?id=${this.deleteTargetId}`, { headers: this.headers }).subscribe({
+      next: () => {
+        this.getVacaciones();
+        this.showDeleteModal = false;
+        this.deleteTargetId = null;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al eliminar:', err),
+    });
+  }
+
+  calcularDias(): void {
+    if (this.form.FechaInicio && this.form.FechaFin) {
+      const inicio = new Date(this.form.FechaInicio);
+      const fin = new Date(this.form.FechaFin);
+      const diff = fin.getTime() - inicio.getTime();
+
+      this.form.DiasSolicitados = diff >= 0
+        ? Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1
+        : 1;
+    }
+  }
+
   get filteredVacaciones(): Vacacion[] {
-    const q = this.searchQuery.toLowerCase();
-    return this.vacaciones.filter(v =>
-      (!q || this.getNombreEmpleado(v.IdEmpleado).toLowerCase().includes(q)) &&
-      (!this.estadoFiltro || v.Estado === this.estadoFiltro)
-    );
+    const q = this.searchQuery.toLowerCase().trim();
+
+    return this.vacaciones().filter((v) => {
+      const texto = `
+        ${v.IdVacacion}
+        ${this.getNombreEmpleado(v.IdEmpleado)}
+        ${this.estadoLabel(v.Estado)}
+      `.toLowerCase();
+
+      const estadoOk = !this.estadoFiltro || this.estadoLabel(v.Estado) === this.estadoFiltro;
+
+      return (!q || texto.includes(q)) && estadoOk;
+    });
   }
 
   get pageSlice(): Vacacion[] {
@@ -91,112 +218,147 @@ export class Vacaciones {
     return Array.from({ length: count }, (_, i) => i + 1);
   }
 
-  // ── Helpers ──
-  min(a: number, b: number) { return Math.min(a, b); }
+  get visiblePages(): number[] {
+    const total = this.totalPages.length;
 
-  colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
+    if (total <= 5) return this.totalPages;
 
-  getNombreEmpleado(id: number) {
-    return this.empleados.find(e => e.id === id)?.nombre ?? `Empleado ${id}`;
+    let start = Math.max(1, this.currentPage - 2);
+    let end = Math.min(total, this.currentPage + 2);
+
+    if (this.currentPage <= 3) {
+      start = 1;
+      end = 5;
+    }
+
+    if (this.currentPage >= total - 2) {
+      start = total - 4;
+      end = total;
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
-  getNombreUsuario(id: number) {
-    return this.usuarios.find(u => u.id === id)?.nombre ?? '—';
+  filterTable(): void {
+    this.currentPage = 1;
   }
 
-  inicialesNombre(nombre: string) {
-    const p = nombre.split(' ');
-    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
-  }
-
-  fmtFecha(f: string) {
-    if (!f) return '—';
-    const [y, m, d] = f.split('-');
-    return `${d}/${m}/${y}`;
-  }
-
-  estadoClass(s: string) {
-    if (s === 'Aprobado')  return 'status-active';
-    if (s === 'Pendiente') return 'status-tardanza';
-    if (s === 'En curso')  return 'status-vacation';
-    return 'status-inactive';
-  }
-
-  countByEstado(e: string) { return this.vacaciones.filter(v => v.Estado === e).length; }
-
-  getTotalDias() { return this.vacaciones.reduce((s, v) => s + v.DiasSolicitados, 0); }
-
-  // ── Cálculo automático de días ──
-  calcularDias() {
-    if (!this.form.FechaInicio || !this.form.FechaFin) return;
-    const d1 = new Date(this.form.FechaInicio);
-    const d2 = new Date(this.form.FechaFin);
-    const diff = Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    this.form.DiasSolicitados = diff > 0 ? diff : 1;
-  }
-
-  // ── Filtro / paginación ──
-  filterTable()   { this.currentPage = 1; }
-  changePage(d: number) {
+  changePage(d: number): void {
     const max = this.totalPages.length;
     this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
   }
-  goPage(n: number) { this.currentPage = n; }
 
-  // ── CRUD ──
-  openModal(mode: 'create' | 'edit', id?: number) {
+  goPage(n: number): void {
+    this.currentPage = n;
+  }
+
+  openModal(mode: 'create' | 'edit', v?: Vacacion): void {
     if (mode === 'create') {
       this.editId = null;
-      this.form = { Estado: 'Pendiente', DiasSolicitados: 1 };
-    } else {
-      const v = this.vacaciones.find(x => x.IdVacacion === id)!;
+      this.form = {
+        Estado: 1,
+        DiasSolicitados: 1,
+        UsuarioAprueba: null,
+        FechaInicio: new Date().toISOString().split('T')[0],
+        FechaFin: '',
+      };
+    } else if (v) {
       this.editId = v.IdVacacion;
       this.form = { ...v };
     }
+
     this.showFormModal = true;
   }
 
-  saveVacacion() {
-    if (!this.form.IdEmpleado || !this.form.FechaInicio || !this.form.FechaFin) {
-      alert('Por favor completa los campos obligatorios.');
-      return;
+
+viewInAnotherPage(v: Vacacion): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle de vacaciones',
+    volver: '/vacaciones',
+    datos: {
+      ID: `#${v.IdVacacion}`,
+      Empleado: this.getNombreEmpleado(v.IdEmpleado),
+      'ID Empleado': `#${v.IdEmpleado}`,
+      'Fecha inicio': this.fmtFecha(v.FechaInicio),
+      'Fecha fin': this.fmtFecha(v.FechaFin),
+      'Días solicitados': `${v.DiasSolicitados} día(s)`,
+      Estado: this.estadoLabel(v.Estado),
+      'Aprobado por': v.UsuarioAprueba
+        ? this.getNombreUsuario(v.UsuarioAprueba)
+        : 'Sin asignar'
     }
-    if (this.editId) {
-      const idx = this.vacaciones.findIndex(v => v.IdVacacion === this.editId);
-      this.vacaciones[idx] = { ...this.vacaciones[idx], ...this.form } as Vacacion;
-    } else {
-      const newId = Math.max(0, ...this.vacaciones.map(v => v.IdVacacion)) + 1;
-      this.vacaciones = [...this.vacaciones, { IdVacacion: newId, ...this.form } as Vacacion];
-    }
-    this.showFormModal = false;
-  }
+  }));
 
-  aprobar(id: number) {
-    const idx = this.vacaciones.findIndex(v => v.IdVacacion === id);
-    this.vacaciones[idx] = { ...this.vacaciones[idx], Estado: 'Aprobado', UsuarioAprueba: 1 };
-    this.vacaciones = [...this.vacaciones];
-  }
+  this.router.navigate(['/ver-datos']);
+}
 
-  rechazar(id: number) {
-    const idx = this.vacaciones.findIndex(v => v.IdVacacion === id);
-    this.vacaciones[idx] = { ...this.vacaciones[idx], Estado: 'Rechazado', UsuarioAprueba: 1 };
-    this.vacaciones = [...this.vacaciones];
-  }
-
-  askDelete(id: number) {
+  askDelete(id: number): void {
     this.deleteTargetId = id;
     this.showDeleteModal = true;
   }
 
-  confirmDelete() {
-    this.vacaciones = this.vacaciones.filter(v => v.IdVacacion !== this.deleteTargetId);
-    this.deleteTargetId = null;
-    this.showDeleteModal = false;
+  countByEstado(estado: string): number {
+    return this.vacaciones().filter((v) => this.estadoLabel(v.Estado) === estado).length;
   }
 
-  onOverlayClick(event: MouseEvent, modal: 'form' | 'delete') {
-    if (event.target === event.currentTarget) {
-      if (modal === 'form')   this.showFormModal   = false;
+  getTotalDias(): number {
+    return this.vacaciones().reduce((sum, v) => sum + Number(v.DiasSolicitados || 0), 0);
+  }
+
+  estadoLabel(e: number): string {
+    const labels: Record<number, string> = {
+      1: 'Pendiente',
+      2: 'Aprobado',
+      3: 'Rechazado',
+      4: 'En curso',
+    };
+
+    return labels[Number(e)] || 'Pendiente';
+  }
+
+  estadoClass(estado: number): string {
+    if (Number(estado) === 2) return 'status-active';
+    if (Number(estado) === 3) return 'status-inactive';
+    if (Number(estado) === 4) return 'status-vacation';
+    return 'status-tardanza';
+  }
+
+  getNombreEmpleado(id: number): string {
+    const e = this.empleados().find((emp) => Number(emp.IdEmpleado) === Number(id));
+    return e ? `${e.Nombre} ${e.Apellidos}`.trim() : `Empleado #${id}`;
+  }
+
+  getNombreUsuario(id: number): string {
+    const u = this.usuarios().find((user) => Number(user.IdUsuario) === Number(id));
+    return u ? `${u.Nombre} ${u.Apellidos}`.trim() : `Usuario #${id}`;
+  }
+
+  inicialesNombre(nombreCompleto: string): string {
+    if (!nombreCompleto || nombreCompleto === '—') return 'NA';
+    const partes = nombreCompleto.split(' ').filter(Boolean);
+    return ((partes[0]?.[0] || 'N') + (partes[1]?.[0] || '')).toUpperCase();
+  }
+
+  colorFor(id: number): string {
+    const colors = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
+    return colors[(Number(id || 1) - 1) % colors.length];
+  }
+
+  fmtFecha(f: string): string {
+    if (!f) return '—';
+    const soloFecha = f.includes('T') ? f.split('T')[0] : f;
+    const [y, m, d] = soloFecha.split('-');
+    if (!y || !m || !d) return soloFecha;
+    return `${d}/${m}/${y}`;
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  onOverlayClick(e: MouseEvent, modal: string): void {
+    if (e.target === e.currentTarget) {
+      if (modal === 'form') this.showFormModal = false;
       if (modal === 'delete') this.showDeleteModal = false;
     }
   }

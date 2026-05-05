@@ -4,6 +4,8 @@ const Router = express.Router();
 
 const LicenciaServicio = require('../servicios/LicenciaServicio.js');
 
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
+
 Router.get('/listarLicencia', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
     try {

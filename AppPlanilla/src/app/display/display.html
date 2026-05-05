@@ -1,0 +1,36 @@
+<div class="display-container">
+  @if (savedData()) {
+    <div class="display-header">
+      <div>
+        <h2>{{ savedData()?.titulo }}</h2>
+        <p>Datos recuperados desde la vista anterior</p>
+      </div>
+
+      <a class="back-link" [routerLink]="savedData()?.volver">
+        Volver
+      </a>
+    </div>
+
+    <div class="card">
+      @for (item of savedData()?.datos | keyvalue; track item.key) {
+        <div class="data-row">
+          <span class="data-label">{{ item.key }}</span>
+          <span class="data-value">{{ item.value || '—' }}</span>
+        </div>
+      }
+
+      <button class="clear-btn" (click)="clearStorage()">
+        Limpiar Datos Guardados
+      </button>
+    </div>
+  } @else {
+    <div class="empty-card">
+      <h2>No hay información guardada</h2>
+      <p>Primero seleccioná un registro desde algún gestor.</p>
+
+      <a class="back-link" routerLink="/Aguinaldos">
+        Volver
+      </a>
+    </div>
+  }
+</div>

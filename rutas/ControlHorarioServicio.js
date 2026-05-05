@@ -2,6 +2,7 @@ const express = require('express');
 const Router = express.Router();
 
 const ControlHorarioServicio = require('../servicios/ControlHorarioServicio.js');
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get('/listarControlHorario', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {

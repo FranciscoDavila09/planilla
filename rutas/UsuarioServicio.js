@@ -17,6 +17,19 @@ Router.get("/listarUsuarios", async (solicitud, respuesta, next) => {
   return respuesta.status(401).json();
 
 });
+Router.get("/listarUsuariosCombo", async (solicitud, respuesta, next) => {
+  // return respuesta.json(await UsuarioServicio.listarUsuarios());
+  if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {
+    try {   
+     return respuesta.json(await UsuarioServicio.listarUsuariosCombo());
+    } catch (error) {
+      console.error(error);
+      return respuesta.status(500).json(error);
+    }
+  }
+  return respuesta.status(401).json();
+
+});
 
 Router.get("/obtenerPorId", async (solicitud, respuesta, next) => {
   // return respuesta.json(await UsuarioServicio.obtenerPorId(solicitud.query.id));

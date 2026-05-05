@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+import { Router } from '@angular/router';
 
 interface ControlHorario {
   IdControl: number;
@@ -9,12 +12,26 @@ interface ControlHorario {
   HoraSalida: string;
   HorasNormales: number;
   HorasExtra: number;
-  Estado: string;
-  idUsuarios?: number;
+  Estado: number;
+  idUsuarios: number;
+
+  NombreEmpleado?: string;
+  ApellidosEmpleado?: string;
+  NombreUsuario?: string;
+  ApellidosUsuario?: string;
 }
 
-interface Empleado { id: number; nombre: string; }
-interface Usuario  { id: number; nombre: string; }
+interface Empleado {
+  idEmpleado: number;
+  Nombre: string;
+  Apellidos: string;
+}
+
+interface Usuario {
+  idUsuario: number;
+  Nombre: string;
+  Apellidos: string;
+}
 
 @Component({
   selector: 'app-horarios',
@@ -23,70 +40,123 @@ interface Usuario  { id: number; nombre: string; }
   templateUrl: './horarios.html',
   styleUrl: './horarios.css',
 })
-export class Horarios {
+export class Horarios implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+
+  private readonly BASE_URL = 'http://localhost';
+  private readonly HORARIO_URL = `${this.BASE_URL}/ControlHorarioServicio`;
+  private readonly EMPLEADO_URL = `${this.BASE_URL}/EmpleadoServicio`;
+  private readonly USUARIO_URL = `${this.BASE_URL}/UsuarioServicio`;
+
   readonly COLORS = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
   readonly perPage = 8;
 
-  showFormModal   = false;
+  horarios: ControlHorario[] = [];
+  empleados: Empleado[] = [];
+  usuarios: Usuario[] = [];
+
+  showFormModal = false;
   showDeleteModal = false;
 
-  searchQuery  = '';
-  fechaFiltro  = '';
+  searchQuery = '';
+  fechaFiltro = '';
   estadoFiltro = '';
-  currentPage  = 1;
+  currentPage = 1;
 
   editId: number | null = null;
   form: Partial<ControlHorario> = {};
   deleteTargetId: number | null = null;
 
-  empleados: Empleado[] = [
-    { id: 1,  nombre: 'María Rodríguez López'   },
-    { id: 2,  nombre: 'Carlos Mendoza Torres'   },
-    { id: 3,  nombre: 'Sofía Vargas Chaves'     },
-    { id: 4,  nombre: 'Andrés Jiménez Mora'     },
-    { id: 5,  nombre: 'Lucía Pérez Solís'       },
-    { id: 6,  nombre: 'Diego Castillo Brenes'   },
-    { id: 7,  nombre: 'Valeria Núñez Ulate'     },
-    { id: 8,  nombre: 'Felipe Aguilar Rojas'    },
-    { id: 9,  nombre: 'Daniela Herrera Campos'  },
-    { id: 10, nombre: 'Ricardo Soto Fallas'     },
-  ];
+  private get headers(): HttpHeaders {
+    const token = localStorage.getItem('token') ?? '';
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+  }
 
-  usuarios: Usuario[] = [
-    { id: 1, nombre: 'Admin RH'      },
-    { id: 2, nombre: 'Supervisor TI' },
-    { id: 3, nombre: 'Gerente RRHH'  },
-  ];
+  ngOnInit(): void {
+    this.cargarTodo();
+  }
 
-  horarios: ControlHorario[] = [
-    { IdControl: 1,  IdEmpleado: 1,  Fecha: '2026-03-21', HoraEntrada: '07:58', HoraSalida: '17:02', HorasNormales: 8, HorasExtra: 0, Estado: 'Aprobado',  idUsuarios: 1 },
-    { IdControl: 2,  IdEmpleado: 2,  Fecha: '2026-03-21', HoraEntrada: '08:15', HoraSalida: '18:00', HorasNormales: 8, HorasExtra: 1, Estado: 'Aprobado',  idUsuarios: 1 },
-    { IdControl: 3,  IdEmpleado: 3,  Fecha: '2026-03-21', HoraEntrada: '08:00', HoraSalida: '17:00', HorasNormales: 8, HorasExtra: 0, Estado: 'Pendiente', idUsuarios: 1 },
-    { IdControl: 4,  IdEmpleado: 4,  Fecha: '2026-03-21', HoraEntrada: '07:55', HoraSalida: '19:00', HorasNormales: 8, HorasExtra: 3, Estado: 'Pendiente', idUsuarios: 1 },
-    { IdControl: 5,  IdEmpleado: 5,  Fecha: '2026-03-21', HoraEntrada: '08:00', HoraSalida: '17:05', HorasNormales: 8, HorasExtra: 0, Estado: 'Aprobado',  idUsuarios: 1 },
-    { IdControl: 6,  IdEmpleado: 6,  Fecha: '2026-03-21', HoraEntrada: '08:30', HoraSalida: '18:30', HorasNormales: 8, HorasExtra: 2, Estado: 'Aprobado',  idUsuarios: 2 },
-    { IdControl: 7,  IdEmpleado: 7,  Fecha: '2026-03-21', HoraEntrada: '08:00', HoraSalida: '17:00', HorasNormales: 8, HorasExtra: 0, Estado: 'Pendiente', idUsuarios: 1 },
-    { IdControl: 8,  IdEmpleado: 8,  Fecha: '2026-03-21', HoraEntrada: '07:50', HoraSalida: '17:10', HorasNormales: 8, HorasExtra: 0, Estado: 'Aprobado',  idUsuarios: 1 },
-    { IdControl: 9,  IdEmpleado: 9,  Fecha: '2026-03-20', HoraEntrada: '08:00', HoraSalida: '20:00', HorasNormales: 8, HorasExtra: 4, Estado: 'Aprobado',  idUsuarios: 2 },
-    { IdControl: 10, IdEmpleado: 10, Fecha: '2026-03-20', HoraEntrada: '08:00', HoraSalida: '17:00', HorasNormales: 8, HorasExtra: 0, Estado: 'Rechazado', idUsuarios: 1 },
-    { IdControl: 11, IdEmpleado: 1,  Fecha: '2026-03-20', HoraEntrada: '07:59', HoraSalida: '18:59', HorasNormales: 8, HorasExtra: 3, Estado: 'Aprobado',  idUsuarios: 1 },
-    { IdControl: 12, IdEmpleado: 2,  Fecha: '2026-03-20', HoraEntrada: '08:00', HoraSalida: '17:00', HorasNormales: 8, HorasExtra: 0, Estado: 'Aprobado',  idUsuarios: 1 },
-    { IdControl: 13, IdEmpleado: 3,  Fecha: '2026-03-19', HoraEntrada: '08:05', HoraSalida: '17:05', HorasNormales: 8, HorasExtra: 0, Estado: 'Aprobado',  idUsuarios: 1 },
-    { IdControl: 14, IdEmpleado: 4,  Fecha: '2026-03-19', HoraEntrada: '08:45', HoraSalida: '19:45', HorasNormales: 8, HorasExtra: 3, Estado: 'Pendiente', idUsuarios: 1 },
-    { IdControl: 15, IdEmpleado: 5,  Fecha: '2026-03-19', HoraEntrada: '07:55', HoraSalida: '17:55', HorasNormales: 8, HorasExtra: 2, Estado: 'Aprobado',  idUsuarios: 1 },
-    { IdControl: 16, IdEmpleado: 6,  Fecha: '2026-03-19', HoraEntrada: '08:00', HoraSalida: '17:00', HorasNormales: 8, HorasExtra: 0, Estado: 'Aprobado',  idUsuarios: 2 },
-  ];
+  cargarTodo(): void {
+    this.getHorarios();
+    this.getEmpleados();
+    this.getUsuarios();
+  }
 
-  // ── Computed ──
+  getHorarios(): void {
+    this.http.get<ControlHorario[]>(`${this.HORARIO_URL}/listarControlHorario`, { headers: this.headers }).subscribe({
+      next: (data) => {
+        this.horarios = (data || []).map((h: any) => ({
+          ...h,
+          IdControl: Number(h.IdControl),
+          IdEmpleado: Number(h.IdEmpleado),
+          Fecha: h.Fecha ? String(h.Fecha).split('T')[0] : '',
+          HoraEntrada: this.normalizarHora(h.HoraEntrada),
+          HoraSalida: this.normalizarHora(h.HoraSalida),
+          HorasNormales: this.horasANumero(h.HorasNormales),
+          HorasExtra: this.horasANumero(h.HorasExtra),
+          Estado: Number(h.Estado ?? 0),
+          idUsuarios: Number(h.idUsuarios),
+        }));
+          this.currentPage = 1;
+          this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al obtener horarios:', err);
+        this.horarios = [];
+      },
+    });
+  }
+
+  getEmpleados(): void {
+    this.http.get<Empleado[]>(`${this.EMPLEADO_URL}/listarEmpleados`, { headers: this.headers }).subscribe({
+      next: (data) => {
+        this.empleados = (data || []).map((e: any) => ({
+          ...e,
+          idEmpleado: Number(e.idEmpleado ?? e.IdEmpleado),
+        }));
+      },
+      error: (err) => {
+        console.error('Error al obtener empleados:', err);
+        this.empleados = [];
+      },
+    });
+  }
+
+  getUsuarios(): void {
+    this.http.get<Usuario[]>(`${this.USUARIO_URL}/listarUsuarios`, { headers: this.headers }).subscribe({
+      next: (data) => {
+        this.usuarios = (data || []).map((u: any) => ({
+          ...u,
+          idUsuario: Number(u.idUsuario ?? u.IdUsuario),
+        }));
+      },
+      error: (err) => {
+        console.error('Error al obtener usuarios:', err);
+        this.usuarios = [];
+      },
+    });
+  }
+
   get filteredHorarios(): ControlHorario[] {
-    const q = this.searchQuery.toLowerCase();
-    return this.horarios.filter(h => {
-      const nombre = this.getNombreEmpleado(h.IdEmpleado).toLowerCase();
-      return (
-        (!q || nombre.includes(q)) &&
-        (!this.fechaFiltro || h.Fecha === this.fechaFiltro) &&
-        (!this.estadoFiltro || h.Estado === this.estadoFiltro)
-      );
+    const q = this.searchQuery.toLowerCase().trim();
+
+    return this.horarios.filter((h) => {
+      const texto = `
+        ${h.IdControl}
+        ${this.getNombreEmpleado(h.IdEmpleado)}
+        ${this.usuarioNombre(h.idUsuarios)}
+        ${h.Fecha}
+      `.toLowerCase();
+
+      const estadoOk = this.estadoFiltro === '' || Number(h.Estado) === Number(this.estadoFiltro);
+      const fechaOk = !this.fechaFiltro || h.Fecha === this.fechaFiltro;
+
+      return (!q || texto.includes(q)) && estadoOk && fechaOk;
     });
   }
 
@@ -100,111 +170,314 @@ export class Horarios {
     return Array.from({ length: count }, (_, i) => i + 1);
   }
 
-  // ── Helpers ──
-  min(a: number, b: number) { return Math.min(a, b); }
-
-  colorFor(id: number)      { return this.COLORS[(id - 1) % this.COLORS.length]; }
-
-  getNombreEmpleado(id: number) {
-    return this.empleados.find(e => e.id === id)?.nombre ?? `Empleado ${id}`;
+  min(a: number, b: number): number {
+    return Math.min(a, b);
   }
 
-  inicialesNombre(nombre: string) {
-    const p = nombre.split(' ');
-    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
+  colorFor(id: number): string {
+    const safeId = Number(id || 1);
+    return this.COLORS[(safeId - 1) % this.COLORS.length];
   }
 
-  fmtFecha(f: string) {
+  getNombreEmpleado(id: number): string {
+    const desdeVista = this.horarios.find((h) => Number(h.IdEmpleado) === Number(id) && h.NombreEmpleado);
+
+    if (desdeVista?.NombreEmpleado) {
+      return `${desdeVista.NombreEmpleado} ${desdeVista.ApellidosEmpleado || ''}`.trim();
+    }
+
+    const emp = this.empleados.find((e) => Number(e.idEmpleado) === Number(id));
+    return emp ? `${emp.Nombre} ${emp.Apellidos}`.trim() : `Empleado #${id}`;
+  }
+
+  usuarioNombre(id: number): string {
+    const desdeVista = this.horarios.find((h) => Number(h.idUsuarios) === Number(id) && h.NombreUsuario);
+
+    if (desdeVista?.NombreUsuario) {
+      return `${desdeVista.NombreUsuario} ${desdeVista.ApellidosUsuario || ''}`.trim();
+    }
+
+    const usuario = this.usuarios.find((u) => Number(u.idUsuario) === Number(id));
+    return usuario ? `${usuario.Nombre} ${usuario.Apellidos}`.trim() : `Usuario #${id}`;
+  }
+
+  inicialesNombre(nombre: string): string {
+    const partes = nombre.split(' ').filter(Boolean);
+    return ((partes[0]?.[0] || 'E') + (partes[1]?.[0] || '')).toUpperCase();
+  }
+
+  fmtFecha(f: string): string {
     if (!f) return '—';
-    const [y, m, d] = f.split('-');
+    const soloFecha = f.includes('T') ? f.split('T')[0] : f;
+    const [y, m, d] = soloFecha.split('-');
+    if (!y || !m || !d) return soloFecha;
     return `${d}/${m}/${y}`;
   }
 
-  estadoClass(s: string) {
-    if (s === 'Aprobado')  return 'status-active';
-    if (s === 'Pendiente') return 'status-tardanza';
-    return 'status-inactive';
+  estadoTexto(e: number): string {
+    if (Number(e) === 1) return 'Aprobado';
+    return 'Pendiente';
   }
 
-  getTotalRegistros()    { return this.horarios.length; }
-  getTotalHorasNormales(){ return this.horarios.reduce((s, h) => s + h.HorasNormales, 0); }
-  getTotalHorasExtra()   { return this.horarios.reduce((s, h) => s + h.HorasExtra, 0); }
-  countByEstado(e: string){ return this.horarios.filter(h => h.Estado === e).length; }
+  estadoClass(e: number): string {
+    if (Number(e) === 1) return 'status-active';
+    return 'status-tardanza';
+  }
 
-  // ── Filtro / paginación ──
-  filterTable()   { this.currentPage = 1; }
-  changePage(d: number) {
+  getTotalRegistros(): number {
+    return this.horarios.length;
+  }
+
+  getTotalHorasNormales(): number {
+    return this.horarios.reduce((s, h) => s + Number(h.HorasNormales || 0), 0);
+  }
+
+  getTotalHorasExtra(): number {
+    return this.horarios.reduce((s, h) => s + Number(h.HorasExtra || 0), 0);
+  }
+
+  countByEstado(estado: number): number {
+    return this.horarios.filter((h) => Number(h.Estado) === Number(estado)).length;
+  }
+
+  filterTable(): void {
+    this.currentPage = 1;
+  }
+
+  changePage(d: number): void {
     const max = this.totalPages.length;
     this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
   }
-  goPage(n: number) { this.currentPage = n; }
 
-  // ── Cálculo automático ──
-  calcularHoras() {
-    const e = this.form.HoraEntrada;
-    const s = this.form.HoraSalida;
-    if (!e || !s) return;
-    const [eh, em] = e.split(':').map(Number);
-    const [sh, sm] = s.split(':').map(Number);
-    const total = (sh * 60 + sm) - (eh * 60 + em);
-    if (total <= 0) return;
-    const totalH = total / 60;
-    this.form.HorasNormales = Math.min(8, Math.floor(totalH));
-    this.form.HorasExtra    = Math.max(0, Math.floor(totalH) - 8);
+  goPage(n: number): void {
+    this.currentPage = n;
   }
 
-  // ── CRUD ──
-  openModal(mode: 'create' | 'edit', id?: number) {
+  calcularHoras(): void {
+    const entrada = this.form.HoraEntrada;
+    const salida = this.form.HoraSalida;
+
+    if (!entrada || !salida) return;
+
+    const [eh, em] = entrada.split(':').map(Number);
+    const [sh, sm] = salida.split(':').map(Number);
+
+    const minutosEntrada = eh * 60 + em;
+    const minutosSalida = sh * 60 + sm;
+    const totalMinutos = minutosSalida - minutosEntrada;
+
+    if (totalMinutos <= 0) return;
+
+    const totalHoras = totalMinutos / 60;
+    this.form.HorasNormales = Math.min(8, Number(totalHoras.toFixed(2)));
+    this.form.HorasExtra = Math.max(0, Number((totalHoras - 8).toFixed(2)));
+  }
+
+  openModal(mode: 'create' | 'edit', id?: number): void {
     if (mode === 'create') {
       this.editId = null;
-      const hoy = new Date().toISOString().split('T')[0];
-      this.form = { Fecha: hoy, Estado: 'Pendiente', HorasNormales: 8, HorasExtra: 0 };
+      this.form = {
+        Fecha: new Date().toISOString().split('T')[0],
+        HoraEntrada: '08:00',
+        HoraSalida: '17:00',
+        HorasNormales: 8,
+        HorasExtra: 0,
+        Estado: 0,
+        idUsuarios: 1,
+      };
     } else {
-      const h = this.horarios.find(x => x.IdControl === id)!;
+      const h = this.horarios.find((x) => Number(x.IdControl) === Number(id));
+      if (!h) return;
+
       this.editId = h.IdControl;
-      this.form = { ...h };
+      this.form = {
+        ...h,
+        Fecha: h.Fecha ? h.Fecha.split('T')[0] : '',
+        HoraEntrada: this.normalizarHora(h.HoraEntrada).slice(0, 5),
+        HoraSalida: this.normalizarHora(h.HoraSalida).slice(0, 5),
+      };
     }
+
     this.showFormModal = true;
   }
 
-  saveHorario() {
-    if (!this.form.IdEmpleado || !this.form.Fecha) {
-      alert('Por favor selecciona un empleado y una fecha.');
+
+
+
+viewInAnotherPage(h: ControlHorario): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del horario',
+    volver: '/horarios',
+    datos: {
+      ID: `#${h.IdControl}`,
+      Empleado: this.getNombreEmpleado(h.IdEmpleado),
+      'ID Empleado': `#${h.IdEmpleado}`,
+      Fecha: this.fmtFecha(h.Fecha),
+      'Hora entrada': h.HoraEntrada || '—',
+      'Hora salida': h.HoraSalida || '—',
+      'Horas normales': this.mostrarHoras(h.HorasNormales),
+      'Horas extra': this.mostrarHoras(h.HorasExtra),
+      Usuario: this.usuarioNombre(h.idUsuarios),
+      Estado: this.estadoTexto(h.Estado)
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
+  saveHorario(): void {
+    if (!this.form.IdEmpleado || Number(this.form.IdEmpleado) <= 0) {
+      alert('Debes seleccionar un empleado.');
       return;
     }
+
+    if (!this.form.Fecha) {
+      alert('Debes ingresar una fecha.');
+      return;
+    }
+
+    if (!this.form.HoraEntrada || !this.form.HoraSalida) {
+      alert('Debes ingresar hora de entrada y salida.');
+      return;
+    }
+
+    if (!this.form.idUsuarios || Number(this.form.idUsuarios) <= 0) {
+      alert('Debes seleccionar un usuario responsable.');
+      return;
+    }
+
+    const payload = {
+      IdControl: this.editId ?? undefined,
+      IdEmpleado: Number(this.form.IdEmpleado),
+      Fecha: this.form.Fecha,
+      HoraEntrada: this.form.HoraEntrada,
+      HoraSalida: this.form.HoraSalida,
+      HorasNormales: this.horasATime(this.form.HorasNormales),
+      HorasExtra: this.horasATime(this.form.HorasExtra),
+      Estado: Number(this.form.Estado ?? 0),
+      idUsuarios: Number(this.form.idUsuarios),
+    };
+
     if (this.editId) {
-      const idx = this.horarios.findIndex(h => h.IdControl === this.editId);
-      this.horarios[idx] = { ...this.horarios[idx], ...this.form } as ControlHorario;
+      this.http.put(`${this.HORARIO_URL}/actualizar`, payload, { headers: this.headers }).subscribe({
+        next: () => {
+          this.getHorarios();
+          this.showFormModal = false;
+        },
+        error: (err) => console.error('Error al actualizar horario:', err),
+      });
     } else {
-      const newId = Math.max(0, ...this.horarios.map(h => h.IdControl)) + 1;
-      this.horarios = [...this.horarios, { IdControl: newId, ...this.form } as ControlHorario];
-    }
-    this.showFormModal = false;
-  }
-
-  aprobar(id: number) {
-    const idx = this.horarios.findIndex(h => h.IdControl === id);
-    if (this.horarios[idx].Estado !== 'Aprobado') {
-      this.horarios[idx] = { ...this.horarios[idx], Estado: 'Aprobado' };
-      this.horarios = [...this.horarios];
+      this.http.post(`${this.HORARIO_URL}/insertar`, payload, { headers: this.headers }).subscribe({
+        next: () => {
+          this.getHorarios();
+          this.showFormModal = false;
+        },
+        error: (err) => console.error('Error al crear horario:', err),
+      });
     }
   }
 
-  askDelete(id: number) {
+  aprobar(id: number): void {
+    const h = this.horarios.find((x) => Number(x.IdControl) === Number(id));
+    if (!h) return;
+
+    const payload = {
+      ...h,
+      Estado: 1,
+    };
+
+    this.http.put(`${this.HORARIO_URL}/actualizar`, payload, { headers: this.headers }).subscribe({
+       next: () => {
+      this.getHorarios();         
+      this.currentPage = 1;        
+      this.cdr.detectChanges();   
+    },
+    error: (err) => console.error('Error al aprobar horario:', err),
+  });
+}
+
+  askDelete(id: number): void {
     this.deleteTargetId = id;
     this.showDeleteModal = true;
   }
 
-  confirmDelete() {
-    this.horarios = this.horarios.filter(h => h.IdControl !== this.deleteTargetId);
-    this.deleteTargetId = null;
-    this.showDeleteModal = false;
+  confirmDelete(): void {
+    if (!this.deleteTargetId) return;
+
+    this.http.delete(`${this.HORARIO_URL}/eliminar?id=${this.deleteTargetId}`, { headers: this.headers }).subscribe({
+      next: () => {
+        this.getHorarios();
+        this.deleteTargetId = null;
+        this.showDeleteModal = false;
+      },
+      error: (err) => console.error('Error al eliminar horario:', err),
+    });
   }
 
-  onOverlayClick(event: MouseEvent, modal: 'form' | 'delete') {
+  onOverlayClick(event: MouseEvent, modal: 'form' | 'delete'): void {
     if (event.target === event.currentTarget) {
-      if (modal === 'form')   this.showFormModal   = false;
+      if (modal === 'form') this.showFormModal = false;
       if (modal === 'delete') this.showDeleteModal = false;
     }
   }
+
+  private normalizarHora(value: string): string {
+    if (!value) return '';
+    return String(value).slice(0, 8);
+  }
+
+private horasANumero(value: any): number {
+  if (value === null || value === undefined || value === '') return 0;
+
+  if (typeof value === 'number') return value;
+
+  const texto = String(value);
+
+  if (texto.includes(':')) {
+    const [h, m, s] = texto.split(':').map(Number);
+
+  
+    if (h === 0 && m === 0 && s > 0) return s;
+
+    return Number((h + (m || 0) / 60).toFixed(2));
+  }
+
+  return Number(value) || 0;
+}
+
+
+private horasATime(value: any): string {
+  const horas = Math.floor(Number(value || 0));
+  const minutos = Math.round((Number(value || 0) - horas) * 60);
+
+  const hh = String(horas).padStart(2, '0');
+  const mm = String(minutos).padStart(2, '0');
+
+  return `${hh}:${mm}:00`;
+}
+
+
+mostrarHoras(value: any): string {
+  if (!value) return '0h';
+
+  const texto = String(value);
+
+  if (texto.includes(':')) {
+    const [h, m, s] = texto.split(':').map(Number);
+
+    if (h > 0) return `${h}h`;
+    if (m > 0) return `${m} min`;
+
+    // Por si tu BD guarda 00:00:08 y vos querés verlo como 8h
+    if (s > 0) return `${s}h`;
+
+    return '0h';
+  }
+
+  return `${Number(value || 0)}h`;
+}
+
+
+
 }

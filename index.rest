@@ -56,7 +56,7 @@ Origin: {{ BASE_URL }}
 
 {
 
- "IdEmpleado": 402,
+ "idEmpleado": 402,
   
  "CodigoEmpleado": "E202",
   "Nombre": "Randy",
@@ -145,6 +145,13 @@ GET {{ BASE_URL }}/UsuarioServicio/listarUsuarios HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
+
+###
+GET {{ BASE_URL }}/UsuarioServicio/listarUsuariosCombo HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
 
 
 /// get donde lista usuario por id*/
@@ -343,6 +350,12 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+//Listar pagos de la vista con nombre 
+###
+GET {{ BASE_URL }}/PagoServicio/listarPagosVista HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
 
 /// get donde lista pago por id*/
 ###
@@ -482,6 +495,14 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+// get donde se lista el aguinaldo con el nombre del empleado y el nombre del usuario
+###
+GET {{ BASE_URL }}/AguinaldosServicio/listarAguinaldosVista HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
 /// get donde lista aguinaldo por id*/
 ###
 GET {{ BASE_URL }}/AguinaldosServicio/obtenerPorId?id=201 HTTP/1.1
@@ -601,6 +622,13 @@ Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}
 
+//get donde se lista el prestamo con el nombre del empleado y el nombre del usuario 
+###
+GET {{ BASE_URL }}/PrestamoServicio/listarPrestamosVista HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
 
 /// get donde lista prestamo por id*/
 ###
@@ -692,7 +720,8 @@ Origin: {{ BASE_URL }}
   "SalarioBruto": 475000,
   "idPlanilla": 1,
   "idDeducciones": 601,
-  "idTipoIngreso": 1
+  "idTipoIngreso": 1,
+  "idEmpleado": 201
 }
 
 
@@ -755,7 +784,8 @@ Origin: {{ BASE_URL }}
   "HoraEntrada": "08:00:00",
   "HoraSalida": "17:00:00",
   "idEmpleados": 201,
-  "idUsuarios": 1
+  "idUsuarios": 1,
+  "Fecha":"2026-04-27"
 }
 
 //put para actualizar un controlAsistencia por id
@@ -770,7 +800,8 @@ Origin: {{ BASE_URL }}
   "HoraEntrada": "08:30:00",
   "HoraSalida": "17:30:00",
   "idEmpleados": 202,
-  "idUsuarios": 1
+  "idUsuarios": 1,
+  "Fecha":"2026-04-27"
 }
 
 //delete para eliminar un controlAsistencia por id
@@ -855,6 +886,13 @@ Origin: {{ BASE_URL }}
 // get donde lista todos los deducciones
 ###
 GET {{ BASE_URL }}/DeduccionesServicio/listarDeducciones HTTP/1.1
+Authorization: Bearer {{ AUTH_TOKEN }}
+Content-Type: application/json
+Origin: {{ BASE_URL }}
+
+
+###
+GET {{ BASE_URL }}/DeduccionesServicio/listarDeduccionesVista HTTP/1.1
 Authorization: Bearer {{ AUTH_TOKEN }}
 Content-Type: application/json
 Origin: {{ BASE_URL }}

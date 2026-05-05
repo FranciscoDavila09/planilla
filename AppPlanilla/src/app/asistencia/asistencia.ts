@@ -1,42 +1,58 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface ControlAsistencia {
   idControlAsistencia: number;
   idEmpleados: number;
   nombreEmpleado: string;
-  fecha: string;
-  horaEntrada: string;
-  horaSalida: string;
+  HoraEntrada: string;
+  HoraSalida: string;
   estado: string;
   observacion?: string;
-  idUsuarios?: number; // si tiene valor = registrado por admin, null = empleado
+  idUsuarios?: number;
+  fecha: string | null;
 }
 
 interface Empleado {
-  id: number;
-  nombre: string;
+  idEmpleado: number;
+  Nombre: string;
+  Apellidos: string;
 }
 
 @Component({
   selector: 'app-asistencia',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './asistencia.html',
   styleUrl: './asistencia.css',
 })
 export class Asistencia implements OnInit, OnDestroy {
+  private readonly http = inject(HttpClient);
+
+  private readonly router = inject(Router);
+
+  private readonly API_URL = 'http://localhost';
+  private readonly ASISTENCIA_URL = `${this.API_URL}/ControlAsistenciaServicio/`;
+  private readonly EMPLEADO_URL = `${this.API_URL}/EmpleadoServicio/`;
+  private readonly TZ = 'America/Costa_Rica';
+
+  protected readonly Registros = signal<ControlAsistencia[]>([]);
+  protected readonly Empleados = signal<Empleado[]>([]);
+
   readonly COLORS = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
   readonly perPage = 8;
 
   // ── Modales ──
-  showFormModal   = false;
-  showMarcaModal  = false;
+  showFormModal = false;
+  showMarcaModal = false;
   showDeleteModal = false;
 
   // ── Filtros ──
-  searchQuery  = '';
-  fechaFiltro  = '';
+  searchQuery = '';
+  fechaFiltro = '';
   estadoFiltro = '';
 
   // ── Paginación ──
@@ -55,46 +71,28 @@ export class Asistencia implements OnInit, OnDestroy {
   // ── Eliminar ──
   deleteTargetId: number | null = null;
 
-  // ── Empleados (catálogo) ──
-  empleados: Empleado[] = [
-    { id: 1,  nombre: 'María Rodríguez López'    },
-    { id: 2,  nombre: 'Carlos Mendoza Torres'    },
-    { id: 3,  nombre: 'Sofía Vargas Chaves'      },
-    { id: 4,  nombre: 'Andrés Jiménez Mora'      },
-    { id: 5,  nombre: 'Lucía Pérez Solís'        },
-    { id: 6,  nombre: 'Diego Castillo Brenes'    },
-    { id: 7,  nombre: 'Valeria Núñez Ulate'      },
-    { id: 8,  nombre: 'Felipe Aguilar Rojas'     },
-    { id: 9,  nombre: 'Daniela Herrera Campos'   },
-    { id: 10, nombre: 'Ricardo Soto Fallas'      },
-  ];
+  // ── Helpers zona horaria CR ──
+  private hoyCR(): string {
+    // en-CA devuelve YYYY-MM-DD, ideal para comparaciones con la BD
+    return new Date().toLocaleDateString('en-CA', { timeZone: this.TZ });
+  }
 
-  // ── Registros ──
-  registros: ControlAsistencia[] = [
-    { idControlAsistencia: 1,  idEmpleados: 1,  nombreEmpleado: 'María Rodríguez López',  fecha: '2026-03-21', horaEntrada: '07:58', horaSalida: '17:02', estado: 'Presente',  idUsuarios: undefined },
-    { idControlAsistencia: 2,  idEmpleados: 2,  nombreEmpleado: 'Carlos Mendoza Torres',  fecha: '2026-03-21', horaEntrada: '08:15', horaSalida: '17:00', estado: 'Tardanza',  idUsuarios: undefined },
-    { idControlAsistencia: 3,  idEmpleados: 3,  nombreEmpleado: 'Sofía Vargas Chaves',    fecha: '2026-03-21', horaEntrada: '',      horaSalida: '',      estado: 'Ausente',   idUsuarios: 1 },
-    { idControlAsistencia: 4,  idEmpleados: 4,  nombreEmpleado: 'Andrés Jiménez Mora',    fecha: '2026-03-21', horaEntrada: '07:55', horaSalida: '17:05', estado: 'Presente',  idUsuarios: undefined },
-    { idControlAsistencia: 5,  idEmpleados: 5,  nombreEmpleado: 'Lucía Pérez Solís',      fecha: '2026-03-21', horaEntrada: '08:00', horaSalida: '',      estado: 'Presente',  idUsuarios: undefined },
-    { idControlAsistencia: 6,  idEmpleados: 6,  nombreEmpleado: 'Diego Castillo Brenes',  fecha: '2026-03-21', horaEntrada: '08:30', horaSalida: '17:00', estado: 'Tardanza',  idUsuarios: undefined },
-    { idControlAsistencia: 7,  idEmpleados: 7,  nombreEmpleado: 'Valeria Núñez Ulate',    fecha: '2026-03-21', horaEntrada: '',      horaSalida: '',      estado: 'Permiso',   idUsuarios: 1 },
-    { idControlAsistencia: 8,  idEmpleados: 8,  nombreEmpleado: 'Felipe Aguilar Rojas',   fecha: '2026-03-21', horaEntrada: '07:50', horaSalida: '17:10', estado: 'Presente',  idUsuarios: undefined },
-    { idControlAsistencia: 9,  idEmpleados: 9,  nombreEmpleado: 'Daniela Herrera Campos', fecha: '2026-03-20', horaEntrada: '08:00', horaSalida: '17:00', estado: 'Presente',  idUsuarios: undefined },
-    { idControlAsistencia: 10, idEmpleados: 10, nombreEmpleado: 'Ricardo Soto Fallas',    fecha: '2026-03-20', horaEntrada: '',      horaSalida: '',      estado: 'Ausente',   idUsuarios: 1 },
-    { idControlAsistencia: 11, idEmpleados: 1,  nombreEmpleado: 'María Rodríguez López',  fecha: '2026-03-20', horaEntrada: '07:59', horaSalida: '17:01', estado: 'Presente',  idUsuarios: undefined },
-    { idControlAsistencia: 12, idEmpleados: 2,  nombreEmpleado: 'Carlos Mendoza Torres',  fecha: '2026-03-20', horaEntrada: '08:00', horaSalida: '17:00', estado: 'Presente',  idUsuarios: undefined },
-    { idControlAsistencia: 13, idEmpleados: 3,  nombreEmpleado: 'Sofía Vargas Chaves',    fecha: '2026-03-19', horaEntrada: '08:05', horaSalida: '17:00', estado: 'Presente',  idUsuarios: undefined },
-    { idControlAsistencia: 14, idEmpleados: 4,  nombreEmpleado: 'Andrés Jiménez Mora',    fecha: '2026-03-19', horaEntrada: '08:45', horaSalida: '17:00', estado: 'Tardanza',  idUsuarios: undefined },
-    { idControlAsistencia: 15, idEmpleados: 5,  nombreEmpleado: 'Lucía Pérez Solís',      fecha: '2026-03-19', horaEntrada: '07:55', horaSalida: '17:05', estado: 'Presente',  idUsuarios: undefined },
-    { idControlAsistencia: 16, idEmpleados: 6,  nombreEmpleado: 'Diego Castillo Brenes',  fecha: '2026-03-19', horaEntrada: '',      horaSalida: '',      estado: 'Ausente',   idUsuarios: 1 },
-  ];
+  private ahoraCR(): string {
+    return new Date().toLocaleTimeString('es-CR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: this.TZ
+    });
+  }
 
   ngOnInit() {
     this.actualizarReloj();
     this.clockInterval = setInterval(() => this.actualizarReloj(), 1000);
-    // Fecha de hoy por defecto en el filtro
-    const hoy = new Date().toISOString().split('T')[0];
-    this.fechaFiltro = hoy;
+    this.fechaFiltro = '';
+    this.getEmpleados();
+    this.getRegistros();
   }
 
   ngOnDestroy() {
@@ -103,18 +101,134 @@ export class Asistencia implements OnInit, OnDestroy {
 
   private actualizarReloj() {
     const now = new Date();
-    this.horaActual = now.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    this.fechaActual = now.toLocaleDateString('es-CR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    this.horaActual = now.toLocaleTimeString('es-CR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: this.TZ   // ✅ forzado a CR
+    });
+    this.fechaActual = now.toLocaleDateString('es-CR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: this.TZ   // ✅ forzado a CR
+    });
+  }
+
+  // ── HTTP GET ──
+  getRegistros(): void {
+    this.http.get<any[]>(`${this.ASISTENCIA_URL}listarControlAsistencia`).subscribe({
+      next: (data) => {
+        const empleados = this.Empleados();
+        const mapped: ControlAsistencia[] = data.map(r => {
+          const emp = empleados.find(e => e.idEmpleado === r.idEmpleados);
+          
+
+//       let fechaLimpia = r.Fecha || r.fecha;
+
+// if (fechaLimpia) {
+//   fechaLimpia = String(fechaLimpia).split('T')[0].split(' ')[0];
+// }
+
+const fechaLimpia = this.limpiarFechaBD(r.Fecha || r.fecha);
+
+
+          return {
+            ...r,
+            nombreEmpleado: emp ? `${emp.Nombre} ${emp.Apellidos}` : '—',
+            fecha: fechaLimpia || null,
+           estado: this.calcularEstado(r.HoraEntrada, r.HoraSalida)
+          };
+        });
+        this.Registros.set(mapped);
+      },
+      error: (err) => console.error('Error al obtener registros:', err)
+    });
+  }
+
+private limpiarFechaBD(fecha: any): string | null {
+  if (!fecha) return null;
+
+  const texto = String(fecha);
+
+  return texto.split('T')[0].split(' ')[0];
+}
+
+
+
+
+
+calcularEstado(entrada: string, salida: string): string {
+  if (entrada && salida) return 'Presente';
+  if (entrada && !salida) return 'Pendiente salida';
+  return 'Ausente';
+}
+
+
+
+
+
+  getEmpleados(): void {
+    this.http.get<Empleado[]>(`${this.EMPLEADO_URL}listarEmpleados`).subscribe({
+      next: (data) => this.Empleados.set(data),
+      error: (err) => console.error('Error al obtener empleados:', err)
+    });
+  }
+
+  // ── HTTP POST ──
+  crearRegistro(registro: Partial<ControlAsistencia>): void {
+    const body = {
+      HoraEntrada: registro.HoraEntrada,
+      HoraSalida: registro.HoraSalida || null,  // ✅ vacío/undefined → null
+      idEmpleados: registro.idEmpleados,
+      idUsuarios: registro.idUsuarios ?? 1,
+      Fecha: registro.fecha || this.hoyCR()                   // ✅ F mayúscula para el backend
+    };
+  console.log('BODY QUE SE ENVÍA:', body);
+
+    this.http.post(`${this.ASISTENCIA_URL}insertar`, body).subscribe({
+      next: () => this.getRegistros(),
+      error: (err) => console.error('Error al crear registro:', err)
+    });
+  }
+
+  // ── HTTP PUT ──
+  actualizarRegistro(registro: Partial<ControlAsistencia>): void {
+    const body = {
+      idControlAsistencia: registro.idControlAsistencia,
+      HoraEntrada: registro.HoraEntrada,
+      HoraSalida: registro.HoraSalida || null,  // ✅ vacío/undefined → null
+      idEmpleados: registro.idEmpleados,
+      idUsuarios: registro.idUsuarios ?? 1,     // ✅ nunca undefined
+      Fecha: registro.fecha                     // ✅ F mayúscula para el backend
+    };
+
+    this.http.put(`${this.ASISTENCIA_URL}actualizar`, body).subscribe({
+      next: () => this.getRegistros(),
+      error: (err) => console.error('Error al actualizar registro:', err)
+    });
+  }
+
+  // ── HTTP DELETE ──
+  eliminarRegistro(id: number): void {
+    this.http.delete(`${this.ASISTENCIA_URL}eliminar`, { params: { id } }).subscribe({
+      next: () => this.getRegistros(),
+      error: (err) => console.error('Error al eliminar registro:', err)
+    });
   }
 
   // ── Computed ──
   get filteredRegistros(): ControlAsistencia[] {
     const q = this.searchQuery.toLowerCase();
-    return this.registros.filter(r =>
-      (!q || r.nombreEmpleado.toLowerCase().includes(q)) &&
-      (!this.fechaFiltro || r.fecha === this.fechaFiltro) &&
-      (!this.estadoFiltro || r.estado === this.estadoFiltro)
-    );
+    const f = this.fechaFiltro;
+
+    return this.Registros().filter(r => {
+      const coincideNombre = !q || r.nombreEmpleado?.toLowerCase().includes(q);
+      const coincideEstado = !this.estadoFiltro || r.estado === this.estadoFiltro;
+      const coincideFecha = !f || r.fecha === f;
+      return coincideNombre && coincideEstado && coincideFecha;
+    });
   }
 
   get pageSlice(): ControlAsistencia[] {
@@ -131,14 +245,15 @@ export class Asistencia implements OnInit, OnDestroy {
   min(a: number, b: number) { return Math.min(a, b); }
 
   inicialesNombre(nombre: string) {
+    if (!nombre || nombre === '—') return '?';
     const partes = nombre.split(' ');
     return (partes[0][0] + (partes[1]?.[0] ?? '')).toUpperCase();
   }
 
   colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
 
-  fmtFecha(f: string) {
-    if (!f) return '—';
+  fmtFecha(f: string | null) {
+    if (!f) return 'Sin fecha';
     const [y, m, d] = f.split('-');
     return `${d}/${m}/${y}`;
   }
@@ -155,20 +270,20 @@ export class Asistencia implements OnInit, OnDestroy {
   }
 
   estadoClass(s: string) {
-    if (s === 'Presente')  return 'status-active';
-    if (s === 'Tardanza')  return 'status-tardanza';
-    if (s === 'Permiso')   return 'status-vacation';
+    if (s === 'Presente') return 'status-active';
+    if (s === 'Tardanza') return 'status-tardanza';
+    if (s === 'Permiso')  return 'status-vacation';
     return 'status-inactive';
   }
 
   countByEstado(estado: string) {
-    const hoy = new Date().toISOString().split('T')[0];
-    return this.registros.filter(r => r.fecha === hoy && r.estado === estado).length;
+    const hoy = this.hoyCR(); // ✅ fecha CR
+    return this.Registros().filter(r => r.fecha === hoy && r.estado === estado).length;
   }
 
   getPorcentaje() {
-    const hoy = new Date().toISOString().split('T')[0];
-    const hoyRegistros = this.registros.filter(r => r.fecha === hoy);
+    const hoy = this.hoyCR(); // ✅ fecha CR
+    const hoyRegistros = this.Registros().filter(r => r.fecha === hoy);
     if (!hoyRegistros.length) return 0;
     const presentes = hoyRegistros.filter(r => r.estado === 'Presente' || r.estado === 'Tardanza').length;
     return Math.round((presentes / hoyRegistros.length) * 100);
@@ -176,23 +291,59 @@ export class Asistencia implements OnInit, OnDestroy {
 
   // ── Filtro / paginación ──
   filterTable() { this.currentPage = 1; }
+
   changePage(d: number) {
     const max = this.totalPages.length;
     this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
   }
+
   goPage(n: number) { this.currentPage = n; }
 
+  get visiblePages(): (number | '...')[] {
+  const total = this.totalPages.length;
+  const current = this.currentPage;
+  const pages: (number | '...')[] = [];
+
+  if (total <= 5) {
+    // Si hay pocas páginas, muéstralas todas
+    return this.totalPages;
+  }
+
+  // Siempre muestra la primera
+  pages.push(1);
+
+  // Puntos suspensivos izquierda
+  if (current > 3) pages.push('...');
+
+  // Páginas alrededor de la actual
+  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+    pages.push(i);
+  }
+
+  // Puntos suspensivos derecha
+  if (current < total - 2) pages.push('...');
+
+  // Siempre muestra la última
+  pages.push(total);
+
+  return pages;
+}
   onEmpleadoChange() {
-    const emp = this.empleados.find(e => e.id === Number(this.form.idEmpleados));
-    if (emp) this.form.nombreEmpleado = emp.nombre;
+    const emp = this.Empleados().find(e => e.idEmpleado === Number(this.form.idEmpleados));
+    if (emp) this.form.nombreEmpleado = `${emp.Nombre} ${emp.Apellidos}`;
   }
 
   // ── CRUD ──
   openModal(mode: 'manual' | 'edit', registro?: ControlAsistencia) {
     if (mode === 'manual') {
       this.editId = null;
-      const hoy = new Date().toISOString().split('T')[0];
-      this.form = { fecha: hoy, estado: 'Presente', idUsuarios: 1 };
+      this.form = {
+        HoraEntrada: '',
+        HoraSalida: '',
+        
+        idUsuarios: 1,
+        fecha: this.hoyCR() 
+      };
     } else if (registro) {
       this.editId = registro.idControlAsistencia;
       this.form = { ...registro };
@@ -200,17 +351,40 @@ export class Asistencia implements OnInit, OnDestroy {
     this.showFormModal = true;
   }
 
+
+viewInAnotherPage(r: ControlAsistencia): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle de asistencia',
+    volver: '/asistencia',
+    datos: {
+      ID: `#${r.idControlAsistencia}`,
+      Empleado: r.nombreEmpleado,
+      'ID Empleado': `#${r.idEmpleados}`,
+      Fecha: this.fmtFecha(r.fecha),
+      'Hora entrada': r.HoraEntrada || '—',
+      'Hora salida': r.HoraSalida || '—',
+      'Horas trabajadas': this.calcularHoras(r.HoraEntrada, r.HoraSalida),
+      Estado: r.estado,
+      'Registrado por': r.idUsuarios ? 'Administrador' : 'Empleado',
+      Observación: r.observacion || '—'
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
+
+
   saveRegistro() {
-    if (!this.form.idEmpleados || !this.form.fecha) {
-      alert('Por favor selecciona un empleado y una fecha.');
+    if (!this.form.idEmpleados) {
+      alert('Por favor selecciona un empleado.');
       return;
     }
     if (this.editId) {
-      const idx = this.registros.findIndex(r => r.idControlAsistencia === this.editId);
-      this.registros[idx] = { ...this.registros[idx], ...this.form } as ControlAsistencia;
+      this.actualizarRegistro({ ...this.form, idControlAsistencia: this.editId });
     } else {
-      const newId = Math.max(0, ...this.registros.map(r => r.idControlAsistencia)) + 1;
-      this.registros = [...this.registros, { idControlAsistencia: newId, ...this.form } as ControlAsistencia];
+      this.crearRegistro(this.form);
     }
     this.showFormModal = false;
   }
@@ -221,30 +395,56 @@ export class Asistencia implements OnInit, OnDestroy {
   }
 
   registrarMarca(tipo: 'entrada' | 'salida') {
-    if (!this.marcaEmpleadoId) { alert('Selecciona un empleado.'); return; }
-    const emp = this.empleados.find(e => e.id === Number(this.marcaEmpleadoId))!;
-    const hoy = new Date().toISOString().split('T')[0];
-    const ahora = new Date().toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
-    const existente = this.registros.find(r => r.idEmpleados === emp.id && r.fecha === hoy);
-
-    if (existente) {
-      if (tipo === 'entrada') existente.horaEntrada = ahora;
-      else existente.horaSalida = ahora;
-      this.registros = [...this.registros];
-    } else {
-      const newId = Math.max(0, ...this.registros.map(r => r.idControlAsistencia)) + 1;
-      const hora = new Date();
-      const esHoraNormal = hora.getHours() < 8 || (hora.getHours() === 8 && hora.getMinutes() === 0);
-      this.registros = [...this.registros, {
-        idControlAsistencia: newId,
-        idEmpleados: emp.id,
-        nombreEmpleado: emp.nombre,
-        fecha: hoy,
-        horaEntrada: tipo === 'entrada' ? ahora : '',
-        horaSalida: tipo === 'salida' ? ahora : '',
-        estado: hora.getHours() > 8 ? 'Tardanza' : 'Presente',
-      }];
+    if (!this.marcaEmpleadoId) {
+      alert('Selecciona un empleado.');
+      return;
     }
+
+    const ahora = this.ahoraCR(); 
+    const hoy   = this.hoyCR();   
+
+    const registroHoy = this.Registros().find(r =>
+      r.idEmpleados === Number(this.marcaEmpleadoId) &&
+      r.fecha === hoy
+    );
+
+    // ───── ENTRADA ─────
+    if (tipo === 'entrada') {
+      if (registroHoy) {
+        alert('Este empleado ya marcó entrada hoy');
+        return;
+      }
+
+      this.crearRegistro({
+        idEmpleados: Number(this.marcaEmpleadoId),
+        HoraEntrada: ahora,
+        HoraSalida: undefined,  
+        fecha: hoy,
+       
+        idUsuarios: 1           
+      });
+    }
+
+    // ───── SALIDA ─────
+    if (tipo === 'salida') {
+      if (!registroHoy) {
+        alert('Primero debe marcar entrada');
+        return;
+      }
+
+      if (registroHoy.HoraSalida) {
+        alert('La salida ya fue registrada');
+        return;
+      }
+
+      this.actualizarRegistro({
+        ...registroHoy,                           // ✅ spread completo, no se pierde ningún campo
+        HoraSalida: ahora,
+        idUsuarios: registroHoy.idUsuarios ?? 1,  // ✅ nunca undefined
+        fecha: hoy
+      });
+    }
+
     this.showMarcaModal = false;
   }
 
@@ -254,7 +454,9 @@ export class Asistencia implements OnInit, OnDestroy {
   }
 
   confirmDelete() {
-    this.registros = this.registros.filter(r => r.idControlAsistencia !== this.deleteTargetId);
+    if (this.deleteTargetId !== null) {
+      this.eliminarRegistro(this.deleteTargetId);
+    }
     this.deleteTargetId = null;
     this.showDeleteModal = false;
   }

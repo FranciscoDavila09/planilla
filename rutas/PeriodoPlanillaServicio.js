@@ -3,6 +3,7 @@ const express = require('express');
 const Router = express.Router();
 
 const PeriodoPlanillaServicio = require('../servicios/PeriodoPlanillaServicio.js');
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 Router.get('/listarPeriodoPlanilla', async (solicitud, respuesta, next) => {
   if (await UsuarioServicio.ValidarToken(solicitud.headers.authorization)) {

@@ -2,6 +2,7 @@ const express = require("express");
 const Router = express.Router();
 
 const AuditoriaServicio = require("../servicios/AuditoriaServicio.js");
+const UsuarioServicio = require("../servicios/UsuarioServicio.js");
 
 //Listar todos los registros de auditoría
 Router.get("/listarAuditoria", async (solicitud, respuesta, next) => {

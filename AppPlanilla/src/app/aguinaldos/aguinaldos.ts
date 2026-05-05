@@ -1,14 +1,45 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
+
 
 interface Aguinaldo {
   IdAguinaldo: number;
   IdEmpleado: number;
   Periodo: number;
   MontoCalculado: number;
-  FechaPago: string;
+  FechaPago: string | null;
   Estado: number;
   idUsuario: number;
+
+  NombreEmpleado?: string;
+  ApellidosEmpleado?: string;
+  CodigoEmpleado?: string;
+
+  NombreUsuario?: string;
+  ApellidosUsuario?: string;
+}
+
+interface EmpleadoRef {
+  idEmpleado: number;
+  Nombre: string;
+  Apellidos: string;
+  Identificacion?: string;
+  CodigoEmpleado?: string;
+  Correo?: string;
+  Telefono?: string;
+  Salario?: number;
+  idDepartamento?: number;
+}
+
+interface UsuarioRef {
+  idUsuario: number;
+  Nombre?: string;
+  Apellidos?: string;
+  NombreCompleto?: string;
+  idRol?: number;
+  correo?: string;
 }
 
 interface PeriodoResumen {
@@ -18,8 +49,6 @@ interface PeriodoResumen {
   monto: number;
 }
 
-interface EmpRef { nombre: string; }
-
 @Component({
   selector: 'app-aguinaldos',
   standalone: true,
@@ -27,64 +56,40 @@ interface EmpRef { nombre: string; }
   templateUrl: './aguinaldos.html',
   styleUrl: './aguinaldos.css',
 })
-export class Aguinaldos {
+export class Aguinaldos implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+
+  private readonly BASE_URL = 'http://localhost';
+  private readonly AGUINALDO_URL = `${this.BASE_URL}/AguinaldosServicio`;
+  private readonly EMPLEADO_URL = `${this.BASE_URL}/EmpleadoServicio`;
+  private readonly USUARIO_URL = `${this.BASE_URL}/UsuarioServicio`;
+
   readonly perPage = 8;
-  readonly COLORS  = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
+  readonly COLORS = ['av-red', 'av-green', 'av-blue', 'av-amber', 'av-violet', 'av-teal'];
 
-  // ── Mapas de referencia (reemplazar con servicios reales en producción) ──
+  private get headers(): HttpHeaders {
+    const token = localStorage.getItem('token') ?? '';
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+  }
 
-  readonly empMap: Record<number, EmpRef> = {
-    1:  { nombre: 'María Rodríguez'   },
-    2:  { nombre: 'Carlos Mendoza'    },
-    3:  { nombre: 'Sofía Vargas'      },
-    4:  { nombre: 'Andrés Jiménez'    },
-    5:  { nombre: 'Lucía Pérez'       },
-    6:  { nombre: 'Diego Castillo'    },
-    7:  { nombre: 'Valeria Núñez'     },
-    8:  { nombre: 'Felipe Aguilar'    },
-    9:  { nombre: 'Daniela Herrera'   },
-    10: { nombre: 'Ricardo Soto'      },
-    11: { nombre: 'Camila Quesada'    },
-    12: { nombre: 'Pablo Araya'       },
-    13: { nombre: 'Natalia Mora'      },
-    14: { nombre: 'Sebastián Ugalde'  },
-    15: { nombre: 'Adriana Blanco'    },
-  };
+  protected readonly aguinaldos = signal<Aguinaldo[]>([]);
+  protected readonly empleados = signal<EmpleadoRef[]>([]);
+  protected readonly usuarios = signal<UsuarioRef[]>([]);
 
-  // Detalle extendido del empleado para el bloque hijo
-  readonly empDetalleMap: Record<number, { puesto: string; departamento: string; cedula: string }> = {
-    1:  { puesto: 'Desarrolladora Senior',    departamento: 'TI',          cedula: '1-0234-5678' },
-    2:  { puesto: 'Analista Financiero',      departamento: 'Finanzas',    cedula: '2-0987-6543' },
-    3:  { puesto: 'Gerente de Ventas',        departamento: 'Ventas',      cedula: '3-1234-7890' },
-    4:  { puesto: 'Reclutador',               departamento: 'RRHH',        cedula: '1-0543-2109' },
-    5:  { puesto: 'Jefa de Operaciones',      departamento: 'Operaciones', cedula: '4-0321-8765' },
-    6:  { puesto: 'DevOps Engineer',          departamento: 'TI',          cedula: '2-1098-3456' },
-    7:  { puesto: 'Contadora',                departamento: 'Finanzas',    cedula: '5-0765-4321' },
-    8:  { puesto: 'Asesor Comercial',         departamento: 'Ventas',      cedula: '3-0432-9876' },
-    9:  { puesto: 'Diseñadora UX',            departamento: 'TI',          cedula: '1-0876-5432' },
-    10: { puesto: 'Auxiliar Contable',        departamento: 'Finanzas',    cedula: '2-0543-1098' },
-    11: { puesto: 'Analista de RRHH',         departamento: 'RRHH',        cedula: '4-0987-6543' },
-    12: { puesto: 'Técnico de Soporte',       departamento: 'TI',          cedula: '3-0654-3219' },
-    13: { puesto: 'Supervisora',              departamento: 'Operaciones', cedula: '5-0321-7654' },
-    14: { puesto: 'Programador Jr.',          departamento: 'TI',          cedula: '1-0789-4567' },
-    15: { puesto: 'Vendedora',                departamento: 'Ventas',      cedula: '2-0234-8901' },
-  };
-
-  readonly usuarioMap: Record<number, { nombre: string; rol: string }> = {
-    1: { nombre: 'María Rodríguez', rol: 'Administrador' },
-    2: { nombre: 'Carlos Mendoza',  rol: 'RRHH'          },
-  };
-
-  showFormModal   = false;
-  showViewModal   = false;
+  showFormModal = false;
+  showViewModal = false;
   showDeleteModal = false;
 
-  searchQuery   = '';
-  estadoFilter  = '';
-  periodoFilter = '';
-  periodoActivo = 2025;
+  searchQuery = signal('');
+  estadoFilter = signal('');
+  periodoFilter = signal('');
+  periodoActivo = new Date().getFullYear();
 
-  currentPage = 1;
+  currentPage = signal(1);
 
   editId: number | null = null;
   form: Partial<Aguinaldo> = {};
@@ -94,193 +99,451 @@ export class Aguinaldos {
   deleteTargetId: number | null = null;
   deleteDesc = '';
 
-  aguinaldos: Aguinaldo[] = [
-    // ── 2025 ──
-    { IdAguinaldo: 1,  IdEmpleado: 1,  Periodo: 2025, MontoCalculado: 950000,  FechaPago: '2025-12-15', Estado: 0, idUsuario: 1 },
-    { IdAguinaldo: 2,  IdEmpleado: 2,  Periodo: 2025, MontoCalculado: 820000,  FechaPago: '2025-12-15', Estado: 0, idUsuario: 1 },
-    { IdAguinaldo: 3,  IdEmpleado: 3,  Periodo: 2025, MontoCalculado: 1100000, FechaPago: '2025-12-15', Estado: 0, idUsuario: 1 },
-    { IdAguinaldo: 4,  IdEmpleado: 4,  Periodo: 2025, MontoCalculado: 700000,  FechaPago: '2025-12-15', Estado: 0, idUsuario: 1 },
-    { IdAguinaldo: 5,  IdEmpleado: 5,  Periodo: 2025, MontoCalculado: 1050000, FechaPago: '2025-12-15', Estado: 0, idUsuario: 1 },
-    { IdAguinaldo: 6,  IdEmpleado: 6,  Periodo: 2025, MontoCalculado: 980000,  FechaPago: '2025-12-15', Estado: 0, idUsuario: 1 },
-    { IdAguinaldo: 7,  IdEmpleado: 7,  Periodo: 2025, MontoCalculado: 860000,  FechaPago: '2025-12-15', Estado: 0, idUsuario: 1 },
-    { IdAguinaldo: 8,  IdEmpleado: 8,  Periodo: 2025, MontoCalculado: 750000,  FechaPago: '2025-12-15', Estado: 0, idUsuario: 1 },
-    // ── 2024 ──
-    { IdAguinaldo: 9,  IdEmpleado: 1,  Periodo: 2024, MontoCalculado: 912500,  FechaPago: '2024-12-14', Estado: 1, idUsuario: 1 },
-    { IdAguinaldo: 10, IdEmpleado: 2,  Periodo: 2024, MontoCalculado: 795000,  FechaPago: '2024-12-14', Estado: 1, idUsuario: 1 },
-    { IdAguinaldo: 11, IdEmpleado: 3,  Periodo: 2024, MontoCalculado: 1058333, FechaPago: '2024-12-14', Estado: 1, idUsuario: 2 },
-    { IdAguinaldo: 12, IdEmpleado: 4,  Periodo: 2024, MontoCalculado: 672917,  FechaPago: '2024-12-14', Estado: 1, idUsuario: 2 },
-    { IdAguinaldo: 13, IdEmpleado: 5,  Periodo: 2024, MontoCalculado: 1012500, FechaPago: '2024-12-14', Estado: 1, idUsuario: 1 },
-    { IdAguinaldo: 14, IdEmpleado: 6,  Periodo: 2024, MontoCalculado: 943750,  FechaPago: '2024-12-14', Estado: 1, idUsuario: 1 },
-    { IdAguinaldo: 15, IdEmpleado: 9,  Periodo: 2024, MontoCalculado: 837500,  FechaPago: '2024-12-14', Estado: 1, idUsuario: 1 },
-    { IdAguinaldo: 16, IdEmpleado: 10, Periodo: 2024, MontoCalculado: 598750,  FechaPago: '2024-12-14', Estado: 1, idUsuario: 2 },
-    // ── 2023 ──
-    { IdAguinaldo: 17, IdEmpleado: 1,  Periodo: 2023, MontoCalculado: 875000,  FechaPago: '2023-12-12', Estado: 1, idUsuario: 1 },
-    { IdAguinaldo: 18, IdEmpleado: 2,  Periodo: 2023, MontoCalculado: 762500,  FechaPago: '2023-12-12', Estado: 1, idUsuario: 1 },
-    { IdAguinaldo: 19, IdEmpleado: 3,  Periodo: 2023, MontoCalculado: 1020833, FechaPago: '2023-12-12', Estado: 1, idUsuario: 1 },
-    { IdAguinaldo: 20, IdEmpleado: 5,  Periodo: 2023, MontoCalculado: 975000,  FechaPago: '2023-12-12', Estado: 1, idUsuario: 1 },
-  ];
+  ngOnInit(): void {
+    this.cargarTodo();
+  }
 
-  // ── Computed ──
-  get filteredAguinaldos(): Aguinaldo[] {
-    const q = this.searchQuery.toLowerCase();
-    return this.aguinaldos.filter(a => {
-      const txt = `${a.IdAguinaldo} ${this.empName(a.IdEmpleado)} ${a.Periodo}`.toLowerCase();
-      const estadoOk  = this.estadoFilter  === '' || a.Estado === +this.estadoFilter;
-      const periodoOk = !this.periodoFilter || a.Periodo === +this.periodoFilter;
-      return (!q || txt.includes(q)) && estadoOk && periodoOk;
+  cargarTodo(): void {
+    this.getEmpleados();
+    this.getUsuarios();
+    this.getAguinaldos();
+  }
+
+  getAguinaldos(): void {
+    this.http
+      .get<Aguinaldo[]>(`${this.AGUINALDO_URL}/listarAguinaldosVista`, { headers: this.headers })
+      .subscribe({
+        next: (data) => {
+          const lista = (data || []).map((a) => ({
+            ...a,
+            IdAguinaldo: Number(a.IdAguinaldo),
+            IdEmpleado: Number(a.IdEmpleado),
+            Periodo: Number(a.Periodo),
+            MontoCalculado: Number(a.MontoCalculado ?? 0),
+            Estado: Number(a.Estado ?? 0),
+            idUsuario: Number(a.idUsuario),
+            FechaPago: a.FechaPago ?? '',
+          }));
+          this.aguinaldos.set(lista);
+        },
+        error: (err) => console.error('Error al obtener aguinaldos:', err),
+      });
+  }
+
+  getEmpleados(): void {
+    this.http
+      .get<EmpleadoRef[]>(`${this.EMPLEADO_URL}/listarEmpleados`, { headers: this.headers })
+      .subscribe({
+        next: (data) => {
+          const lista = (data || []).map((e: any) => ({
+            ...e,
+            idEmpleado: Number(e.idEmpleado ?? e.IdEmpleado),
+          }));
+          this.empleados.set(lista);
+        },
+        error: (err) => {
+          console.error('Error al obtener empleados:', err);
+          this.empleados.set([]);
+        },
+      });
+  }
+
+getUsuarios(): void {
+  this.http
+    .get<any[]>(`${this.USUARIO_URL}/listarUsuariosCombo`, { headers: this.headers })
+    .subscribe({
+      next: (data) => {
+        const lista = (data || []).map((u: any) => ({
+          idUsuario: Number(u.idUsuario ?? u.IdUsuario),
+          Nombre: u.Nombre ?? '',
+          Apellidos: u.Apellidos ?? '',
+          NombreCompleto:
+            u.NombreCompleto ??
+            u.nombreCompleto ??
+            `${u.Nombre ?? ''} ${u.Apellidos ?? ''}`.trim(),
+          idRol: Number(u.idRol ?? u.IdRol ?? 0),
+          correo: u.correo ?? u.Correo ?? '',
+        }));
+
+        this.usuarios.set(lista);
+      },
+      error: (err) => {
+        console.error('Error al obtener usuarios:', err);
+        this.usuarios.set([]);
+      },
     });
-  }
+}
 
-  get pageSlice(): Aguinaldo[] {
-    const start = (this.currentPage - 1) * this.perPage;
-    return this.filteredAguinaldos.slice(start, start + this.perPage);
-  }
+readonly filteredAguinaldos = computed(() => {
+  const q = this.searchQuery().toLowerCase().trim();
+  const estado = this.estadoFilter();
+  const periodo = this.periodoFilter();
 
-  get totalPages(): number[] {
-    const count = Math.ceil(this.filteredAguinaldos.length / this.perPage) || 1;
+  return this.aguinaldos().filter((a) => {
+    const texto = `${a.IdAguinaldo} ${this.empName(a.IdEmpleado)} ${a.Periodo} ${this.usuarioNombre(a.idUsuario)}`.toLowerCase();
+
+    const estadoOk = estado === '' || Number(a.Estado) === Number(estado);
+    const periodoOk = periodo === '' || Number(a.Periodo) === Number(periodo);
+
+    return (!q || texto.includes(q)) && estadoOk && periodoOk;
+  });
+});
+
+
+onSearchChange(value: string): void {
+  this.searchQuery.set(value);
+  this.filterTable();
+}
+
+onEstadoChange(value: string): void {
+  this.estadoFilter.set(value);
+  this.filterTable();
+}
+
+onPeriodoChange(value: string): void {
+  this.periodoFilter.set(value);
+  this.periodoActivo = value ? Number(value) : new Date().getFullYear();
+  this.filterTable();
+}
+
+
+
+readonly pageSlice = computed(() => {
+  const start = (this.currentPage() - 1) * this.perPage;
+  return this.filteredAguinaldos().slice(start, start + this.perPage);
+});
+
+  readonly totalPages = computed(() => {
+    const count = Math.ceil(this.filteredAguinaldos().length / this.perPage) || 1;
     return Array.from({ length: count }, (_, i) => i + 1);
-  }
-
-  // ── Helpers originales ──
-  min(a: number, b: number) { return Math.min(a, b); }
-
-  empName(id: number) { return this.empMap[id]?.nombre ?? `Empleado #${id}`; }
-
-  empInitial(id: number) {
-    const n = this.empMap[id]?.nombre;
-    if (!n) return `E${id}`;
-    const p = n.split(' ');
-    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
-  }
-
-  colorFor(id: number) { return this.COLORS[(id - 1) % this.COLORS.length]; }
-
-  fmtNum(n: number) { return Number(n).toLocaleString('es-CR'); }
-
-  fmtShort(n: number) {
-    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-    if (n >= 1_000)     return (n / 1_000).toFixed(0) + 'K';
-    return String(n);
-  }
-
-  fmtDate(d: string) {
-    if (!d) return '—';
-    const [y, m, day] = d.split('-');
-    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `${+day} ${meses[+m - 1]} ${y}`;
-  }
-
-  estadoClass(e: number) { return e === 1 ? 'status-pagado' : 'status-pendiente'; }
-
-  countByEstado(e: number) { return this.aguinaldos.filter(a => a.Estado === e).length; }
-
-  totalMontoPagado() {
-    return this.aguinaldos.filter(a => a.Estado === 1).reduce((acc, a) => acc + a.MontoCalculado, 0);
-  }
+  });
 
   periodos(): PeriodoResumen[] {
     const map = new Map<number, PeriodoResumen>();
-    for (const a of this.aguinaldos) {
-      if (!map.has(a.Periodo)) map.set(a.Periodo, { year: a.Periodo, total: 0, pagados: 0, monto: 0 });
-      const r = map.get(a.Periodo)!;
-      r.total++;
-      r.monto += a.MontoCalculado;
-      if (a.Estado === 1) r.pagados++;
+
+    for (const a of this.aguinaldos()) {
+      if (!map.has(a.Periodo)) {
+        map.set(a.Periodo, {
+          year: a.Periodo,
+          total: 0,
+          pagados: 0,
+          monto: 0,
+        });
+      }
+
+      const item = map.get(a.Periodo)!;
+      item.total += 1;
+      item.monto += Number(a.MontoCalculado ?? 0);
+
+      if (Number(a.Estado) === 1) {
+        item.pagados += 1;
+      }
     }
+
     return Array.from(map.values()).sort((a, b) => b.year - a.year);
   }
 
-  setPeriodo(year: number) {
-    this.periodoActivo = year;
-    this.periodoFilter = String(year);
-    this.filterTable();
+  min(a: number, b: number): number {
+    return Math.min(a, b);
   }
 
-  // ── Filtro / paginación ──
-  filterTable()   { this.currentPage = 1; }
-  changePage(d: number) {
-    const max = this.totalPages.length;
-    this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
+  fmtNum(n: number): string {
+    return Number(n ?? 0).toLocaleString('es-CR');
   }
-  goPage(n: number) { this.currentPage = n; }
 
-  // ── CRUD ──
-  openModal(mode: 'create' | 'edit', id?: number) {
+  fmtShort(n: number): string {
+    const val = Number(n ?? 0);
+    if (val >= 1_000_000) return (val / 1_000_000).toFixed(1) + 'M';
+    if (val >= 1_000) return (val / 1_000).toFixed(0) + 'K';
+    return String(val);
+  }
+
+  fmtDate(d: string | null): string {
+    if (!d) return '—';
+    const soloFecha = d.includes('T') ? d.split('T')[0] : d;
+    const [y, m, day] = soloFecha.split('-');
+    if (!y || !m || !day) return soloFecha;
+    const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    return `${Number(day)} ${meses[Number(m) - 1]} ${y}`;
+  }
+
+  colorFor(id: number): string {
+    const safeId = Number(id || 1);
+    return this.COLORS[(safeId - 1) % this.COLORS.length];
+  }
+
+  empName(id: number): string {
+    const aguinaldo = this.aguinaldos().find((a) => Number(a.IdEmpleado) === Number(id) && a.NombreEmpleado);
+    if (aguinaldo?.NombreEmpleado) {
+      return `${aguinaldo.NombreEmpleado}${aguinaldo.ApellidosEmpleado ? ' ' + aguinaldo.ApellidosEmpleado : ''}`;
+    }
+
+    const emp = this.empleados().find((e) => Number(e.idEmpleado) === Number(id));
+    if (emp) {
+      return `${emp.Nombre}${emp.Apellidos ? ' ' + emp.Apellidos : ''}`;
+    }
+
+    return `Empleado #${id}`;
+  }
+
+  empInitial(id: number): string {
+    const nombre = this.empName(id);
+    const partes = nombre.split(' ');
+    return (partes[0]?.[0] ?? 'E') + (partes[1]?.[0] ?? '');
+  }
+
+  empDetalle(id: number): { puesto: string; departamento: string; cedula: string } {
+    const emp = this.empleados().find((e) => Number(e.idEmpleado) === Number(id));
+    return {
+      puesto: emp?.CodigoEmpleado ? `Código ${emp.CodigoEmpleado}` : 'Sin puesto',
+      departamento: emp?.idDepartamento ? `Departamento #${emp.idDepartamento}` : 'Sin departamento',
+      cedula: emp?.Identificacion ?? '—',
+    };
+  }
+
+usuarioNombre(id: number): string {
+  const aguinaldo = this.aguinaldos().find(
+    (a) => Number(a.idUsuario) === Number(id) && a.NombreUsuario
+  );
+
+  if (aguinaldo?.NombreUsuario) {
+    return `${aguinaldo.NombreUsuario}${aguinaldo.ApellidosUsuario ? ' ' + aguinaldo.ApellidosUsuario : ''}`;
+  }
+
+  const usuario = this.usuarios().find((u) => Number(u.idUsuario) === Number(id));
+
+  if (usuario) {
+    return this.nombreCompletoUsuario(usuario);
+  }
+
+  return `Usuario #${id}`;
+}
+  nombreCompletoUsuario(u: UsuarioRef): string {
+  if (u.NombreCompleto) return u.NombreCompleto;
+
+  const nombre = `${u.Nombre ?? ''} ${u.Apellidos ?? ''}`.trim();
+
+  return nombre || `Usuario #${u.idUsuario}`;
+}
+
+  usuarioRol(id: number): string {
+    const usuario = this.usuarios().find((u) => Number(u.idUsuario) === Number(id));
+    if (!usuario?.idRol) return 'Usuario del sistema';
+
+    if (Number(usuario.idRol) === 1) return 'Administrador';
+    if (Number(usuario.idRol) === 2) return 'RRHH';
+    if (Number(usuario.idRol) === 3) return 'Supervisor';
+
+    return `Rol #${usuario.idRol}`;
+  }
+
+  usuarioInitial(id: number): string {
+    const nombre = this.usuarioNombre(id);
+    const partes = nombre.split(' ');
+    return (partes[0]?.[0] ?? 'U') + (partes[1]?.[0] ?? '');
+  }
+
+  estadoClass(e: number): string {
+    return Number(e) === 1 ? 'status-pagado' : 'status-pendiente';
+  }
+
+  countByEstado(e: number): number {
+    return this.aguinaldos().filter((a) => Number(a.Estado) === Number(e)).length;
+  }
+
+  totalMontoPagado(): number {
+    return this.aguinaldos()
+      .filter((a) => Number(a.Estado) === 1)
+      .reduce((acc, a) => acc + Number(a.MontoCalculado ?? 0), 0);
+  }
+
+setPeriodo(year: number): void {
+  this.periodoActivo = year;
+  this.periodoFilter.set(String(year));
+  this.filterTable();
+}
+ filterTable(): void {
+  this.currentPage.set(1);
+}
+
+
+readonly visiblePages = computed(() => {
+  const pages = this.totalPages();
+  const total = pages.length;
+  const current = this.currentPage();
+
+  if (total <= 7) return pages;
+
+  let start = Math.max(1, current - 3);
+  let end = Math.min(total, current + 3);
+
+  if (current <= 4) {
+    start = 1;
+    end = 7;
+  }
+
+  if (current >= total - 3) {
+    start = total - 6;
+    end = total;
+  }
+
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+});
+
+
+
+
+
+changePage(d: number): void {
+  const max = this.totalPages().length;
+  const nextPage = Math.max(1, Math.min(max, this.currentPage() + d));
+  this.currentPage.set(nextPage);
+}
+
+goPage(n: number): void {
+  this.currentPage.set(n);
+}
+  openModal(mode: 'create' | 'edit', id?: number): void {
     if (mode === 'create') {
       this.editId = null;
-      this.form = { Estado: 0, Periodo: new Date().getFullYear(), FechaPago: '', idUsuario: 1 };
+      this.form = {
+        Estado: 0,
+        Periodo: new Date().getFullYear(),
+        FechaPago: '',
+        idUsuario: 0,
+      };
     } else {
-      const a = this.aguinaldos.find(x => x.IdAguinaldo === id)!;
+      const a = this.aguinaldos().find((x) => Number(x.IdAguinaldo) === Number(id));
+      if (!a) return;
+
       this.editId = a.IdAguinaldo;
-      this.form = { ...a };
+      this.form = {
+        IdAguinaldo: a.IdAguinaldo,
+        IdEmpleado: a.IdEmpleado,
+        Periodo: a.Periodo,
+        MontoCalculado: a.MontoCalculado,
+        FechaPago: a.FechaPago ? (a.FechaPago.includes('T') ? a.FechaPago.split('T')[0] : a.FechaPago) : '',
+        Estado: a.Estado,
+        idUsuario: a.idUsuario,
+      };
     }
+
     this.showFormModal = true;
   }
 
-  saveAguinaldo() {
-    if (!this.form.IdEmpleado || !this.form.MontoCalculado || !this.form.Periodo) {
-      alert('Por favor completa empleado, período y monto.');
+  saveAguinaldo(): void {
+    if (!this.form.IdEmpleado || Number(this.form.IdEmpleado) <= 0) {
+      alert('Debes ingresar un ID de empleado válido.');
       return;
     }
-    if (this.editId) {
-      const idx = this.aguinaldos.findIndex(x => x.IdAguinaldo === this.editId);
-      this.aguinaldos[idx] = { ...this.aguinaldos[idx], ...this.form } as Aguinaldo;
-    } else {
-      const newId = Math.max(0, ...this.aguinaldos.map(x => x.IdAguinaldo)) + 1;
-      this.aguinaldos = [...this.aguinaldos, { IdAguinaldo: newId, ...this.form } as Aguinaldo];
+
+    if (!this.form.Periodo || Number(this.form.Periodo) <= 0) {
+      alert('Debes ingresar un período válido.');
+      return;
     }
-    this.showFormModal = false;
+
+    if (!this.form.MontoCalculado || Number(this.form.MontoCalculado) <= 0) {
+      alert('Debes ingresar un monto válido.');
+      return;
+    }
+
+    if (!this.form.idUsuario || Number(this.form.idUsuario) <= 0) {
+      alert('Debes ingresar un ID de usuario válido.');
+      return;
+    }
+
+    const payload = {
+      IdAguinaldo: this.editId ?? undefined,
+      IdEmpleado: Number(this.form.IdEmpleado),
+      Periodo: Number(this.form.Periodo),
+      MontoCalculado: Number(this.form.MontoCalculado),
+      FechaPago: this.form.FechaPago || null,
+      Estado: Number(this.form.Estado ?? 0),
+      idUsuario: Number(this.form.idUsuario),
+    };
+
+    if (this.editId) {
+      this.http
+        .put(`${this.AGUINALDO_URL}/actualizar`, payload, { headers: this.headers })
+        .subscribe({
+          next: () => {
+            this.getAguinaldos();
+            this.showFormModal = false;
+          },
+          error: (err) => console.error('Error al editar aguinaldo:', err),
+        });
+    } else {
+      this.http
+        .post(`${this.AGUINALDO_URL}/insertar`, payload, { headers: this.headers })
+        .subscribe({
+          next: () => {
+            this.getAguinaldos();
+            this.showFormModal = false;
+          },
+          error: (err) => console.error('Error al crear aguinaldo:', err),
+        });
+    }
   }
 
-  viewAguinaldo(id: number) {
-    this.viewedAguinaldo = this.aguinaldos.find(x => x.IdAguinaldo === id)!;
+  viewAguinaldo(id: number): void {
+    const a = this.aguinaldos().find((x) => Number(x.IdAguinaldo) === Number(id));
+    if (!a) return;
+
+    this.viewedAguinaldo = a;
     this.showViewModal = true;
   }
 
-  askDelete(id: number) {
-    const a = this.aguinaldos.find(x => x.IdAguinaldo === id)!;
+
+viewInAnotherPage(a: Aguinaldo): void {
+  localStorage.setItem('displayData', JSON.stringify({
+    titulo: 'Detalle del aguinaldo',
+    volver: '/aguinaldos',
+    datos: {
+      ID: `#${a.IdAguinaldo}`,
+      Empleado: this.empName(a.IdEmpleado),
+      'ID Empleado': `#${a.IdEmpleado}`,
+      Período: a.Periodo,
+      'Monto calculado': `₡${this.fmtNum(a.MontoCalculado)}`,
+      'Fecha de pago': a.FechaPago ? this.fmtDate(a.FechaPago) : 'Sin fecha',
+      Estado: Number(a.Estado) === 1 ? 'Pagado' : 'Pendiente',
+      'Procesado por': this.usuarioNombre(a.idUsuario)
+    }
+  }));
+
+  this.router.navigate(['/ver-datos']);
+}
+
+
+
+  askDelete(id: number): void {
+    const a = this.aguinaldos().find((x) => Number(x.IdAguinaldo) === Number(id));
+    if (!a) return;
+
     this.deleteTargetId = id;
     this.deleteDesc = `Estás a punto de eliminar el aguinaldo de ${this.empName(a.IdEmpleado)} del período ${a.Periodo} por ₡${this.fmtNum(a.MontoCalculado)}. Esta acción no se puede deshacer.`;
     this.showDeleteModal = true;
   }
 
-  confirmDelete() {
-    this.aguinaldos = this.aguinaldos.filter(x => x.IdAguinaldo !== this.deleteTargetId);
-    this.deleteTargetId = null;
-    this.showDeleteModal = false;
+  confirmDelete(): void {
+    if (!this.deleteTargetId) return;
+
+    this.http
+      .delete(`${this.AGUINALDO_URL}/eliminar?id=${this.deleteTargetId}`, { headers: this.headers })
+      .subscribe({
+        next: () => {
+          this.getAguinaldos();
+          this.deleteTargetId = null;
+          this.showDeleteModal = false;
+        },
+        error: (err) => console.error('Error al eliminar aguinaldo:', err),
+      });
   }
 
-  onOverlayClick(event: MouseEvent, modal: 'form' | 'view' | 'delete') {
+  onOverlayClick(event: MouseEvent, modal: 'form' | 'view' | 'delete'): void {
     if (event.target === event.currentTarget) {
-      if (modal === 'form')   this.showFormModal   = false;
-      if (modal === 'view')   this.showViewModal   = false;
+      if (modal === 'form') this.showFormModal = false;
+      if (modal === 'view') this.showViewModal = false;
       if (modal === 'delete') this.showDeleteModal = false;
     }
-  }
-
-  // ════════════════════════════════════════════════
-  // NUEVOS MÉTODOS — BLOQUES HIJO DEL DETALLE
-  // ════════════════════════════════════════════════
-
-  /**
-   * Bloque 2 — Empleado relacionado.
-   * Devuelve puesto, departamento y cédula para la tarjeta hijo.
-   * En producción esto viene del servicio de empleados.
-   */
-  empDetalle(id: number): { puesto: string; departamento: string; cedula: string } {
-    return this.empDetalleMap[id] ?? { puesto: '—', departamento: '—', cedula: '—' };
-  }
-
-  /**
-   * Bloque 3 — Usuario responsable.
-   * Nombre, rol e inicial para el avatar.
-   */
-  usuarioNombre(id: number): string { return this.usuarioMap[id]?.nombre ?? `Usuario #${id}`; }
-  usuarioRol(id: number):    string { return this.usuarioMap[id]?.rol    ?? '—'; }
-  usuarioInitial(id: number): string {
-    const n = this.usuarioMap[id]?.nombre;
-    if (!n) return `U${id}`;
-    const p = n.split(' ');
-    return (p[0][0] + (p[1]?.[0] ?? '')).toUpperCase();
   }
 }

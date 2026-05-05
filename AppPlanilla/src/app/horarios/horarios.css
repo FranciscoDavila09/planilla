@@ -642,3 +642,45 @@ tbody tr:last-child td {
 .av-teal {
   background: #0a7a8f;
 }
+
+
+.table-card {
+  overflow-x: auto;
+}
+
+table {
+  min-width: 980px;
+}
+
+@media (max-width: 900px) {
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .filter-select,
+  .filter-date {
+    flex: 1;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
