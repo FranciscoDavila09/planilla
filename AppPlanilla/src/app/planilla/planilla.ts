@@ -16,9 +16,10 @@ interface PlanillaData {
 
 interface UsuarioData {
   idUsuario: number;
-  NombreCompleto: string;
+  Nombre?: string;
+  Apellidos?: string;
+  NombreCompleto?: string;
 }
-
 interface DetalleEmpleado {
   idDetallePlanilla?: number;
   idEmpleado?: number;
@@ -95,6 +96,10 @@ export class Planilla implements OnInit {
       this.getPlanillas();
     });
   }
+  nombreUsuario(u: UsuarioData): string {
+  if (u.NombreCompleto) return u.NombreCompleto;
+  return `${u.Nombre || ''} ${u.Apellidos || ''}`.trim() || `Usuario #${u.idUsuario}`;
+}
 
   getUsuarios(): void {
     this.http.get<UsuarioData[]>(`${this.USUARIO_URL}/listarUsuarios`).subscribe({
@@ -154,10 +159,10 @@ export class Planilla implements OnInit {
     return periodo ? periodo.NombrePeriodo : '';
   }
 
-  obtenerNombreUsuario(idUsuario: number): string {
-    const usuario = this.usuarios().find((u) => Number(u.idUsuario) === Number(idUsuario));
-    return usuario ? usuario.NombreCompleto : '';
-  }
+ obtenerNombreUsuario(idUsuario: number): string {
+  const usuario = this.usuarios().find((u) => Number(u.idUsuario) === Number(idUsuario));
+  return usuario ? this.nombreUsuario(usuario) : '';
+}
 
   get filteredPlanillas(): PlanillaData[] {
     const q = this.searchQuery.toLowerCase().trim();

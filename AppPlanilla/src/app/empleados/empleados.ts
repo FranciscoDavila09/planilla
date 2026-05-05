@@ -38,6 +38,8 @@ export class Empleados implements OnInit {
 
   private readonly API_URL = 'http://localhost/';
 
+  private readonly DEPARTAMENTO_URL = 'http://localhost/DepartamentoServicio/';
+
   protected readonly Empleados = signal<Empleado[]>([]);
   protected readonly departamentos = signal<Departamento[]>([]);
 
