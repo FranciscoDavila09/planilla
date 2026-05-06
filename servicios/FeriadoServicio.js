@@ -1,62 +1,70 @@
-const { ejecutarConsulta } = require("../db.js");
+const { supabase } = require("../supabase");
 
 class FeriadoServicio {
   constructor() {}
-  //Get para listar los feriados
+
+  // Listar todos los feriados
   async listarFeriados() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`feriados`");
+    const { data, error } = await supabase.from("feriados").select("*");
+
+    if (error) throw error;
+    return data;
   }
 
-  //Get para obtener feriados por el id
-
+  // Obtener feriado por ID
   async obtenerPorId(id) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`feriados` WHERE `IdFeriado` = ?",
-      [id],
-    );
+    const { data, error } = await supabase
+      .from("feriados")
+      .select("*")
+      .eq("id_feriado", id)
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
-  //Insertar datos
-
+  // Insertar un feriado
   async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.feriados
-(Fecha, Nombre, EsObligatorio) VALUES 
-(?, ?, ?)
-    `;
+    const { data, error } = await supabase
+      .from("feriados")
+      .insert({
+        fecha: datos.Fecha,
+        nombre: datos.Nombre,
+        es_obligatorio: datos.EsObligatorio,
+      })
+      .select()
+      .single();
 
-    const parametros = [datos.Fecha, datos.Nombre, datos.EsObligatorio];
-
-    return await ejecutarConsulta(sql, parametros);
+    if (error) throw error;
+    return data;
   }
 
-  //Actualizar datos
-
+  // Actualizar un feriado
   async actualizar(datos) {
-    const sql = `
-  UPDATE dbplanilla.feriados
-      SET Fecha = ?, Nombre = ?, EsObligatorio = ?
-      WHERE IdFeriado = ?
+    const { data, error } = await supabase
+      .from("feriados")
+      .update({
+        fecha: datos.Fecha,
+        nombre: datos.Nombre,
+        es_obligatorio: datos.EsObligatorio,
+      })
+      .eq("id_feriado", datos.IdFeriado)
+      .select()
+      .single();
 
-`;
-
-    const parametros = [
-      datos.Fecha,
-      datos.Nombre,
-      datos.EsObligatorio,
-      datos.IdFeriado,
-    ];
-
-    return await ejecutarConsulta(sql, parametros);
+    if (error) throw error;
+    return data;
   }
 
-  //eliminar datos por id
-
+  // Eliminar un feriado
   async eliminar(id) {
-    return await ejecutarConsulta(
-      "DELETE FROM dbplanilla.feriados WHERE IdFeriado = ?",
-      [id],
-    );
+    const { error } = await supabase
+      .from("feriados")
+      .delete()
+      .eq("id_feriado", id);
+
+    if (error) throw error;
+    return { mensaje: "Feriado eliminado correctamente" };
   }
 }
 

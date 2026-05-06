@@ -38,7 +38,7 @@ Origin: {{ BASE_URL }}
   "HoraEntrada": "08:00:00",
   "CuentaBancaria": 123456,
   "Salario": 450000,
-  "idDepartamento": 1,
+  "idDepartamento": 2,
   "HoraSalida": "17:00:00"
 }
 
@@ -244,8 +244,8 @@ Content-Type: application/json
 Origin: {{ BASE_URL }}
 
 {
-  "Nombre": "Finanzas",
-  "Descripcion": "Departamento de Finanzas",
+  "Nombre": "TI",
+  "Descripcion": "Departamento de TI",
   "Estado": 1
 }
 

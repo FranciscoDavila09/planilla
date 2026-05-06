@@ -1,139 +1,147 @@
-const {ejecutarConsulta} = require('../db.js');
+const { supabase } = require("../supabase");
 
 class PagoServicio {
+  constructor() {}
 
-  constructor() { };
-//Get para listar los pagos
+  // Listar todos los pagos
   async listarPagos() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`pagos`");
+    const { data, error } = await supabase.from("pagos").select("*");
+
+    if (error) throw error;
+    return data;
   }
 
-  //get para obtner los pagos con nombre del empleado y planilla y demas 
-
+  // Listar pagos con datos de empleado, planilla, usuario, feriado y deducción
   async listarPagosVista() {
-  const sql = `
-    SELECT 
-      p.IdPago,
-      p.IdPlanilla,
-      p.IdEmpleado,
-      p.MontoPagado,
-      p.MetodoPago,
-      p.ReferenciaPago,
-      p.IdUsuarioProcesa,
-      p.FechaPago,
-      p.Estado,
-      p.idFeriados,
-      p.idDeduccion,
+    const { data, error } = await supabase
+      .from("pagos")
+      .select(
+        `
+                id_pago,
+                id_planilla,
+                id_empleado,
+                monto_pagado,
+                metodo_pago,
+                referencia_pago,
+                id_usuario_procesa,
+                fecha_pago,
+                estado,
+                id_feriados,
+                id_deduccion,
+                empleados (
+                    nombre,
+                    apellidos,
+                    codigo_empleado
+                ),
+                planillas (
+                    estado_planilla
+                ),
+                usuarios (
+                    nombre,
+                    apellidos
+                ),
+                feriados (
+                    nombre
+                ),
+                deducciones (
+                    nombre
+                )
+            `,
+      )
+      .order("id_pago", { ascending: false });
 
-      e.Nombre AS NombreEmpleado,
-      e.Apellidos AS ApellidosEmpleado,
-      e.CodigoEmpleado,
+    if (error) throw error;
 
-      pl.EstadoPlanilla,
+    // Aplanar la respuesta para mantener el mismo formato que antes
+    return data.map((p) => ({
+      id_pago: p.id_pago,
+      id_planilla: p.id_planilla,
+      id_empleado: p.id_empleado,
+      monto_pagado: p.monto_pagado,
+      metodo_pago: p.metodo_pago,
+      referencia_pago: p.referencia_pago,
+      id_usuario_procesa: p.id_usuario_procesa,
+      fecha_pago: p.fecha_pago,
+      estado: p.estado,
+      id_feriados: p.id_feriados,
+      id_deduccion: p.id_deduccion,
+      nombre_empleado: p.empleados?.nombre,
+      apellidos_empleado: p.empleados?.apellidos,
+      codigo_empleado: p.empleados?.codigo_empleado,
+      estado_planilla: p.planillas?.estado_planilla,
+      nombre_usuario_procesa: p.usuarios?.nombre,
+      apellidos_usuario_procesa: p.usuarios?.apellidos,
+      nombre_feriado: p.feriados?.nombre,
+      nombre_deduccion: p.deducciones?.nombre,
+    }));
+  }
 
-      u.Nombre AS NombreUsuarioProcesa,
-      u.Apellidos AS ApellidosUsuarioProcesa,
+  // Obtener pago por ID
+  async obtenerPorId(id) {
+    const { data, error } = await supabase
+      .from("pagos")
+      .select("*")
+      .eq("id_pago", id)
+      .single();
 
-      f.Nombre AS NombreFeriado,
+    if (error) throw error;
+    return data;
+  }
 
-      d.Nombre AS NombreDeduccion
-    FROM dbplanilla.pagos p
-    LEFT JOIN dbplanilla.empleados e
-      ON p.IdEmpleado = e.idEmpleado
-    LEFT JOIN dbplanilla.planillas pl
-      ON p.IdPlanilla = pl.idPlanillas
-    LEFT JOIN dbplanilla.usuarios u
-      ON p.IdUsuarioProcesa = u.idUsuario
-    LEFT JOIN dbplanilla.feriados f
-      ON p.idFeriados = f.IdFeriado
-    LEFT JOIN dbplanilla.deducciones d
-      ON p.idDeduccion = d.idDeducciones
-    ORDER BY p.IdPago DESC
-  `;
+  // Insertar un pago
+  async insertar(datos) {
+    const { data, error } = await supabase
+      .from("pagos")
+      .insert({
+        id_planilla: datos.IdPlanilla,
+        id_empleado: datos.IdEmpleado,
+        monto_pagado: datos.MontoPagado,
+        metodo_pago: datos.MetodoPago,
+        referencia_pago: datos.ReferenciaPago,
+        id_usuario_procesa: datos.IdUsuarioProcesa,
+        fecha_pago: datos.FechaPago,
+        estado: datos.Estado,
+        id_feriados: datos.idFeriados,
+        id_deduccion: datos.idDeduccion,
+      })
+      .select()
+      .single();
 
-  return await ejecutarConsulta(sql);
-}
+    if (error) throw error;
+    return data;
+  }
 
+  // Actualizar un pago
+  async actualizar(datos) {
+    const { data, error } = await supabase
+      .from("pagos")
+      .update({
+        id_planilla: datos.IdPlanilla,
+        id_empleado: datos.IdEmpleado,
+        monto_pagado: datos.MontoPagado,
+        metodo_pago: datos.MetodoPago,
+        referencia_pago: datos.ReferenciaPago,
+        id_usuario_procesa: datos.IdUsuarioProcesa,
+        fecha_pago: datos.FechaPago,
+        estado: datos.Estado,
+        id_feriados: datos.idFeriados,
+        id_deduccion: datos.idDeduccion,
+      })
+      .eq("id_pago", datos.IdPago)
+      .select()
+      .single();
 
-  //Get para obtener pagos por el id 
+    if (error) throw error;
+    return data;
+  }
 
-    async obtenerPorId(id) {
-        return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`pagos` WHERE `IdPago` = ?",
-             [id]);
+  // Eliminar un pago
+  async eliminar(id) {
+    const { error } = await supabase.from("pagos").delete().eq("id_pago", id);
 
-    }
-
-    //Insertar datos 
-
-async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.pagos
-(IdPlanilla, IdEmpleado, MontoPagado, MetodoPago, ReferenciaPago, IdUsuarioProcesa,
- FechaPago, Estado, idFeriados, idDeduccion) VALUES 
-(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-const parametros = [
-datos.IdPlanilla,
-datos.IdEmpleado,
-datos.MontoPagado,
-datos.MetodoPago,
-datos.ReferenciaPago,
-datos.IdUsuarioProcesa,
-datos.FechaPago,
-datos.Estado,
-datos.idFeriados,
-datos.idDeduccion
-];
-
-return await ejecutarConsulta(sql, parametros);
-
-}
-
-
-//Actualizar datos
-
-async actualizar(datos) {
-
-const sql = `
-  UPDATE dbplanilla.pagos
-      SET IdPlanilla = ?, IdEmpleado = ?, MontoPagado = ?, MetodoPago = ?, ReferenciaPago = ?, IdUsuarioProcesa = ?, FechaPago = ?, Estado = ?, idFeriados = ?, idDeduccion = ?
-      WHERE IdPago = ?
-
-`;
-
-const parametros = [
-
-datos.IdPlanilla,
-datos.IdEmpleado,
-datos.MontoPagado,
-datos.MetodoPago,
-datos.ReferenciaPago,
-datos.IdUsuarioProcesa,
-datos.FechaPago,
-datos.Estado,
-datos.idFeriados,
-datos.idDeduccion,
-datos.IdPago
-];
-
-return await ejecutarConsulta(sql, parametros);
-
-}
-
-
-//eliminar datos por id
-
-async eliminar(id) {
-
-return await ejecutarConsulta("DELETE FROM dbplanilla.pagos WHERE IdPago = ?", [id]);
-
-
-}
-
-
-
-
+    if (error) throw error;
+    return { mensaje: "Pago eliminado correctamente" };
+  }
 }
 
 module.exports = new PagoServicio();

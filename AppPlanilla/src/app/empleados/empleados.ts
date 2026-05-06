@@ -37,7 +37,6 @@ export class Empleados implements OnInit {
   private readonly router = inject(Router);
 
   private readonly API_URL = 'http://localhost/';
-
   private readonly DEPARTAMENTO_URL = 'http://localhost/DepartamentoServicio/';
 
   protected readonly Empleados = signal<Empleado[]>([]);
@@ -72,23 +71,36 @@ export class Empleados implements OnInit {
 
   // ── HTTP ──
   getEmpleados(): void {
-    this.http.get<Empleado[]>(`${this.API_URL}EmpleadoServicio/listarEmpleados`).subscribe({
+    this.http.get<any[]>(`${this.API_URL}EmpleadoServicio/listarEmpleados`).subscribe({
       next: (data) => {
-        console.log('EMPLEADOS:', data);
-        this.Empleados.set(data);
+        const normalizados = data.map((e: any) => ({
+          idEmpleado:     e.idEmpleado     ?? e.id_empleado,
+          CodigoEmpleado: e.CodigoEmpleado ?? e.codigo_empleado,
+          Nombre:         e.Nombre         ?? e.nombre,
+          Apellidos:      e.Apellidos      ?? e.apellidos,
+          Identificacion: e.Identificacion ?? e.identificacion,
+          Correo:         e.Correo         ?? e.correo,
+          Telefono:       e.Telefono       ?? e.telefono,
+          FechaIngreso:   e.FechaIngreso   ?? e.fecha_ingreso,
+          Estado:         e.Estado         ?? e.estado,
+          HoraEntrada:    e.HoraEntrada    ?? e.hora_entrada,
+          CuentaBancaria: e.CuentaBancaria ?? e.cuenta_bancaria,
+          Salario:        e.Salario        ?? e.salario,
+          idDepartamento: e.idDepartamento ?? e.id_departamento,
+          HoraSalida:     e.HoraSalida     ?? e.hora_salida,
+        }));
+        console.log('EMPLEADOS:', normalizados);
+        this.Empleados.set(normalizados);
       },
       error: (err) => console.error('Error empleados:', err)
     });
   }
 
   getDepartamentos(): void {
-    this.http.get<any>(`${this.API_URL}DepartamentoServicio/listar`).subscribe({
+    this.http.get<any>(`${this.API_URL}DepartamentoServicio/listarDepartamentos`).subscribe({
       next: (data) => {
-        console.log('DEPARTAMENTOS RAW:', data);
+        let lista: any[] = [];
 
-        let lista: Departamento[] = [];
-
-        // 🔥 Soporta diferentes formatos de backend
         if (Array.isArray(data)) {
           lista = data;
         } else if (data.data) {
@@ -97,24 +109,21 @@ export class Empleados implements OnInit {
           lista = data.result;
         }
 
-        // 🔥 Normalizar nombres de propiedades
         const normalizados = lista.map((d: any) => ({
-          idDepartamento: Number(d.idDepartamento ?? d.Id ?? d.ID),
-          Nombre: d.Nombre ?? d.NombreDepartamento ?? 'Sin nombre'
+          idDepartamento: Number(d.idDepartamento ?? d.id_departamento ?? d.Id ?? d.ID),
+          Nombre: d.Nombre ?? d.nombre ?? d.NombreDepartamento ?? 'Sin nombre'
         }));
 
-        console.log('DEPARTAMENTOS NORMALIZADOS:', normalizados);
-
+        console.log('DEPARTAMENTOS:', normalizados);
         this.departamentos.set(normalizados);
       },
       error: (err) => console.error('Error departamentos:', err)
     });
   }
 
-  // ── 🔥 CLAVE ──
+  // ── Helpers ──
   deptName(id: number): string {
     if (!id) return 'Sin departamento';
-
     const dept = this.departamentos().find(d => Number(d.idDepartamento) === Number(id));
     return dept ? dept.Nombre : 'Sin departamento';
   }
@@ -144,11 +153,9 @@ export class Empleados implements OnInit {
 
     let start = Math.max(1, current - 2);
     let end = Math.min(total, start + 4);
-
     if (end - start < 4) start = Math.max(1, end - 4);
 
     for (let i = start; i <= end; i++) pages.push(i);
-
     return pages;
   }
 
@@ -156,9 +163,7 @@ export class Empleados implements OnInit {
     return Math.ceil(this.filteredEmployees.length / this.perPage) || 1;
   }
 
-  min(a: number, b: number) {
-    return Math.min(a, b);
-  }
+  min(a: number, b: number) { return Math.min(a, b); }
 
   initials(e: Empleado) {
     return ((e.Nombre?.[0] ?? '?') + (e.Apellidos?.[0] ?? '?')).toUpperCase();
@@ -179,31 +184,19 @@ export class Empleados implements OnInit {
     return y && m && day ? `${day}/${m}/${y}` : fecha;
   }
 
-  estadoLabel(e: number) {
-    return Number(e) === 1 ? 'Activo' : 'Inactivo';
-  }
-
-  statusClass(e: number) {
-    return Number(e) === 1 ? 'status-active' : 'status-inactive';
-  }
-
-  countByStatus(s: number) {
-    return this.Empleados().filter(e => e.Estado === s).length;
-  }
+  estadoLabel(e: number) { return Number(e) === 1 ? 'Activo' : 'Inactivo'; }
+  statusClass(e: number) { return Number(e) === 1 ? 'status-active' : 'status-inactive'; }
+  countByStatus(s: number) { return this.Empleados().filter(e => e.Estado === s).length; }
 
   // ── UI ──
-  filterTable() {
-    this.currentPage = 1;
-  }
+  filterTable() { this.currentPage = 1; }
 
   changePage(d: number) {
     const max = this.totalCount();
     this.currentPage = Math.max(1, Math.min(max, this.currentPage + d));
   }
 
-  goPage(n: number) {
-    this.currentPage = n;
-  }
+  goPage(n: number) { this.currentPage = n; }
 
   // ── CRUD ──
   openModal(mode: 'create' | 'edit', id?: number) {
@@ -233,7 +226,6 @@ export class Empleados implements OnInit {
   }
 
   saveEmployee() {
-    // 🔥 VALIDACIÓN CLAVE
     if (!this.form.idDepartamento || this.form.idDepartamento === 0) {
       alert('Debe seleccionar un departamento');
       return;
@@ -272,7 +264,6 @@ export class Empleados implements OnInit {
         Estado: this.estadoLabel(e.Estado)
       }
     }));
-
     this.router.navigate(['/ver-datos']);
   }
 

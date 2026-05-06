@@ -1,41 +1,71 @@
-const { ejecutarConsulta } = require("../db.js");
+const { supabase } = require("../supabase");
 
 class RolesServicio {
   constructor() {}
 
-    async listarRoles() {
-        const consulta = "SELECT * FROM roles";
-        return await ejecutarConsulta(consulta);
-    }
+  // Listar todos los roles
+  async listarRoles() {
+    const { data, error } = await supabase.from("roles").select("*");
 
-    async obtenerPorId(id) {
-        const consulta = "SELECT * FROM roles WHERE IdRol = ?";
-        return await ejecutarConsulta(consulta, [id]);
-    }
+    if (error) throw error;
+    return data;
+  }
 
-    async insertar(datos) {
-        const consulta = "INSERT INTO roles (Nombre, Descripcion, Estado) VALUES (?, ?, ?)";
-        const parametros = 
-        [datos.Nombre, 
-        datos.Descripcion, 
-        datos.Estado];
-        return await ejecutarConsulta(consulta, parametros);
-    }
+  // Obtener rol por ID
+  async obtenerPorId(id) {
+    const { data, error } = await supabase
+      .from("roles")
+      .select("*")
+      .eq("id_rol", id)
+      .single();
 
-    async actualizar(datos) {
-        const consulta = "UPDATE roles SET Nombre = ?, Descripcion = ?, Estado = ? WHERE IdRol = ?";
-        const parametros = 
-        [datos.Nombre, 
-        datos.Descripcion, 
-        datos.Estado,
-        datos.IdRol];
-        return await ejecutarConsulta(consulta, parametros);
-    }
+    if (error) throw error;
+    return data;
+  }
 
-    async eliminar(id) {
-        const consulta = "DELETE FROM roles WHERE IdRol = ?";
-        return await ejecutarConsulta(consulta, [id]);
-    }
+  // Insertar un rol
+  async insertar(datos) {
+    const { data, error } = await supabase
+      .from("roles")
+      .insert({
+        nombre: datos.Nombre,
+        descripcion: datos.Descripcion,
+        estado: datos.Estado,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Actualizar un rol
+  async actualizar(datos) {
+    const { data, error } = await supabase
+      .from("roles")
+      .update({
+        nombre: datos.Nombre,
+        descripcion: datos.Descripcion,
+        estado: datos.Estado,
+      })
+      .eq("id_rol", datos.idRol)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Eliminar un rol
+  async eliminar(id) {
+    const { error } = await supabase
+      .from("roles")
+      .delete()
+      .eq("id_rol", id);
+
+    if (error) throw error;
+    return { mensaje: "Rol eliminado correctamente" };
+  }
 }
 
 module.exports = new RolesServicio();

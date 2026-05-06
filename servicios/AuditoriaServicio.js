@@ -1,53 +1,78 @@
-const { ejecutarConsulta } = require("../db.js");
+const { supabase } = require("../supabase");
 
 class AuditoriaServicio {
   constructor() {}
 
-  //Listar todos los registros de auditoría (solo lectura)
+  // Listar todos los registros de auditoría
   async listarAuditoria() {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`auditoria` ORDER BY fecha DESC",
-    );
+    const { data, error } = await supabase
+      .from("auditoria")
+      .select("*")
+      .order("fecha", { ascending: false });
+
+    if (error) throw error;
+    return data;
   }
 
-  //Obtener auditoría por ID (solo lectura)
+  // Obtener auditoría por ID
   async obtenerPorId(id) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`auditoria` WHERE `idAuditoria` = ?",
-      [id],
-    );
+    const { data, error } = await supabase
+      .from("auditoria")
+      .select("*")
+      .eq("id_auditoria", id)
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
-  //Obtener auditoría por tabla (solo lectura)
+  // Obtener auditoría por tabla afectada
   async obtenerPorTabla(tabla) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`auditoria` WHERE `tabla_afectada` = ? ORDER BY fecha DESC",
-      [tabla],
-    );
+    const { data, error } = await supabase
+      .from("auditoria")
+      .select("*")
+      .eq("tabla_afectada", tabla)
+      .order("fecha", { ascending: false });
+
+    if (error) throw error;
+    return data;
   }
 
-  //Obtener auditoría por tipo de acción (solo lectura)
+  // Obtener auditoría por tipo de acción (INSERT, UPDATE, DELETE)
   async obtenerPorAccion(accion) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`auditoria` WHERE `accion` = ? ORDER BY fecha DESC",
-      [accion],
-    );
+    const { data, error } = await supabase
+      .from("auditoria")
+      .select("*")
+      .eq("accion", accion)
+      .order("fecha", { ascending: false });
+
+    if (error) throw error;
+    return data;
   }
 
-  //Obtener auditoría por usuario (solo lectura)
+  // Obtener auditoría por usuario
   async obtenerPorUsuario(usuario) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`auditoria` WHERE `usuario` = ? ORDER BY fecha DESC",
-      [usuario],
-    );
+    const { data, error } = await supabase
+      .from("auditoria")
+      .select("*")
+      .eq("usuario", usuario)
+      .order("fecha", { ascending: false });
+
+    if (error) throw error;
+    return data;
   }
 
-  //Obtener auditoría por rango de fechas (solo lectura)
+  // Obtener auditoría por rango de fechas
   async obtenerPorFechas(fechaInicio, fechaFin) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`auditoria` WHERE `fecha` BETWEEN ? AND ? ORDER BY fecha DESC",
-      [fechaInicio, fechaFin],
-    );
+    const { data, error } = await supabase
+      .from("auditoria")
+      .select("*")
+      .gte("fecha", fechaInicio)
+      .lte("fecha", fechaFin)
+      .order("fecha", { ascending: false });
+
+    if (error) throw error;
+    return data;
   }
 }
 

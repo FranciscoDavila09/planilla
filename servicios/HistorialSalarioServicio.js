@@ -1,63 +1,78 @@
-const { ejecutarConsulta } = require('../db.js');
+const { supabase } = require("../supabase");
 
 class HistorialSalarioServicio {
   constructor() {}
 
+  // Listar todo el historial de salarios
   async listarHistorialSalario() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`historialsalarios`");
+    const { data, error } = await supabase
+      .from("historialsalarios")
+      .select("*");
+
+    if (error) throw error;
+    return data;
   }
 
+  // Obtener historial por ID
   async obtenerPorId(id) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`historialsalarios` WHERE `idHistorialSalarios` = ?",
-      [id]
-    );
+    const { data, error } = await supabase
+      .from("historialsalarios")
+      .select("*")
+      .eq("id_historial_salarios", id)
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
+  // Insertar un registro de historial
   async insertar(datos) {
-    const sql = `
-      INSERT INTO \`dbplanilla\`.\`historialsalarios\`
-      (MontoSalario, FechaInicio, FechaFin, MotivoCambio, idUsuarios, idEmpleados)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
+    const { data, error } = await supabase
+      .from("historialsalarios")
+      .insert({
+        monto_salario: datos.MontoSalario,
+        fecha_inicio: datos.FechaInicio,
+        fecha_fin: datos.FechaFin,
+        motivo_cambio: datos.MotivoCambio,
+        id_usuarios: datos.idUsuarios,
+        id_empleados: datos.idEmpleados,
+      })
+      .select()
+      .single();
 
-    const parametros = [
-      datos.MontoSalario,
-      datos.FechaInicio,
-      datos.FechaFin,
-      datos.MotivoCambio,
-      datos.idUsuarios,
-      datos.idEmpleados
-    ];
-
-    return await ejecutarConsulta(sql, parametros);
+    if (error) throw error;
+    return data;
   }
 
+  // Actualizar un registro de historial
   async actualizar(datos) {
-    const sql = `
-      UPDATE \`dbplanilla\`.\`historialsalarios\`
-      SET MontoSalario = ?, FechaInicio = ?, FechaFin = ?, MotivoCambio = ?, idUsuarios = ?, idEmpleados = ?
-      WHERE idHistorialSalarios = ?
-    `;
+    const { data, error } = await supabase
+      .from("historialsalarios")
+      .update({
+        monto_salario: datos.MontoSalario,
+        fecha_inicio: datos.FechaInicio,
+        fecha_fin: datos.FechaFin,
+        motivo_cambio: datos.MotivoCambio,
+        id_usuarios: datos.idUsuarios,
+        id_empleados: datos.idEmpleados,
+      })
+      .eq("id_historial_salarios", datos.idHistorialSalarios)
+      .select()
+      .single();
 
-    const parametros = [
-      datos.MontoSalario,
-      datos.FechaInicio,
-      datos.FechaFin,
-      datos.MotivoCambio,
-      datos.idUsuarios,
-      datos.idEmpleados,
-      datos.idHistorialSalarios
-    ];
-
-    return await ejecutarConsulta(sql, parametros);
+    if (error) throw error;
+    return data;
   }
 
+  // Eliminar un registro de historial
   async eliminar(id) {
-    return await ejecutarConsulta(
-      "DELETE FROM `dbplanilla`.`historialsalarios` WHERE idHistorialSalarios = ?",
-      [id]
-    );
+    const { error } = await supabase
+      .from("historialsalarios")
+      .delete()
+      .eq("id_historial_salarios", id);
+
+    if (error) throw error;
+    return { mensaje: "Historial de salario eliminado correctamente" };
   }
 }
 

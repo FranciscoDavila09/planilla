@@ -1,66 +1,80 @@
-const { ejecutarConsulta } = require("../db.js");
+const { supabase } = require('../supabase');
 
 class ControlAsistenciaServicio {
-  constructor() {}
+    constructor() { }
 
-async listarControlAsistencia() {
-  return await ejecutarConsulta(`
-    SELECT *
-    FROM dbplanilla.controlasistencia
-    ORDER BY idControlAsistencia DESC
-  `);
-}
+    // Listar todos los registros de asistencia
+    async listarControlAsistencia() {
+        const { data, error } = await supabase
+            .from('controlasistencia')
+            .select('*')
+            .order('id_control_asistencia', { ascending: false });
 
-  async obtenerPorId(id) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`controlasistencia` WHERE `idControlAsistencia` = ?",
-      [id],
-    );
-  }
+        if (error) throw error;
+        return data;
+    }
 
-async insertar(datos) {
-  const sql = `
-    INSERT INTO dbplanilla.controlasistencia
-    (\`HoraEntrada\`, \`HoraSalida\`, \`idEmpleados\`, \`idUsuarios\`, \`Fecha\`)
-    VALUES (?, ?, ?, ?, ?)
-  `;
+    // Obtener registro por ID
+    async obtenerPorId(id) {
+        const { data, error } = await supabase
+            .from('controlasistencia')
+            .select('*')
+            .eq('id_control_asistencia', id)
+            .single();
 
-  const parametros = [
-    datos.HoraEntrada,
-    datos.HoraSalida,
-    datos.idEmpleados,
-    datos.idUsuarios,
-    datos.Fecha,
-  ];
+        if (error) throw error;
+        return data;
+    }
 
-  console.log("PARAMETROS INSERT:", parametros);
+    // Insertar registro de asistencia
+    async insertar(datos) {
+        console.log("PARAMETROS INSERT:", datos);
 
-  return await ejecutarConsulta(sql, parametros);
-}
+        const { data, error } = await supabase
+            .from('controlasistencia')
+            .insert({
+                hora_entrada: datos.HoraEntrada,
+                hora_salida:  datos.HoraSalida,
+                id_empleados: datos.idEmpleados,
+                id_usuarios:  datos.idUsuarios,
+                fecha:        datos.Fecha,
+            })
+            .select()
+            .single();
 
-  async actualizar(datos) {
-    const sql = `
-  UPDATE dbplanilla.controlasistencia
-      SET HoraEntrada = ?, HoraSalida = ?, idEmpleados = ?, idUsuarios = ?,Fecha=?
-      WHERE idControlAsistencia = ?
-`;
-    const parametros = [
-      datos.HoraEntrada,
-      datos.HoraSalida,
-      datos.idEmpleados,
-      datos.idUsuarios,
-      datos.Fecha, // ✅ ahora sí en su lugar
-      datos.idControlAsistencia, // ✅ para el WHERE
-    ];
-    return await ejecutarConsulta(sql, parametros);
-  }
+        if (error) throw error;
+        return data;
+    }
 
-  async eliminar(id) {
-    return await ejecutarConsulta(
-      "DELETE FROM dbplanilla.controlasistencia WHERE idControlAsistencia = ?",
-      [id],
-    );
-  }
+    // Actualizar registro de asistencia
+    async actualizar(datos) {
+        const { data, error } = await supabase
+            .from('controlasistencia')
+            .update({
+                hora_entrada: datos.HoraEntrada,
+                hora_salida:  datos.HoraSalida,
+                id_empleados: datos.idEmpleados,
+                id_usuarios:  datos.idUsuarios,
+                fecha:        datos.Fecha,
+            })
+            .eq('id_control_asistencia', datos.idControlAsistencia)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
+
+    // Eliminar registro de asistencia
+    async eliminar(id) {
+        const { error } = await supabase
+            .from('controlasistencia')
+            .delete()
+            .eq('id_control_asistencia', id);
+
+        if (error) throw error;
+        return { mensaje: 'Registro de asistencia eliminado correctamente' };
+    }
 }
 
 module.exports = new ControlAsistenciaServicio();

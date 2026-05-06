@@ -1,69 +1,81 @@
-const {ejecutarConsulta} = require('../db.js');
+const { supabase } = require('../supabase');
 
 class ContratoServicio {
-    constructor() { };
+    constructor() { }
 
-//Get para listar los contratos
-async listarContratos() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`contratos`");
-}
+    // Listar todos los contratos
+    async listarContratos() {
+        const { data, error } = await supabase
+            .from('contratos')
+            .select('*');
 
-//Get para obtener contratos por el id
-async obtenerPorId(id) {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`contratos` WHERE `IdContrato` = ?",
-         [id]);
+        if (error) throw error;
+        return data;
     }
 
-//Insertar datos
-async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.contratos
-(IdEmpleado, TipoContrato, FechaInicio, FechaFin, SalarioPactado, Estado, usuarioId) VALUES 
-(?, ?, ?, ?, ?, ?, ?)
-    `;
+    // Obtener contrato por ID
+    async obtenerPorId(id) {
+        const { data, error } = await supabase
+            .from('contratos')
+            .select('*')
+            .eq('id_contrato', id)
+            .single();
 
-const parametros = [
-datos.IdEmpleado,
-datos.TipoContrato,
-datos.FechaInicio,
-datos.FechaFin,
-datos.SalarioPactado,
-datos.Estado,
-datos.usuarioId
-];
+        if (error) throw error;
+        return data;
+    }
 
-return await ejecutarConsulta(sql, parametros);
+    // Insertar un contrato
+    async insertar(datos) {
+        const { data, error } = await supabase
+            .from('contratos')
+            .insert({
+                id_empleado:     datos.IdEmpleado,
+                tipo_contrato:   datos.TipoContrato,
+                fecha_inicio:    datos.FechaInicio,
+                fecha_fin:       datos.FechaFin,
+                salario_pactado: datos.SalarioPactado,
+                estado:          datos.Estado,
+                id_usuario:      datos.usuarioId,
+            })
+            .select()
+            .single();
 
-}
+        if (error) throw error;
+        return data;
+    }
 
-//Actualizar datos
-async actualizar(datos) {
-    const sql = `
-    UPDATE dbplanilla.contratos SET 
-    IdEmpleado = ?, TipoContrato = ?, FechaInicio = ?, FechaFin = ?, SalarioPactado = ?, Estado = ?, usuarioId = ? WHERE IdContrato = ?
-    `;
-    const parametros = [
-        datos.IdEmpleado,
-        datos.TipoContrato,
-        datos.FechaInicio,
-        datos.FechaFin,
-        datos.SalarioPactado,
-        datos.Estado,
-        datos.usuarioId,
-        datos.IdContrato
-    ];
-    return await ejecutarConsulta(sql, parametros);
-}
+    // Actualizar un contrato
+    async actualizar(datos) {
+        const { data, error } = await supabase
+            .from('contratos')
+            .update({
+                id_empleado:     datos.IdEmpleado,
+                tipo_contrato:   datos.TipoContrato,
+                fecha_inicio:    datos.FechaInicio,
+                fecha_fin:       datos.FechaFin,
+                salario_pactado: datos.SalarioPactado,
+                estado:          datos.Estado,
+                id_usuario:      datos.usuarioId,
+            })
+            .eq('id_contrato', datos.IdContrato)
+            .select()
+            .single();
 
-//Eliminar datos
-async eliminar(id) {
-    const sql = `
-    DELETE FROM dbplanilla.contratos WHERE IdContrato = ?
-    `;
-    return await ejecutarConsulta(sql, [id]);
-}
+        if (error) throw error;
+        return data;
+    }
 
- 
+    // Eliminar un contrato
+    async eliminar(id) {
+        const { error } = await supabase
+            .from('contratos')
+            .delete()
+            .eq('id_contrato', id);
+
+        if (error) throw error;
+        return { mensaje: 'Contrato eliminado correctamente' };
+    }
 }
 
 module.exports = new ContratoServicio();

@@ -1,65 +1,83 @@
-const {ejecutarConsulta} = require('../db.js');
+const { supabase } = require('../supabase');
+
 class ControlHorarioServicio {
+    constructor() { }
 
-  constructor() { };
-
+    // Listar todos los registros de control horario
     async listarControlHorario() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`controlhorarios`");
-  }
+        const { data, error } = await supabase
+            .from('controlhorarios')
+            .select('*');
 
+        if (error) throw error;
+        return data;
+    }
+
+    // Obtener registro por ID
     async obtenerPorId(id) {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`controlhorarios` WHERE `IdControl` = ?",
-      [id]);
-  }
+        const { data, error } = await supabase
+            .from('controlhorarios')
+            .select('*')
+            .eq('id_control', id)
+            .single();
 
-  async insertar(datos) {
-  const sql = `
-    INSERT INTO dbplanilla.controlhorarios
-    (IdEmpleado, Fecha, HoraEntrada, HoraSalida, HorasNormales, HorasExtra, Estado, idUsuarios)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+        if (error) throw error;
+        return data;
+    }
 
-  const parametros = [
-    datos.IdEmpleado,
-    datos.Fecha,
-    datos.HoraEntrada,
-    datos.HoraSalida,
-    datos.HorasNormales,
-    datos.HorasExtra,
-    datos.Estado,
-    datos.idUsuarios
-  ];
+    // Insertar registro de control horario
+    async insertar(datos) {
+        const { data, error } = await supabase
+            .from('controlhorarios')
+            .insert({
+                id_empleado:    datos.IdEmpleado,
+                fecha:          datos.Fecha,
+                hora_entrada:   datos.HoraEntrada,
+                hora_salida:    datos.HoraSalida,
+                horas_normales: datos.HorasNormales,
+                horas_extra:    datos.HorasExtra,
+                estado:         datos.Estado,
+                id_usuarios:    datos.idUsuarios,
+            })
+            .select()
+            .single();
 
-  return await ejecutarConsulta(sql, parametros);
+        if (error) throw error;
+        return data;
+    }
+
+    // Actualizar registro de control horario
+    async actualizar(datos) {
+        const { data, error } = await supabase
+            .from('controlhorarios')
+            .update({
+                id_empleado:    datos.IdEmpleado,
+                fecha:          datos.Fecha,
+                hora_entrada:   datos.HoraEntrada,
+                hora_salida:    datos.HoraSalida,
+                horas_normales: datos.HorasNormales,
+                horas_extra:    datos.HorasExtra,
+                estado:         datos.Estado,
+                id_usuarios:    datos.idUsuarios,
+            })
+            .eq('id_control', datos.IdControl)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
+
+    // Eliminar registro de control horario
+    async eliminar(id) {
+        const { error } = await supabase
+            .from('controlhorarios')
+            .delete()
+            .eq('id_control', id);
+
+        if (error) throw error;
+        return { mensaje: 'Registro de horario eliminado correctamente' };
+    }
 }
 
-async actualizar(datos) {
-  const sql = `
-    UPDATE dbplanilla.controlhorarios
-    SET IdEmpleado = ?, Fecha = ?, HoraEntrada = ?, HoraSalida = ?, HorasNormales = ?, HorasExtra = ?, Estado = ?, idUsuarios = ?
-    WHERE IdControl = ?
-  `;
-
-  const parametros = [
-    datos.IdEmpleado,
-    datos.Fecha,
-    datos.HoraEntrada,
-    datos.HoraSalida,
-    datos.HorasNormales,
-    datos.HorasExtra,
-    datos.Estado,
-    datos.idUsuarios,
-    datos.IdControl
-  ];
-
-  return await ejecutarConsulta(sql, parametros);
-}
-
-
-async eliminar(id) {
-    return await ejecutarConsulta("DELETE FROM dbplanilla.controlhorarios WHERE IdControl = ?",
-         [id]);
-}
-  }
-
-    module.exports =  new ControlHorarioServicio();
+module.exports = new ControlHorarioServicio();

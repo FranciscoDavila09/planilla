@@ -1,63 +1,76 @@
-const { ejecutarConsulta } = require("../db.js");
+const { supabase } = require("../supabase");
 
 class PuestosServicio {
   constructor() {}
 
+  // Listar todos los puestos
   async listarPuestos() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`puestos`");
+    const { data, error } = await supabase.from("puestos").select("*");
+
+    if (error) throw error;
+    return data;
   }
 
+  // Obtener puesto por ID
   async obtenerPorId(id) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`puestos` WHERE `IdPuestos` = ?",
-      [id],
-    );
+    const { data, error } = await supabase
+      .from("puestos")
+      .select("*")
+      .eq("id_puesto", id)
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
+  // Insertar un puesto
   async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.puestos
-(NombrePuesto, Descripcion, SalarioBase, Estado, idEmpleado, idUsuario) VALUES 
-(?, ?, ?, ?, ?, ?)
-    `;
+    const { data, error } = await supabase
+      .from("puestos")
+      .insert({
+        nombre_puesto: datos.NombrePuesto,
+        descripcion: datos.Descripcion,
+        salario_base: datos.SalarioBase,
+        estado: datos.Estado,
+        id_empleado: datos.idEmpleado,
+        id_usuario: datos.idUsuario,
+      })
+      .select()
+      .single();
 
-    const parametros = [
-      datos.NombrePuesto,
-      datos.Descripcion,
-      datos.SalarioBase,
-      datos.Estado,
-      datos.idEmpleado,
-      datos.idUsuario,
-    ];
-
-    return await ejecutarConsulta(sql, parametros);
+    if (error) throw error;
+    return data;
   }
 
+  // Actualizar un puesto
   async actualizar(datos) {
-    const sql = `
-  UPDATE dbplanilla.puestos
-      SET NombrePuesto = ?, Descripcion = ?, SalarioBase = ?, Estado = ?, idEmpleado = ?, idUsuario = ?
-      WHERE idPuestos = ?
-`;
+    const { data, error } = await supabase
+      .from("puestos")
+      .update({
+        nombre_puesto: datos.NombrePuesto,
+        descripcion: datos.Descripcion,
+        salario_base: datos.SalarioBase,
+        estado: datos.Estado,
+        id_empleado: datos.idEmpleado,
+        id_usuario: datos.idUsuario,
+      })
+      .eq("id_puesto", datos.idPuestos)
+      .select()
+      .single();
 
-    const parametros = [
-      datos.NombrePuesto,
-      datos.Descripcion,
-      datos.SalarioBase,
-      datos.Estado,
-      datos.idEmpleado,
-      datos.idUsuario,
-      datos.idPuestos,
-    ];
-
-    return await ejecutarConsulta(sql, parametros);
+    if (error) throw error;
+    return data;
   }
 
+  // Eliminar un puesto
   async eliminar(id) {
-    return await ejecutarConsulta(
-      "DELETE FROM dbplanilla.puestos WHERE IdPuestos = ?",
-      [id],
-    );
+    const { error } = await supabase
+      .from("puestos")
+      .delete()
+      .eq("id_puesto", id);
+
+    if (error) throw error;
+    return { mensaje: "Puesto eliminado correctamente" };
   }
 }
 

@@ -1,78 +1,73 @@
-const {ejecutarConsulta} = require('../db.js');
+const { supabase } = require('../supabase');
 
 class DepartamentoServicio {
+    constructor() { }
 
-  constructor() { };
-//Get para listar los departamentos
-  async listarDepartamentos() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`departamentos`");
-  }
+    // Listar todos los departamentos
+    async listarDepartamentos() {
+        const { data, error } = await supabase
+            .from('departamentos')
+            .select('*');
 
-
-  //Get para obtener departamentos por el id 
-
-    async obtenerPorId(id) {
-        return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`departamentos` WHERE `idDepartamento` = ?",
-             [id]);
-
+        if (error) throw error;
+        return data;
     }
 
-    //Insertar datos 
+    // Obtener departamento por ID
+    async obtenerPorId(id) {
+        const { data, error } = await supabase
+            .from('departamentos')
+            .select('*')
+            .eq('id_departamento', id)
+            .single();
 
-async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.departamentos
-(Nombre, Descripcion, Estado) VALUES 
-(?, ?, ?)
-    `;
+        if (error) throw error;
+        return data;
+    }
 
-const parametros = [
-datos.Nombre,
-datos.Descripcion,
-datos.Estado
-];
+    // Insertar un departamento
+    async insertar(datos) {
+        const { data, error } = await supabase
+            .from('departamentos')
+            .insert({
+                nombre:      datos.Nombre,
+                descripcion: datos.Descripcion,
+                estado:      datos.Estado,
+            })
+            .select()
+            .single();
 
-return await ejecutarConsulta(sql, parametros);
+        if (error) throw error;
+        return data;
+    }
 
-}
+    // Actualizar un departamento
+    async actualizar(datos) {
+        const { data, error } = await supabase
+            .from('departamentos')
+            .update({
+                nombre:      datos.Nombre,
+                descripcion: datos.Descripcion,
+                estado:      datos.Estado,
+            })
+            .eq('id_departamento', datos.IdDepartamento)
+            .select()
+            .single();
 
+        if (error) throw error;
+        return data;
+    }
 
-//Actualizar datos
+    // Eliminar un departamento
+    async eliminar(id) {
+        const { error } = await supabase
+            .from('departamentos')
+            .delete()
+            .eq('id_departamento', id);
 
-async actualizar(datos) {
-
-const sql = `
-  UPDATE dbplanilla.departamentos
-      SET Nombre = ?, Descripcion = ?, Estado = ?
-      WHERE IdDepartamento  = ?
-
-`;
-
-const parametros = [
-
-datos.Nombre,
-datos.Descripcion,
-datos.Estado,
-datos.IdDepartamento 
-];
-
-return await ejecutarConsulta(sql, parametros);
-
-}
-
-
-//eliminar datos por id
-
-async eliminar(id) {
-
-return await ejecutarConsulta("DELETE FROM dbplanilla.departamentos WHERE idDepartamento = ?", [id]);
-
-
-}
-
-
-
-
+        if (error) throw error;
+        return { mensaje: 'Departamento eliminado correctamente' };
+    }
 }
 
 module.exports = new DepartamentoServicio();

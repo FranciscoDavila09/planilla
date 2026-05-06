@@ -1,23 +1,23 @@
-const { ejecutarConsulta } = require("../db.js");
+const { supabase } = require("../supabase");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 class UsuarioServicio {
   constructor() {}
   PalabraSecreta = "MiPalabraSecreta";
 
   async Autenticacion(correo, ClaveSinEncriptar) {
-    // Consultar en la base de datos si el usuario y la clave coninciden
-    const filas = await ejecutarConsulta(
-      "SELECT * FROM dbplanilla.usuarios  WHERE correo = ?",
-      [correo],
-    );
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select("*")
+      .eq("correo", correo)
+      .single();
 
-    if (!filas || filas.length === 0) return false;
+    if (error || !data) return false;
 
-    const Usuario = filas[0];
+    const Usuario = data;
 
     let Resultado = false;
-
     try {
       Resultado = await bcrypt.compare(ClaveSinEncriptar, Usuario.Clave);
     } catch (err) {
@@ -35,317 +35,174 @@ class UsuarioServicio {
     let token = jwt.sign({ Nombre, Correo }, this.PalabraSecreta, {
       expiresIn: "10m",
     });
-    // Almacenar en la base de datos para el usuario
-    await ejecutarConsulta(
-      "UPDATE dbplanilla.usuarios SET Token = ? WHERE correo = ?",
-      [token, Correo],
-    );
+    await supabase.from("usuarios").update({ Token: token }).eq("correo", Correo);
     return token;
   }
 
   async ValidarToken(authorizationHeader) {
-    // let token;
-
-    // try {
-    //   // authorizationHeader = "Bearer <token>"
-    //   token = authorizationHeader.split(" ")[1];
-    //   if (!token) return false;
-    // } catch (err) {
-    //   return false;
-    // }
-
-    // let resultado;
-    // try {
-    //   resultado = jwt.verify(token, this.PalabraSecreta);
-    // } catch (err) {
-    //   return false;
-    // }
-
-    // // Buscar token guardado por el correo del JWT
-    // const filas = await ejecutarConsulta(
-    //   "SELECT Token FROM dbplanilla.usuarios WHERE correo = ? LIMIT 1",
-    //   [resultado.Correo]
-    // );
-
-    // if (!filas || filas.length === 0) return false;
-
-    // const tokenbase = filas[0].Token;
-
-    // //  Retornar SOLO true false
-    // return tokenbase === token;
     return true;
   }
 
-  //  async ValidarToken(solicitud) {
-  //     let token;
-  //     try {
-  //       token = solicitud.headers.authorization.split(" ")[1];
-  //     } catch (err) {
-  //       return false;
-  //     }
-
-  //     let Resultado;
-  //     try {
-  //       Resultado = jwt.verify(token, this.PalabraSecreta);
-  //     } catch (err) {
-  //       return false;
-  //     }
-
-  //     // buscar usuario por correo que viene en el token
-  //     const filas = await ejecutarConsulta(
-  //       "SELECT Token FROM dbplanilla.usuarios WHERE correo = ? LIMIT 1",
-  //       [Resultado.Correo]
-  //     );
-
-  //     if (!filas || filas.length === 0) return false;
-
-  //     const Usuario = filas[0];
-
-  //     // validar que el token sea el mismo guardado en la base de datos
-  //     if (Usuario.Token === token) return Resultado;
-
-  //     return false;
-  //   }
   async DesAutenticacion(CorreoElectronico) {
-    await ejecutarConsulta(
-      "UPDATE dbplanilla.usuarios SET Token = NULL WHERE correo = ?",
-      [CorreoElectronico],
-    );
+    const { error } = await supabase
+      .from("usuarios")
+      .update({ Token: null })
+      .eq("correo", CorreoElectronico);
+    if (error) throw error;
     return true;
   }
 
-  //Get para listar los usuarios
+  // Listar todos los usuarios
   async listarUsuarios() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`usuarios`");
+    const { data, error } = await supabase.from("usuarios").select("*");
+    if (error) throw error;
+    return data;
   }
 
   async listarUsuariosCombo() {
-  return await ejecutarConsulta(`
-    SELECT 
-      idUsuario,
-      CONCAT(Nombre, ' ', Apellidos) AS NombreCompleto
-    FROM dbplanilla.usuarios
-    WHERE Estado = 1
-  `);
-}
-
-
-  //Get para obtener empleados por el id
-
-  async obtenerPorId(id) {
-    return await ejecutarConsulta(
-      "SELECT * FROM `dbplanilla`.`usuarios` WHERE `idUsuario` = ?",
-      [id],
-    );
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select("idUsuario,Nombre,Apellidos")
+      .eq("Estado", 1);
+    if (error) throw error;
+    return data.map((u) => ({
+      idUsuario: u.idUsuario,
+      NombreCompleto: `${u.Nombre} ${u.Apellidos}`,
+    }));
   }
 
-  //Insertar datos
+  // Obtener usuario por ID
+  async obtenerPorId(id) {
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select("*")
+      .eq("idUsuario", id)
+      .single();
 
+    if (error) throw error;
+    return data;
+  }
+
+  // Insertar usuario
   async insertar(datos) {
     const claveHash = await bcrypt.hash(datos.Clave, 10);
 
-    const sql = `
-    INSERT INTO dbplanilla.usuarios
-    (Nombre, Apellidos, Estado, FechaCreacion, Clave, telefono,
-     correo, IdRol, IdDepartamento) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+    const { data, error } = await supabase
+      .from("usuarios")
+      .insert({
+        Nombre: datos.Nombre,
+        Apellidos: datos.Apellidos,
+        Estado: datos.Estado,
+        FechaCreacion: datos.FechaCreacion,
+        Clave: claveHash,
+        telefono: datos.telefono,
+        correo: datos.correo,
+        IdRol: datos.idRol,
+        IdDepartamento: datos.idDepartamento,
+      })
+      .select()
+      .single();
 
-    const parametros = [
-      datos.Nombre,
-      datos.Apellidos,
-      datos.Estado,
-      datos.FechaCreacion,
-      claveHash,
-      datos.telefono,
-      datos.correo,
-      datos.idRol,
-      datos.idDepartamento,
-    ];
-
-    return await ejecutarConsulta(sql, parametros);
+    if (error) throw error;
+    return data;
   }
 
-  // async insertar(datos) {
-  //   const sql = `
-  //   INSERT INTO dbplanilla.usuarios
-  //   (Nombre, Apellidos, Estado, FechaCreacion, Clave, telefono,
-  //    correo, IdRol, IdDepartamento)
-  //   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  // `;
-
-  //   const parametros = [
-  //     datos.Nombre,
-  //     datos.Apellidos,
-  //     datos.Estado,
-  //     datos.FechaCreacion,
-  //     datos.Clave,
-  //     datos.Telefono,
-  //     datos.Correo,
-  //     datos.idRol,
-  //     datos.idDepartamento,
-  //   ];
-
-  //   return await ejecutarConsulta(sql, parametros);
-  // }
-
-  //Actualizar datos
-
+  // Actualizar usuario
   async actualizar(datos) {
     const claveHash = await bcrypt.hash(datos.Clave, 10);
 
-    const sql = `
-    UPDATE dbplanilla.usuarios
-    SET Nombre = ?, Apellidos = ?, Clave = ?, correo = ?, telefono = ?,
-        FechaCreacion = ?, Estado = ?, idRol = ?, idDepartamento = ?
-    WHERE idUsuario = ?
-  `;
+    const { data, error } = await supabase
+      .from("usuarios")
+      .update({
+        Nombre: datos.Nombre,
+        Apellidos: datos.Apellidos,
+        Clave: claveHash,
+        correo: datos.correo,
+        telefono: datos.telefono,
+        FechaCreacion: datos.FechaCreacion,
+        Estado: datos.Estado,
+        IdRol: datos.idRol,
+        IdDepartamento: datos.idDepartamento,
+      })
+      .eq("idUsuario", datos.idUsuario)
+      .select()
+      .single();
 
-    const parametros = [
-      datos.Nombre,
-      datos.Apellidos,
-      claveHash,
-      datos.correo,
-      datos.telefono,
-      datos.FechaCreacion,
-      datos.Estado,
-      datos.idRol,
-      datos.idDepartamento,
-      datos.idUsuario,
-    ];
-
-    return await ejecutarConsulta(sql, parametros);
+    if (error) throw error;
+    return data;
   }
 
-  //   async actualizar(datos) {
-  //     const sql = `
-  //   UPDATE dbplanilla.usuarios
-  //       SET Nombre = ?, Apellidos = ?, Clave = ?, correo = ?, telefono = ?,
-  //           FechaCreacion = ?, Estado = ?, idRol = ?, idDepartamento = ?
-  //       WHERE idUsuario = ?
-
-  // `;
-
-  //     const parametros = [
-  //       datos.Nombre,
-  //       datos.Apellidos,
-  //       datos.Clave,
-  //       datos.correo,
-  //       datos.telefono,
-  //       datos.FechaCreacion,
-  //       datos.Estado,
-  //       datos.idRol,
-  //       datos.idDepartamento,
-  //       datos.idUsuario,
-  //     ];
-
-  //     return await ejecutarConsulta(sql, parametros);
-  //   }
-
-  //eliminar datos por id
-
+  // Eliminar usuario (con cascade lógico manejado)
   async eliminar(id) {
-    // 1. Borrar detalleplanilla de las planillas del usuario
-    await ejecutarConsulta(
-      `DELETE dp
-     FROM dbplanilla.detalleplanilla dp
-     INNER JOIN dbplanilla.planillas p
-       ON dp.idPlanilla = p.idPlanillas
-     WHERE p.IdUsuario = ?`,
-      [id],
-    );
+    // Borrar referencias en cascade (simulado - supabase puede manejar FK real si existen)
+    const tables = [
+      "detalleplanilla",
+      "pagos",
+      "deducciones",
+      "aguinaldos",
+      "contratos",
+      "controlasistencia",
+      "controlhorarios",
+      "historialsalarios",
+      "licencias",
+      "puestos",
+      "vacaciones",
+      "planillas",
+    ];
 
-    // 2. Borrar pagos asociados a las planillas del usuario
-    await ejecutarConsulta(
-      `DELETE pa
-     FROM dbplanilla.pagos pa
-     INNER JOIN dbplanilla.planillas p
-       ON pa.IdPlanilla = p.idPlanillas
-     WHERE p.IdUsuario = ?`,
-      [id],
-    );
+    for (const table of tables) {
+      const userColMap = {
+        detalleplanilla: "idPlanilla",
+        pagos: ["IdUsuarioProcesa", "idDeduccion"],
+        deducciones: "usuariosId",
+        aguinaldos: "idUsuario",
+        contratos: "usuarioId",
+        controlasistencia: "idUsuarios",
+        controlhorarios: "idUsuarios",
+        historialsalarios: "idUsuarios",
+        licencias: "idUsuario",
+        puestos: "idUsuario",
+        vacaciones: "UsuarioAprueba",
+        planillas: "IdUsuario",
+      };
 
-    // 3. Borrar pagos que usen deducciones creadas por ese usuario
-    await ejecutarConsulta(
-      `DELETE pa
-     FROM dbplanilla.pagos pa
-     INNER JOIN dbplanilla.deducciones d
-       ON pa.idDeduccion = d.idDeducciones
-     WHERE d.usuariosId = ?`,
-      [id],
-    );
+      const cols = userColMap[table];
+      if (!cols) continue;
 
-    // 4. Borrar pagos donde el usuario procesa el pago
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.pagos WHERE IdUsuarioProcesa = ?",
-      [id],
-    );
+      if (Array.isArray(cols)) {
+        // Para pagos: borrar por IdUsuarioProcesa y por deducciones del usuario
+        if (cols.includes("IdUsuarioProcesa")) {
+          await supabase.from("pagos").delete().eq("IdUsuarioProcesa", id);
+        }
+        if (cols.includes("idDeduccion")) {
+          const { data: deds } = await supabase
+            .from("deducciones")
+            .select("idDeducciones")
+            .eq("usuariosId", id);
+          if (deds && deds.length) {
+            const dedIds = deds.map((d) => d.idDeducciones);
+            await supabase.from("pagos").delete().in("idDeduccion", dedIds);
+          }
+        }
+      } else if (table === "detalleplanilla") {
+        // detalleplanilla -> planillas -> usuario
+        const { data: plans } = await supabase
+          .from("planillas")
+          .select("idPlanillas")
+          .eq("IdUsuario", id);
+        if (plans && plans.length) {
+          const planIds = plans.map((p) => p.idPlanillas);
+          await supabase.from("detalleplanilla").delete().in("idPlanilla", planIds);
+        }
+      } else {
+        await supabase.from(table).delete().eq(cols, id);
+      }
+    }
 
-    // 5. Borrar deducciones del usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.deducciones WHERE usuariosId = ?",
-      [id],
-    );
-
-    // 6. Borrar aguinaldos del usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.aguinaldos WHERE idUsuario = ?",
-      [id],
-    );
-
-    // 7. Borrar contratos del usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.contratos WHERE usuarioId = ?",
-      [id],
-    );
-
-    // 8. Borrar control de asistencia del usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.controlasistencia WHERE idUsuarios = ?",
-      [id],
-    );
-
-    // 9. Borrar control de horarios del usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.controlhorarios WHERE idUsuarios = ?",
-      [id],
-    );
-
-    // 10. Borrar historial de salarios del usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.historialsalarios WHERE idUsuarios = ?",
-      [id],
-    );
-
-    // 11. Borrar licencias del usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.licencias WHERE idUsuario = ?",
-      [id],
-    );
-
-    // 12. Borrar puestos del usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.puestos WHERE idUsuario = ?",
-      [id],
-    );
-
-    // 13. Borrar vacaciones aprobadas por el usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.vacaciones WHERE UsuarioAprueba = ?",
-      [id],
-    );
-
-    // 14. Borrar planillas del usuario
-    await ejecutarConsulta(
-      "DELETE FROM dbplanilla.planillas WHERE IdUsuario = ?",
-      [id],
-    );
-
-    // 15. Finalmente borrar el usuario
-    return await ejecutarConsulta(
-      "DELETE FROM dbplanilla.usuarios WHERE idUsuario = ?",
-      [id],
-    );
+    // Finalmente borrar el usuario
+    const { error } = await supabase.from("usuarios").delete().eq("idUsuario", id);
+    if (error) throw error;
+    return { mensaje: "Usuario eliminado correctamente" };
   }
 }
 

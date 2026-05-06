@@ -1,65 +1,83 @@
-const {ejecutarConsulta} = require('../db.js');
+const { supabase } = require('../supabase');
 
 class DetalleplanillaServicio {
+    constructor() { }
 
-  constructor() { };
+    // Listar todos los detalles de planilla
+    async listarDetalleplanilla() {
+        const { data, error } = await supabase
+            .from('detalleplanilla')
+            .select('*');
 
-  async listarDetalleplanilla() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`detalleplanilla`");
-  }
+        if (error) throw error;
+        return data;
+    }
 
-  async obtenerPorId(id) {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`detalleplanilla` WHERE `idDetallePlanilla` = ?",
-      [id]);
-  }
+    // Obtener detalle por ID
+    async obtenerPorId(id) {
+        const { data, error } = await supabase
+            .from('detalleplanilla')
+            .select('*')
+            .eq('id_detalle_planilla', id)
+            .single();
 
-async insertar(datos) {
-  const sql = `
-    INSERT INTO dbplanilla.detalleplanilla
-    (SalarioBase, TotalDeducciones, SalarioNeto, SalarioBruto, idPlanilla, idDeducciones, idTipoIngreso, idEmpleado)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+        if (error) throw error;
+        return data;
+    }
 
-  const parametros = [
-    datos.SalarioBase,
-    datos.TotalDeducciones,
-    datos.SalarioNeto,
-    datos.SalarioBruto,
-    datos.idPlanilla,
-    datos.idDeducciones,
-    datos.idTipoIngreso,
-    datos.idEmpleado
-  ];
+    // Insertar un detalle de planilla
+    async insertar(datos) {
+        const { data, error } = await supabase
+            .from('detalleplanilla')
+            .insert({
+                salario_base:       datos.SalarioBase,
+                total_deducciones:  datos.TotalDeducciones,
+                salario_neto:       datos.SalarioNeto,
+                salario_bruto:      datos.SalarioBruto,
+                id_planilla:        datos.idPlanilla,
+                id_deducciones:     datos.idDeducciones,
+                id_tipo_ingreso:    datos.idTipoIngreso,
+                id_empleado:        datos.idEmpleado,
+            })
+            .select()
+            .single();
 
-  return await ejecutarConsulta(sql, parametros);
-}
+        if (error) throw error;
+        return data;
+    }
 
-  async actualizar(datos) {
-    const sql = `
-  UPDATE dbplanilla.detalleplanilla
-      SET SalarioBase = ?, TotalDeducciones = ?, SalarioNeto = ?, SalarioBruto = ?, idPlanilla = ?, idDeducciones = ?, idTipoIngreso = ?, idEmpleado = ?
-      WHERE idDetallePlanilla = ?
-`;
+    // Actualizar un detalle de planilla
+    async actualizar(datos) {
+        const { data, error } = await supabase
+            .from('detalleplanilla')
+            .update({
+                salario_base:       datos.SalarioBase,
+                total_deducciones:  datos.TotalDeducciones,
+                salario_neto:       datos.SalarioNeto,
+                salario_bruto:      datos.SalarioBruto,
+                id_planilla:        datos.idPlanilla,
+                id_deducciones:     datos.idDeducciones,
+                id_tipo_ingreso:    datos.idTipoIngreso,
+                id_empleado:        datos.idEmpleado,
+            })
+            .eq('id_detalle_planilla', datos.idDetallePlanilla)
+            .select()
+            .single();
 
-    const parametros = [
-      datos.SalarioBase,
-      datos.TotalDeducciones,
-      datos.SalarioNeto,
-      datos.SalarioBruto,
-      datos.idPlanilla,
-      datos.idDeducciones,
-      datos.idTipoIngreso,
-      datos.idEmpleado,
-      datos.idDetallePlanilla
-    ];
+        if (error) throw error;
+        return data;
+    }
 
-    return await ejecutarConsulta(sql, parametros);
-  }
+    // Eliminar un detalle de planilla
+    async eliminar(id) {
+        const { error } = await supabase
+            .from('detalleplanilla')
+            .delete()
+            .eq('id_detalle_planilla', id);
 
-  async eliminar(id) {
-    return await ejecutarConsulta("DELETE FROM dbplanilla.detalleplanilla WHERE idDetallePlanilla = ?", [id]);
-  }
-
+        if (error) throw error;
+        return { mensaje: 'Detalle de planilla eliminado correctamente' };
+    }
 }
 
 module.exports = new DetalleplanillaServicio();

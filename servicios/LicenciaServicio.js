@@ -1,59 +1,81 @@
-const { ejecutarConsulta } = require('../db.js');
+const { supabase } = require('../supabase');
+
 class LicenciaServicio {
+    constructor() { }
 
-  constructor() { }
+    // Listar todas las licencias
+    async listarLicencia() {
+        const { data, error } = await supabase
+            .from('licencias')
+            .select('*');
 
-  async listarLicencia() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`licencias`");
-  }
-
-    async obtenerPorId(id) {    
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`licencias` WHERE `IdLicencia` = ?", 
-        [id]);
+        if (error) throw error;
+        return data;
     }
 
+    // Obtener licencia por ID
+    async obtenerPorId(id) {
+        const { data, error } = await supabase
+            .from('licencias')
+            .select('*')
+            .eq('id_licencia', id)
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
+
+    // Insertar una licencia
     async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.licencias
-(IdEmpleado, Tipo, FechaInicio, FechaFin, DocumentoSoporte, Estado, idUsuario) VALUES 
-(?, ?, ?, ?, ?, ?, ?)
-    `;
+        const { data, error } = await supabase
+            .from('licencias')
+            .insert({
+                id_empleado:        datos.IdEmpleado,
+                tipo:               datos.Tipo,
+                fecha_inicio:       datos.FechaInicio,
+                fecha_fin:          datos.FechaFin,
+                documento_soporte:  datos.DocumentoSoporte,
+                estado:             datos.Estado,
+                id_usuario:         datos.idUsuario,
+            })
+            .select()
+            .single();
 
-    const parametros = [
-    datos.IdEmpleado,
-    datos.Tipo,
-    datos.FechaInicio,
-    datos.FechaFin,
-    datos.DocumentoSoporte,
-    datos.Estado,
-    datos.idUsuario
-    ];
-    return await ejecutarConsulta(sql, parametros);
-}
+        if (error) throw error;
+        return data;
+    }
 
-async actualizar(datos) {
-    const sql = `
-    UPDATE dbplanilla.licencias SET 
-    IdEmpleado = ?, Tipo = ?, FechaInicio = ?, FechaFin = ?, DocumentoSoporte = ?, Estado = ?, idUsuario = ? WHERE IdLicencia = ?   
-    `;
+    // Actualizar una licencia
+    async actualizar(datos) {
+        const { data, error } = await supabase
+            .from('licencias')
+            .update({
+                id_empleado:        datos.IdEmpleado,
+                tipo:               datos.Tipo,
+                fecha_inicio:       datos.FechaInicio,
+                fecha_fin:          datos.FechaFin,
+                documento_soporte:  datos.DocumentoSoporte,
+                estado:             datos.Estado,
+                id_usuario:         datos.idUsuario,
+            })
+            .eq('id_licencia', datos.IdLicencia)
+            .select()
+            .single();
 
-    const parametros = [
-    datos.IdEmpleado,
-    datos.Tipo,
-    datos.FechaInicio,
-    datos.FechaFin,
-    datos.DocumentoSoporte,
-    datos.Estado,
-    datos.idUsuario,
-    datos.IdLicencia
-    ];
-    return await ejecutarConsulta(sql, parametros);
-}
+        if (error) throw error;
+        return data;
+    }
 
-async eliminar(id) {
-    return await ejecutarConsulta("DELETE FROM dbplanilla.licencias WHERE IdLicencia = ?",
-         [id]);
+    // Eliminar una licencia
+    async eliminar(id) {
+        const { error } = await supabase
+            .from('licencias')
+            .delete()
+            .eq('id_licencia', id);
+
+        if (error) throw error;
+        return { mensaje: 'Licencia eliminada correctamente' };
     }
 }
 
-module.exports =  new LicenciaServicio();
+module.exports = new LicenciaServicio();

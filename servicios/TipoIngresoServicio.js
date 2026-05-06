@@ -1,57 +1,77 @@
-const { ejecutarConsulta } = require('../db.js');
+const { supabase } = require("../supabase");
+
 class TipoIngresoServicio {
+  constructor() {}
 
-  constructor() { }
+  // Listar todos los tipos de ingreso
+  async listarTipoIngreso() {
+    const { data, error } = await supabase.from("tipoingresos").select("*");
 
-    async listarTipoIngreso() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`tipoingresos`");
+    if (error) throw error;
+    return data;
   }
 
-    async obtenerPorId(id) {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`tipoingresos` WHERE `idTipoIngresos` = ?",
-      [id]);
-    }
+  // Obtener tipo de ingreso por ID
+  async obtenerPorId(id) {
+    const { data, error } = await supabase
+      .from("tipoingresos")
+      .select("*")
+      .eq("idTipoIngresos", id)
+      .single();
 
-    async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.tipoingresos
-(Bonos, HorasExtra, HorasDobles, Comisiones, Viaticos, idEmpleados) VALUES 
-(?, ?, ?, ?, ?, ?)
-    `;
-    const parametros = [
-      datos.Bonos,
-      datos.HorasExtra,
-      datos.HorasDobles,
-      datos.Comisiones,
-      datos.Viaticos,
-      datos.idEmpleados
-    ];
-    return await ejecutarConsulta(sql, parametros);
-    }
+    if (error) throw error;
+    return data;
+  }
 
-    async actualizar(datos) {
-    const sql = `
-  UPDATE dbplanilla.tipoingresos
-      SET Bonos = ?, HorasExtra = ?, HorasDobles = ?, Comisiones = ?, Viaticos = ?, idEmpleados = ?
-      WHERE idTipoIngresos = ?
-`;
-    const parametros = [
-      datos.Bonos,
-      datos.HorasExtra,
-      datos.HorasDobles,
-      datos.Comisiones,
-      datos.Viaticos,
-      datos.idEmpleados,
-      datos.idTipoIngresos
-    ];
-    return await ejecutarConsulta(sql, parametros);
+  // Insertar tipo de ingreso
+  async insertar(datos) {
+    const { data, error } = await supabase
+      .from("tipoingresos")
+      .insert({
+        Bonos: datos.Bonos,
+        HorasExtra: datos.HorasExtra,
+        HorasDobles: datos.HorasDobles,
+        Comisiones: datos.Comisiones,
+        Viaticos: datos.Viaticos,
+        idEmpleados: datos.idEmpleados,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Actualizar tipo de ingreso
+  async actualizar(datos) {
+    const { data, error } = await supabase
+      .from("tipoingresos")
+      .update({
+        Bonos: datos.Bonos,
+        HorasExtra: datos.HorasExtra,
+        HorasDobles: datos.HorasDobles,
+        Comisiones: datos.Comisiones,
+        Viaticos: datos.Viaticos,
+        idEmpleados: datos.idEmpleados,
+      })
+      .eq("idTipoIngresos", datos.idTipoIngresos)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Eliminar tipo de ingreso
+  async eliminar(id) {
+    const { error } = await supabase
+      .from("tipoingresos")
+      .delete()
+      .eq("idTipoIngresos", id);
+
+    if (error) throw error;
+    return { mensaje: "Tipo de ingreso eliminado correctamente" };
+  }
 }
 
-async eliminar(id) {
-    return await ejecutarConsulta("DELETE FROM dbplanilla.tipoingresos WHERE idTipoIngresos = ?",
-         [id]);
-    }
-
-  }
-
-    module.exports =  new TipoIngresoServicio();
+module.exports = new TipoIngresoServicio();

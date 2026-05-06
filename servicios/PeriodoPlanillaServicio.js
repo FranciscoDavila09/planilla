@@ -1,50 +1,71 @@
-const {ejecutarConsulta} = require('../db.js');
+const { supabase } = require("../supabase");
+
 class PeriodoPlanillaServicio {
+  constructor() {}
 
-  constructor() { }
+  // Listar todos los periodos de planilla
+  async listarPeriodoPlanilla() {
+    const { data, error } = await supabase.from("periodoplanilla").select("*");
 
-    async listarPeriodoPlanilla() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`periodoplanilla`");
+    if (error) throw error;
+    return data;
   }
 
-    async obtenerPorId(id) {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`periodoplanilla` WHERE `idPeriodoPlanilla` = ?",
-      [id]);
-    }
-    async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.periodoplanilla
-(NombrePeriodo, FechaInicio, FechaFin) VALUES 
-(?, ?, ?)
-    `;
-    const parametros = [
-      datos.NombrePeriodo,
-      datos.FechaInicio,
-      datos.FechaFin
-    ];
-    return await ejecutarConsulta(sql, parametros);
-}
+  // Obtener periodo por ID
+  async obtenerPorId(id) {
+    const { data, error } = await supabase
+      .from("periodoplanilla")
+      .select("*")
+      .eq("id_periodo_planilla", id)
+      .single();
 
-async actualizar(datos) {
-    const sql = `
-  UPDATE dbplanilla.periodoplanilla
-        SET NombrePeriodo = ?, FechaInicio = ?, FechaFin = ?
-        WHERE idPeriodoPlanilla  = ?
-`;
-const parametros = [    
-        datos.NombrePeriodo,
-        datos.FechaInicio,
-        datos.FechaFin,
-        datos.idPeriodoPlanilla
-    ];
-    return await ejecutarConsulta(sql, parametros);
-}
-
-async eliminar(id) {
-    return await ejecutarConsulta("DELETE FROM dbplanilla.periodoplanilla WHERE idPeriodoPlanilla = ?",
-         [id]);
-}
-
+    if (error) throw error;
+    return data;
   }
 
-  module.exports =  new PeriodoPlanillaServicio();
+  // Insertar un periodo de planilla
+  async insertar(datos) {
+    const { data, error } = await supabase
+      .from("periodoplanilla")
+      .insert({
+        nombre_periodo: datos.NombrePeriodo,
+        fecha_inicio: datos.FechaInicio,
+        fecha_fin: datos.FechaFin,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Actualizar un periodo de planilla
+  async actualizar(datos) {
+    const { data, error } = await supabase
+      .from("periodoplanilla")
+      .update({
+        nombre_periodo: datos.NombrePeriodo,
+        fecha_inicio: datos.FechaInicio,
+        fecha_fin: datos.FechaFin,
+      })
+      .eq("id_periodo_planilla", datos.idPeriodoPlanilla)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Eliminar un periodo de planilla
+  async eliminar(id) {
+    const { error } = await supabase
+      .from("periodoplanilla")
+      .delete()
+      .eq("id_periodo_planilla", id);
+
+    if (error) throw error;
+    return { mensaje: "Periodo de planilla eliminado correctamente" };
+  }
+}
+
+module.exports = new PeriodoPlanillaServicio();

@@ -1,100 +1,93 @@
-const {ejecutarConsulta} = require('../db.js');
+const { supabase } = require("../SupaBase.js");
 
 class EmpleadoServicio {
+  constructor() {}
 
-  constructor() { };
-//Get para listar los empleados
+  // Listar todos los empleados
   async listarEmpleados() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`empleados`");
+    const { data, error } = await supabase.from("empleados").select("*");
+
+    if (error) throw error;
+    return data;
   }
 
+  // Obtener empleado por ID
+  async obtenerPorId(id) {
+    const { data, error } = await supabase
+      .from("empleados")
+      .select("*")
+      .eq("id_empleado", id)
+      .single();
 
-  //Get para obtener empleados por el id 
+    if (error) throw error;
+    return data;
+  }
 
-    async obtenerPorId(id) {
-        return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`empleados` WHERE `idEmpleado` = ?",
-             [id]);
+  // Insertar un empleado
+  // NOTA: HoraEntrada y HoraSalida no estaban en el schema original de empleados.
+  // Si los agregaste después, asegurate de tener esas columnas en Supabase.
+  async insertar(datos) {
+    const { data, error } = await supabase
+      .from("empleados")
+      .insert({
+        codigo_empleado: datos.CodigoEmpleado,
+        nombre: datos.Nombre,
+        apellidos: datos.Apellidos,
+        identificacion: datos.Identificacion,
+        correo: datos.Correo,
+        telefono: datos.Telefono,
+        fecha_ingreso: datos.FechaIngreso,
+        estado: datos.Estado,
+        hora_entrada: datos.HoraEntrada,
+        cuenta_bancaria: datos.CuentaBancaria,
+        salario: datos.Salario,
+        id_departamento: datos.idDepartamento,
+        hora_salida: datos.HoraSalida,
+      })
+      .select()
+      .single();
 
-    }
+    if (error) throw error;
+    return data;
+  }
 
-    //Insertar datos 
+  // Actualizar un empleado
+  async actualizar(datos) {
+    const { data, error } = await supabase
+      .from("empleados")
+      .update({
+        codigo_empleado: datos.CodigoEmpleado,
+        nombre: datos.Nombre,
+        apellidos: datos.Apellidos,
+        identificacion: datos.Identificacion,
+        correo: datos.Correo,
+        telefono: datos.Telefono,
+        fecha_ingreso: datos.FechaIngreso,
+        estado: datos.Estado,
+        hora_entrada: datos.HoraEntrada,
+        cuenta_bancaria: datos.CuentaBancaria,
+        salario: datos.Salario,
+        id_departamento: datos.idDepartamento,
+        hora_salida: datos.HoraSalida,
+      })
+      .eq("id_empleado", datos.idEmpleado)
+      .select()
+      .single();
 
-async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.empleados
-(CodigoEmpleado, Nombre, Apellidos, Identificacion, Correo, Telefono, FechaIngreso, Estado,
-HoraEntrada, CuentaBancaria, Salario, idDepartamento, HoraSalida ) VALUES 
-(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+    if (error) throw error;
+    return data;
+  }
 
-const parametros = [
-datos.CodigoEmpleado,
-datos.Nombre,
-datos.Apellidos,
-datos.Identificacion,
-datos.Correo,
-datos.Telefono,
-datos.FechaIngreso,
-datos.Estado,
-datos.HoraEntrada,
-datos.CuentaBancaria,
-datos.Salario,
-datos.idDepartamento,
-datos.HoraSalida
-];
+  // Eliminar un empleado
+  async eliminar(id) {
+    const { error } = await supabase
+      .from("empleados")
+      .delete()
+      .eq("id_empleado", id);
 
-return await ejecutarConsulta(sql, parametros);
-
-}
-
-
-//Actualizar datos
-
-async actualizar(datos) {
-
-const sql = `
-  UPDATE dbplanilla.empleados
-      SET CodigoEmpleado = ?, Nombre = ?, Apellidos = ?, Identificacion = ?, Correo = ?, Telefono = ?,
-          FechaIngreso = ?, Estado = ?, HoraEntrada = ?, CuentaBancaria = ?, Salario = ?, idDepartamento = ?, HoraSalida = ?
-      WHERE idEmpleado = ?
-
-`;
-
-const parametros = [
-
-datos.CodigoEmpleado,
-datos.Nombre,
-datos.Apellidos,
-datos.Identificacion,
-datos.Correo,
-datos.Telefono,
-datos.FechaIngreso,
-datos.Estado,
-datos.HoraEntrada,
-datos.CuentaBancaria,
-datos.Salario,
-datos.idDepartamento,
-datos.HoraSalida,
-datos.idEmpleado
-];
-
-return await ejecutarConsulta(sql, parametros);
-
-}
-
-
-//eliminar datos por id
-
-async eliminar(id) {
-
-return await ejecutarConsulta("DELETE FROM dbplanilla.empleados WHERE idEmpleado = ?", [id]);
-
-
-}
-
-
-
-
+    if (error) throw error;
+    return { mensaje: "Empleado eliminado correctamente" };
+  }
 }
 
 module.exports = new EmpleadoServicio();

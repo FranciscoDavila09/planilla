@@ -1,93 +1,117 @@
-const { ejecutarConsulta } = require("../db.js");
+const { supabase } = require('../supabase');
 
 class PlanillaServicio {
-  constructor() {}
-  //Get para listar las planillas
-async listarPlanillas() {
-  const sql = `
-    SELECT 
-      p.idPlanillas,
-      p.EstadoPlanilla,
-      p.IdUsuario,
-      CONCAT(u.Nombre, ' ', u.Apellidos) AS NombreUsuario,
-      p.FechaCreacion,
-      p.idControlHorarios,
-      p.idPeriodoPlanilla
-    FROM dbplanilla.planillas p
-    INNER JOIN dbplanilla.usuarios u 
-      ON p.IdUsuario = u.idUsuario
-  `;
+    constructor() { }
 
-  return await ejecutarConsulta(sql);
-}
-  //Get para obtener planillas por el id
+    // Listar todas las planillas con nombre de usuario
+    async listarPlanillas() {
+        const { data, error } = await supabase
+            .from('planillas')
+            .select(`
+                id_planillas,
+                estado_planilla,
+                id_usuario,
+                fecha_creacion,
+                id_control_horarios,
+                id_periodo_planilla,
+                usuarios (
+                    nombre,
+                    apellidos
+                )
+            `);
 
-async obtenerPorId(id) {
-  const sql = `
-    SELECT 
-      p.idPlanillas,
-      p.EstadoPlanilla,
-      p.IdUsuario,
-      CONCAT(u.Nombre, ' ', u.Apellidos) AS NombreUsuario,
-      p.FechaCreacion,
-      p.idControlHorarios,
-      p.idPeriodoPlanilla
-    FROM dbplanilla.planillas p
-    INNER JOIN dbplanilla.usuarios u 
-      ON p.IdUsuario = u.idUsuario
-    WHERE p.idPlanillas = ?
-  `;
+        if (error) throw error;
 
-  return await ejecutarConsulta(sql, [id]);
-}
-  //Insertar datos
+        return data.map(p => ({
+            id_planillas:         p.id_planillas,
+            estado_planilla:      p.estado_planilla,
+            id_usuario:           p.id_usuario,
+            nombre_usuario:       `${p.usuarios?.nombre ?? ''} ${p.usuarios?.apellidos ?? ''}`.trim(),
+            fecha_creacion:       p.fecha_creacion,
+            id_control_horarios:  p.id_control_horarios,
+            id_periodo_planilla:  p.id_periodo_planilla,
+        }));
+    }
 
-async insertar(datos) {
-  const sql = `
-    INSERT INTO dbplanilla.planillas
-    (EstadoPlanilla, IdUsuario, FechaCreacion, idControlHorarios, idPeriodoPlanilla)
-    VALUES (?, ?, ?, ?, ?)
-  `;
+    // Obtener planilla por ID con nombre de usuario
+    async obtenerPorId(id) {
+        const { data, error } = await supabase
+            .from('planillas')
+            .select(`
+                id_planillas,
+                estado_planilla,
+                id_usuario,
+                fecha_creacion,
+                id_control_horarios,
+                id_periodo_planilla,
+                usuarios (
+                    nombre,
+                    apellidos
+                )
+            `)
+            .eq('id_planillas', id)
+            .single();
 
-  const parametros = [
-    datos.EstadoPlanilla,
-    datos.IdUsuario,
-    datos.FechaCreacion,
-    datos.idControlHorarios,
-    datos.idPeriodoPlanilla
-  ];
+        if (error) throw error;
 
-  return await ejecutarConsulta(sql, parametros);
-}
-  //Actualizar datos
+        return {
+            id_planillas:         data.id_planillas,
+            estado_planilla:      data.estado_planilla,
+            id_usuario:           data.id_usuario,
+            nombre_usuario:       `${data.usuarios?.nombre ?? ''} ${data.usuarios?.apellidos ?? ''}`.trim(),
+            fecha_creacion:       data.fecha_creacion,
+            id_control_horarios:  data.id_control_horarios,
+            id_periodo_planilla:  data.id_periodo_planilla,
+        };
+    }
 
- async actualizar(datos) {
-  const sql = `
-    UPDATE dbplanilla.planillas
-    SET EstadoPlanilla = ?, IdUsuario = ?, FechaCreacion = ?, idControlHorarios = ?, idPeriodoPlanilla = ?
-    WHERE idPlanillas = ?
-  `;
+    // Insertar una planilla
+    async insertar(datos) {
+        const { data, error } = await supabase
+            .from('planillas')
+            .insert({
+                estado_planilla:     datos.EstadoPlanilla,
+                id_usuario:          datos.IdUsuario,
+                fecha_creacion:      datos.FechaCreacion,
+                id_control_horarios: datos.idControlHorarios,
+                id_periodo_planilla: datos.idPeriodoPlanilla,
+            })
+            .select()
+            .single();
 
-  const parametros = [
-    datos.EstadoPlanilla,
-    datos.IdUsuario,
-    datos.FechaCreacion,
-    datos.idControlHorarios,
-    datos.idPeriodoPlanilla,
-    datos.idPlanillas
-  ];
+        if (error) throw error;
+        return data;
+    }
 
-  return await ejecutarConsulta(sql, parametros);
-}
+    // Actualizar una planilla
+    async actualizar(datos) {
+        const { data, error } = await supabase
+            .from('planillas')
+            .update({
+                estado_planilla:     datos.EstadoPlanilla,
+                id_usuario:          datos.IdUsuario,
+                fecha_creacion:      datos.FechaCreacion,
+                id_control_horarios: datos.idControlHorarios,
+                id_periodo_planilla: datos.idPeriodoPlanilla,
+            })
+            .eq('id_planillas', datos.idPlanillas)
+            .select()
+            .single();
 
-  //eliminar datos por id
+        if (error) throw error;
+        return data;
+    }
 
-  async eliminar(id) {
-    return await ejecutarConsulta(
-      "DELETE FROM dbplanilla.planillas WHERE idPlanillas = ?",
-      [id],
-    );
-  }
+    // Eliminar una planilla
+    async eliminar(id) {
+        const { error } = await supabase
+            .from('planillas')
+            .delete()
+            .eq('id_planillas', id);
+
+        if (error) throw error;
+        return { mensaje: 'Planilla eliminada correctamente' };
+    }
 }
 
 module.exports = new PlanillaServicio();

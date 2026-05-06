@@ -1,21 +1,24 @@
-const { ejecutarConsulta } = require('../db.js');
+const { supabase } = require("../SupaBase.js");
 
 class Servicio1 {
-
-  constructor() { };
-
+  constructor() {}
 
   async listar(Datos) {
-    return await ejecutarConsulta("SELECT * FROM `mysql`.`user` WHERE `User` = ?"
-      , [Datos.Usuario]);
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select("*")
+      .eq("User", Datos.Usuario);
+
+    if (error) throw error;
+    return data;
   }
 
+  async listar2() {
+    const { data, error } = await supabase.from("empleados").select("*");
 
-async listar2() {
-  return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`empleados`");
-}
-
-
+    if (error) throw error;
+    return data;
+  }
 }
 
 module.exports = new Servicio1();

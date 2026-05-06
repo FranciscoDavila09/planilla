@@ -1,57 +1,77 @@
-const { ejecutarConsulta } = require("../db.js");
+const { supabase } = require("../supabase");
 
 class VacacionesServicio {
   constructor() {}
 
-    async listarVacaciones() {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`vacaciones`");
+  // Listar todas las vacaciones
+  async listarVacaciones() {
+    const { data, error } = await supabase.from("vacaciones").select("*");
+
+    if (error) throw error;
+    return data;
   }
 
-    async obtenerPorId(id) {
-    return await ejecutarConsulta("SELECT * FROM `dbplanilla`.`vacaciones` WHERE `IdVacacion` = ?",
-      [id]);
+  // Obtener vacación por ID
+  async obtenerPorId(id) {
+    const { data, error } = await supabase
+      .from("vacaciones")
+      .select("*")
+      .eq("IdVacacion", id)
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
-    async insertar(datos) {
-    const sql = `
-    INSERT INTO dbplanilla.vacaciones
-(IdEmpleado, FechaInicio, FechaFin, DiasSolicitados, Estado, UsuarioAprueba) VALUES
-(?, ?, ?, ?, ?, ?)
-    `;
+  // Insertar vacación
+  async insertar(datos) {
+    const { data, error } = await supabase
+      .from("vacaciones")
+      .insert({
+        IdEmpleado: datos.IdEmpleado,
+        FechaInicio: datos.FechaInicio,
+        FechaFin: datos.FechaFin,
+        DiasSolicitados: datos.DiasSolicitados,
+        Estado: datos.Estado,
+        UsuarioAprueba: datos.UsuarioAprueba,
+      })
+      .select()
+      .single();
 
-    const parametros = [
-        datos.IdEmpleado,
-        datos.FechaInicio,
-        datos.FechaFin,
-        datos.DiasSolicitados,
-        datos.Estado,
-        datos.UsuarioAprueba
-    ];
-    return await ejecutarConsulta(sql, parametros);
-    }
+    if (error) throw error;
+    return data;
+  }
 
-    async actualizar(datos) {
-    const sql = `
-    UPDATE dbplanilla.vacaciones SET 
-    IdEmpleado = ?, FechaInicio = ?, FechaFin = ?, DiasSolicitados = ?, Estado = ?, UsuarioAprueba = ? WHERE IdVacacion = ?
-    `;
-    const parametros = [
-        datos.IdEmpleado,
-        datos.FechaInicio,
-        datos.FechaFin,
-        datos.DiasSolicitados,
-        datos.Estado,
-        datos.UsuarioAprueba,
-        datos.IdVacacion
-    ];
-    return await ejecutarConsulta(sql, parametros);
-    }
+  // Actualizar vacación
+  async actualizar(datos) {
+    const { data, error } = await supabase
+      .from("vacaciones")
+      .update({
+        IdEmpleado: datos.IdEmpleado,
+        FechaInicio: datos.FechaInicio,
+        FechaFin: datos.FechaFin,
+        DiasSolicitados: datos.DiasSolicitados,
+        Estado: datos.Estado,
+        UsuarioAprueba: datos.UsuarioAprueba,
+      })
+      .eq("IdVacacion", datos.IdVacacion)
+      .select()
+      .single();
 
-async eliminar(id) {
-    return await ejecutarConsulta("DELETE FROM dbplanilla.vacaciones WHERE IdVacacion = ?",
-         [id]);
-    }
+    if (error) throw error;
+    return data;
+  }
 
+  // Eliminar vacación
+  async eliminar(id) {
+    const { error } = await supabase
+      .from("vacaciones")
+      .delete()
+      .eq("IdVacacion", id);
+
+    if (error) throw error;
+    return { mensaje: "Vacación eliminada correctamente" };
+  }
 }
 
-module.exports =  new VacacionesServicio();
+module.exports = new VacacionesServicio();
