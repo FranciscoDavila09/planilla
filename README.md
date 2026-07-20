@@ -22,7 +22,7 @@ Sistema web desarrollado para optimizar la administración del talento humano me
 
 ---
 
-# 📖 Descripción
+#  Descripción
 
 PlanillaRH es una plataforma web desarrollada como proyecto académico para optimizar la administración del talento humano dentro de una organización.
 
@@ -30,7 +30,7 @@ El sistema centraliza la gestión de empleados, puestos, contratos, asistencia, 
 
 ---
 
-# 🎥 Demostración del sistema
+#  Demostración del sistema
 
 A continuación se muestra un recorrido por las principales funcionalidades del sistema.
 
@@ -40,7 +40,7 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-# ✨ Funcionalidades
+#  Funcionalidades
 
 -  Gestión completa de empleados.
 -  Administración de puestos.
@@ -62,7 +62,7 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-# 🛠 Tecnologías utilizadas
+#  Tecnologías utilizadas
 
 | Frontend | Backend | Base de Datos | Herramientas |
 |----------|----------|---------------|--------------|
@@ -75,7 +75,7 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-# 🏗 Arquitectura
+#  Arquitectura
 
 ```text
                     Usuario
@@ -95,9 +95,9 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-# 📷 Vista previa del sistema
+#  Vista previa del sistema
 
-## 🏠 Dashboard Principal
+##  Dashboard Principal
 
 <p align="center">
 <img src="assets/dashboardPlanilla.png" width="950">
@@ -105,7 +105,7 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-## 👨‍💼 Gestión de Empleados
+##  Gestión de Empleados
 
 <p align="center">
 <img src="assets/empleadosPlanilla.png" width="950">
@@ -113,7 +113,7 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-## 💰 Gestión de Planillas
+##  Gestión de Planillas
 
 <p align="center">
 <img src="assets/planillaRH.png" width="950">
@@ -121,7 +121,7 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-## 💳 Gestión de Deducciones
+##  Gestión de Deducciones
 
 <p align="center">
 <img src="assets/deduccionesPlanilla.png" width="950">
@@ -129,7 +129,7 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-## 👤 Gestión de Usuarios
+##  Gestión de Usuarios
 
 <p align="center">
 <img src="assets/usuariosPlanilla.png" width="950">
@@ -137,7 +137,7 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-# 🚀 Características del sistema
+#  Características del sistema
 
 - Arquitectura cliente-servidor.
 - Desarrollo basado en componentes con Angular.
@@ -154,7 +154,7 @@ https://github.com/user-attachments/assets/dadc5631-52d6-45cb-9663-e16cf0363bd1
 
 ---
 
-# 👨‍💻 Mi participación
+#  Mi participación
 
 Participé como desarrollador **Full Stack** durante todo el desarrollo del sistema.
 
@@ -202,7 +202,7 @@ PlanillaRH
 
 ---
 
-# ⚙ Instalación
+#  Instalación
 
 ## Clonar el proyecto
 
@@ -234,7 +234,7 @@ npm start
 
 ---
 
-# 📌 Estado del proyecto
+#  Estado del proyecto
 
 🟢 **Proyecto finalizado**
 
@@ -242,14 +242,14 @@ Desarrollado como parte de la carrera de Ingeniería de Software.
 
 ---
 
-# 👨‍💻 Autores
+#  Autores
 
 - Berny Dávila
 - Jeeyson Martínez
 
 ---
 
-# 📄 Licencia
+#  Licencia
 
 Proyecto desarrollado con fines académicos.
 
